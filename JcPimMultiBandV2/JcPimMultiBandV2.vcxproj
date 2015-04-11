@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B4C24DD4-749E-48EF-AE6A-8555976D4CA5}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>JcMultiPim</RootNamespace>
+    <ProjectName>JcPimMultiBandV2</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="3rdParty\NrpControl2.h" />
+    <ClInclude Include="3rdParty\rsnrpz.h" />
+    <ClInclude Include="3rdParty\sqlite3.h" />
+    <ClInclude Include="3rdParty\visa.h" />
+    <ClInclude Include="3rdParty\visatype.h" />
+    <ClInclude Include="ClsInstrAgilent.hpp" />
+    <ClInclude Include="ClsInstrRohdeSchwarz.h" />
+    <ClInclude Include="ClsSenRsNrpz.hpp" />
+    <ClInclude Include="ClsSenRsNrt.hpp" />
+    <ClInclude Include="ClsVnaAgE5062A.hpp" />
+    <ClInclude Include="ClsAnaAgN9020A.hpp" />
+    <ClInclude Include="ClsSigAgN5181A.hpp" />
+    <ClInclude Include="IfSwitch.hpp" />
+    <ClInclude Include="JcApi.h" />
+    <ClInclude Include="JcOffsetDB.hpp" />
+    <ClInclude Include="JcPimObject.h" />
+    <ClInclude Include="IfAnalyzer.hpp" />
+    <ClInclude Include="IfInstrument.hpp" />
+    <ClInclude Include="IfSensor.hpp" />
+    <ClInclude Include="IfSignalSource.hpp" />
+    <ClInclude Include="IfVna.hpp" />
+    <ClInclude Include="Interface.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="ClsJcSwitch.h" />
+    <ClInclude Include="Switch\com_io_ctl.h" />
+    <ClInclude Include="Switch\implementsetting.h" />
+    <ClInclude Include="Switch\switch_info.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="ClsSenAgU2000A.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="3rdParty\sqlite3.c" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="JcApi.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="ClsJcSwitch.cpp" />
+    <ClCompile Include="Switch\com_io_ctl.cpp" />
+    <ClCompile Include="Switch\implementsetting.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="JcPimMultiBandV2.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="3rdParty\NrpControl2.lib" />
+    <Library Include="3rdParty\rsnrpz_32.lib" />
+    <Library Include="3rdParty\visa32.lib" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
