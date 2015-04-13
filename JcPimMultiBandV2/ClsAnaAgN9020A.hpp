@@ -179,6 +179,8 @@ public:
 		InstrSetSpan(400 * 1000);
 	}
 	void InstrTxOffsetSetting() {
+		//OFFSET÷√¡„
+		InstrSetOffset(0);
 		InstrClosgAvg();
 		InstrSetRef(20);
 		InstrSetAtt(30);
@@ -187,7 +189,8 @@ public:
 		InstrSetVbw(100);
 		InstrSetSpan(1000);
 	}
-	void INstrRxOffsetSetting() {
+	void InstrRxOffsetSetting() {
+		//OFFSET÷√¡„
 		InstrSetOffset(0);
 		InstrSetRef(-60);
 		InstrSetAtt(0);

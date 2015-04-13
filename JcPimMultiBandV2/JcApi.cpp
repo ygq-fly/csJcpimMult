@@ -20,25 +20,21 @@ JcBool _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 JcBool _debug_enable = 0;
 
 std::wstring _startPath = [](){
-	//std::cout << "Load Dll" << std::endl;
 	wchar_t wcBuff[512] = { 0 };
-	HINSTANCE hpatch = GetModuleHandle(L"JcPimMultiBandV2.dll");
-	GetModuleFileName(hpatch, wcBuff, 1024);
+	HINSTANCE hpatch = GetModuleHandleW(L"JcPimMultiBandV2.dll");
+	GetModuleFileNameW(hpatch, wcBuff, 1024);
 	std::wstring wsPath(wcBuff);
 	wsPath = wsPath.substr(0, wsPath.rfind(L'\\'));
 
 	std::wstring wsPath_ini = wsPath + L"\\JcConfig.ini";
-	_switch_enable[0] = GetPrivateProfileInt(L"Connect_Enable", L"band0", 1, wsPath_ini.c_str());
-	_switch_enable[1] = GetPrivateProfileInt(L"Connect_Enable", L"band1", 1, wsPath_ini.c_str());
-	_switch_enable[2] = GetPrivateProfileInt(L"Connect_Enable", L"band2", 1, wsPath_ini.c_str());
-	_switch_enable[3] = GetPrivateProfileInt(L"Connect_Enable", L"band3", 1, wsPath_ini.c_str());
-	_switch_enable[4] = GetPrivateProfileInt(L"Connect_Enable", L"band4", 1, wsPath_ini.c_str());
-	_switch_enable[5] = GetPrivateProfileInt(L"Connect_Enable", L"band5", 1, wsPath_ini.c_str());
-	_switch_enable[6] = GetPrivateProfileInt(L"Connect_Enable", L"band6", 1, wsPath_ini.c_str());
-	_debug_enable = GetPrivateProfileInt(L"Settings", L"debug", 0, wsPath_ini.c_str());
-
-	//if (_debug_enable)
-	//	MessageBox(NULL, L"(1)Object Load!", L"Debug", MB_OK);
+	_switch_enable[0] = GetPrivateProfileIntW(L"Connect_Enable", L"band0", 1, wsPath_ini.c_str());
+	_switch_enable[1] = GetPrivateProfileIntW(L"Connect_Enable", L"band1", 1, wsPath_ini.c_str());
+	_switch_enable[2] = GetPrivateProfileIntW(L"Connect_Enable", L"band2", 1, wsPath_ini.c_str());
+	_switch_enable[3] = GetPrivateProfileIntW(L"Connect_Enable", L"band3", 1, wsPath_ini.c_str());
+	_switch_enable[4] = GetPrivateProfileIntW(L"Connect_Enable", L"band4", 1, wsPath_ini.c_str());
+	_switch_enable[5] = GetPrivateProfileIntW(L"Connect_Enable", L"band5", 1, wsPath_ini.c_str());
+	_switch_enable[6] = GetPrivateProfileIntW(L"Connect_Enable", L"band6", 1, wsPath_ini.c_str());
+	_debug_enable = GetPrivateProfileIntW(L"Settings", L"debug", 0, wsPath_ini.c_str());
 
 	return wsPath;
 }();
@@ -73,23 +69,23 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		std::string sPath = conv.to_bytes(wsPath);
 		issqlconn = __pobj->offset.Dbconnect(sPath.c_str());
 		if (!issqlconn) {
-			MessageBox(NULL, L"DB Connected Error！", L"Error", MB_OK);
+			MessageBoxW(NULL, L"DB Connected Error！", L"Error", MB_OK);
 			//return JC_STATUS_ERROR_DATABASE_CONN_FAIL;
 		}
 #else
 		//isconn = __pobj->offset.Dbconnect("D:\\Sync_ProJects\\Jointcom\\JcPimMultiBandV2\\Debug\\JcOffset.db");
 #endif
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
-		__pobj->debug_time = GetPrivateProfileInt(L"Settings", L"time", 200, wsPath_ini.c_str());
-		int vco_limit = GetPrivateProfileInt(L"Settings", L"vco_limit", 10, wsPath_ini.c_str());
-		__pobj->now_vco_threasold = vco_limit == 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
-		__pobj->now_vco_enbale[0] = GetPrivateProfileInt(L"VCO_Enable", L"vco_band0", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[1] = GetPrivateProfileInt(L"VCO_Enable", L"vco_band1", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[2] = GetPrivateProfileInt(L"VCO_Enable", L"vco_band2", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[3] = GetPrivateProfileInt(L"VCO_Enable", L"vco_band3", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[4] = GetPrivateProfileInt(L"VCO_Enable", L"vco_band4", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[5] = GetPrivateProfileInt(L"VCO_Enable", L"vco_band5", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[6] = GetPrivateProfileInt(L"VCO_Enable", L"vco_band6", 1, wsPath_ini.c_str());
+		__pobj->debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
+		int vco_limit = GetPrivateProfileIntW(L"Settings", L"vco_limit", 10, wsPath_ini.c_str());
+		__pobj->now_vco_threasold = vco_limit == 5 ? SMOOTH_VCO_THREASOLD : vco_limit;
+		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1, wsPath_ini.c_str());
+		__pobj->now_vco_enbale[1] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band1", 1, wsPath_ini.c_str());
+		__pobj->now_vco_enbale[2] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band2", 1, wsPath_ini.c_str());
+		__pobj->now_vco_enbale[3] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band3", 1, wsPath_ini.c_str());
+		__pobj->now_vco_enbale[4] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band4", 1, wsPath_ini.c_str());
+		__pobj->now_vco_enbale[5] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band5", 1, wsPath_ini.c_str());
+		__pobj->now_vco_enbale[6] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band6", 1, wsPath_ini.c_str());
 
 		//开始连接
 		std::string strConnMsg = "Connected Info:\r\n";
@@ -119,7 +115,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				}
 				else {
 					std::wstring wsinfo = L"Connect SG1 Fail: " + conv.from_bytes(vaddr[0]);
-					MessageBox(NULL, wsinfo.c_str(), L"Error", MB_OK);
+					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
 				}
 
 			}
@@ -133,7 +129,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				}
 				else {
 					std::wstring wsinfo = L"Connect SG2 Fail: " + conv.from_bytes(vaddr[1]);
-					MessageBox(NULL, wsinfo.c_str(), L"Error", MB_OK);
+					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
 				}
 			}
 			//开始连接功率计
@@ -162,7 +158,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 
 				if (false == __pobj->now_status[3]){
 					std::wstring wsinfo = L"Connect PowerMeter Fail: " + conv.from_bytes(vaddr[3]);
-					MessageBox(NULL, wsinfo.c_str(), L"Error", MB_OK);
+					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
 				}
 
 			}
@@ -176,7 +172,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				}
 				else {
 					std::wstring wsinfo = L"Connect SA Fail: " + conv.from_bytes(vaddr[2]);
-					MessageBox(NULL, wsinfo.c_str(), L"Error", MB_OK);
+					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
 				}
 
 			}
@@ -198,7 +194,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				}
 			}
 			else
-				MessageBox(NULL, TEXT("Switch LoadMap Error！"), TEXT("Error"), MB_OK);
+				MessageBoxW(NULL, TEXT("Switch LoadMap Error！"), TEXT("Error"), MB_OK);
 		}
 
 		//判断连接
@@ -210,10 +206,8 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		__pobj->strErrorInfo += ("SIG2 Connected: " + std::to_string(__pobj->now_status[1]) + "\r\n");
 		__pobj->strErrorInfo += ("Spectrum Connected: " + std::to_string(__pobj->now_status[2]) + "\r\n");
 		__pobj->strErrorInfo += ("Sensor Connected: " + std::to_string(__pobj->now_status[3]) + "\r\n");
-		//__pobj->strErrorInfo += ("Switch Connected: " + std::to_string(__pobj->isSwhConn) + "\r\n");
 		std::string swhinfo = __pobj->swh->SwitchGetInfo();
 		__pobj->strErrorInfo += swhinfo;
-		//__pobj->strErrorInfo += "\r\n";
 		if (!issqlconn) {
 			__pobj->strErrorInfo += "DataBaseConnected: ";
 			__pobj->strErrorInfo += std::to_string(issqlconn);
@@ -227,16 +221,12 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 			return JC_STATUS_ERROR;
 	}
 
-	//if (_debug_enable)
-	//	MessageBox(NULL, L"(2)Object Init!", L"Debug", MB_OK);
 	return 0;
 }
 
 //释放
 int fnSetExit(){
 	JcPimObject::release();
-	//if (_debug_enable)
-	//	MessageBox(NULL, L"(3)Object Exit!", L"Debug", MB_OK);
 	//必须2s的延时才会关闭连接
 	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 	return 0;
@@ -290,7 +280,8 @@ int fnSetDutPort(uint8_t byPort) {
 	//Band转换开关参数
 	//byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
 	int iswitch = __pobj->now_band * 2 + byPort;
-	if (JcSetSwitch(iswitch, iswitch, iswitch, JC_COUP_TX2))
+	JcBool b = JcSetSwitch(iswitch, iswitch, iswitch, JC_COUP_TX2);
+	if (TRUE == b)
 		return 0;
 	else
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
@@ -327,7 +318,7 @@ int fnCheckReceiveChannel(uint8_t byBandIndex, uint8_t byPort) {
 	fnSetMeasBand(byBandIndex);
 	int s = fnSetDutPort(byPort);
 	if (s <= -10000){
-		MessageBox(NULL, L"fnVco: Set Switch Error！", L"Error", MB_OK);
+		MessageBoxW(NULL, L"fnVco: Set Switch Error！", L"Error", MB_OK);
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	}
 
@@ -339,9 +330,8 @@ int fnCheckReceiveChannel(uint8_t byBandIndex, uint8_t byPort) {
 
 	if (HwGet_Vco(real_val, vco_val) == FALSE){
 		std::wstring wErr = L"fnVco: VCO Error(" + std::to_wstring(real_val - vco_val) + L")！";
-		MessageBox(NULL, wErr.c_str(), L"Error", MB_OK);
-		return JC_STATUS_ERROR_CHECK_VCO_FAIL;
-	
+		MessageBoxW(NULL, wErr.c_str(), L"Error", MB_OK);
+		return JC_STATUS_ERROR_CHECK_VCO_FAIL;	
 	}
 	else
 		return 0;
@@ -395,26 +385,36 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	fnSetTxOn(true, JC_CARRIER_TX1TX2);
 	//---------------------------------------------------------------------------------
 	//切换耦合器tx2开关
-	HwSetCoup(JC_COUP_TX2);
+	JcBool b = HwSetCoup(JC_COUP_TX2);
+	if (FALSE == b) {
+		//关闭功放
+		fnSetTxOn(false, JC_CARRIER_TX1TX2);
+		return -10000;
+	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	//检测tx1功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX2);
 	if (js <= -10000) {
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
-		MessageBox(NULL, L"功放TX2输出错误！请检功率输出！", L"错误", MB_OK);
+		MessageBoxW(NULL, L"功放TX2输出错误！请检功率输出！", L"错误", MB_OK);
 		return js;
 	}
 	//---------------------------------------------------------------------------------
 	//切换耦合器tx1开关
-	HwSetCoup(JC_COUP_TX1);
+	b = HwSetCoup(JC_COUP_TX1);
+	if (FALSE == b) {
+		//关闭功放
+		fnSetTxOn(false, JC_CARRIER_TX1TX2);
+		return -10000;
+	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	//检测tx2功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX1);
 	if (js <= -10000) {
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
-		MessageBox(NULL, L"功放TX1输出错误！请检查功率输出！", L"错误", MB_OK);
+		MessageBoxW(NULL, L"功放TX1输出错误！请检查功率输出！", L"错误", MB_OK);
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -461,7 +461,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(freq_pim_khz, cUnits);
 	if (dPimResult == JC_STATUS_ERROR){
-		MessageBox(NULL, TEXT("Spectrum Read Error！"), TEXT("Error"), MB_OK);
+		MessageBoxW(NULL, TEXT("Spectrum Read Error！"), TEXT("Error"), MB_OK);
 		__pobj->strErrorInfo = "Spectrum read error!\r\n";
 		return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
 	}
@@ -563,14 +563,16 @@ void HwSetIsExtBand(JcBool isUse) {
 }
 
 //设置当前功放的耦合器
-void HwSetCoup(uint8_t byCoup) {
+JcBool HwSetCoup(uint8_t byCoup) {
 	int iswitch = __pobj->now_band * 2 + __pobj->now_dut_port;
-	JcBool r = JcSetSwitch(iswitch, iswitch, iswitch, byCoup);
-	if (FALSE == r){
-		//MessageBox(NULL, L"FnCoup: Switch-Coup Error!", L"Error", MB_OK);
-		return;
-	}
+	JcBool r = JcSetSwitch(iswitch, iswitch, iswitch, byCoup);	
 	std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	if (FALSE == r) {
+		wchar_t err[256] = { 0 };
+		swprintf_s(err, L"FnCoup: Switch-Coup-%d Error!", (int)byCoup);
+		MessageBoxW(NULL, err, L"Error", MB_OK);
+	}
+	return r;
 }
 
 //读取当前功放功率值(tx1或tx2)
@@ -621,18 +623,11 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 	double vco_freq_mhz = 1334 + 2 * (2 * __pobj->now_band + __pobj->now_dut_port);
 	//OFFSET置零
 	__pobj->ana->InstrVcoSetting();
-	//__pobj->ana->InstrSetOffset(0);
-	//__pobj->ana->InstrSetRbw(10 * 1000);
-	//__pobj->ana->InstrSetVbw(10 * 1000);
-	//__pobj->ana->InstrSetSpan(400 * 1000);
 	__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	//开始测量
 	real_val = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
 	__pobj->ana->InstrPimSetting();
-	//__pobj->ana->InstrSetRbw(10);
-	//__pobj->ana->InstrSetVbw(10);
-	//__pobj->ana->InstrSetSpan(500);
 
 	JcGetOffsetVco(vco_val, __pobj->now_band, __pobj->now_dut_port);
 	double dd = real_val - vco_val;
@@ -690,7 +685,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 			}
 
 			if (i == 0)
-				dd += tx_deviate;
+				dd += tx_deviate * 0.9;
 			else
 				dd += (tx_deviate * 0.6);
 
@@ -952,7 +947,7 @@ JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
 	double Rxfreq[256] = {0};
 	int freq_num = __pobj->offset.FreqHeader(OFFSET_RX, sband.c_str(), Rxfreq, 256);
 	double off[256] = {0};
-	__pobj->ana->INstrRxOffsetSetting();
+	__pobj->ana->InstrRxOffsetSetting();
 
 	//设置保护值
 	JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, OFFSET_PROTECT_RX);
@@ -1080,7 +1075,7 @@ JC_STATUS JcSetOffsetTx(uint8_t byInternalBand, uint8_t byDutPort,
 		//----------------------------------------------------------------------------------------------
 		//切换开关
 		JcBool isSwhConn = JcSetSwitch(iswitch, iswitch, iswitch, coup);
-		if (isSwhConn == 0) {
+		if (isSwhConn == FALSE) {
 			__pobj->strErrorInfo = "TxOffset: Switch-Coup Fail!\r\n";
 			return JC_STATUS_ERROR;
 		}
@@ -1150,14 +1145,8 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 		//外部传感器使用
 	}
 	else {
-		//默认方式，需设置频谱
-		__pobj->ana->InstrSetOffset(0);
-		__pobj->ana->InstrClosgAvg();
-		__pobj->ana->InstrSetRef(20);
-		__pobj->ana->InstrSetAtt(30);
-		__pobj->ana->InstrSetRbw(100);
-		__pobj->ana->InstrSetVbw(100);
-		__pobj->ana->InstrSetSpan(1000);
+		//默认方式，需设置频谱		
+		__pobj->ana->InstrTxOffsetSetting();
 	}
 
 	double p_true = OFFSET_PROTECT_TX;
@@ -1193,7 +1182,6 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 			//计算
 			r = des_p_dbm - (v + loss_db);
 			double temp = p_true + r;
-			//if ()
 			if (p_true >= SIGNAL_SOURCE_MAX_POW){
 				std::this_thread::sleep_for(std::chrono::milliseconds(300));
 				continue;

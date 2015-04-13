@@ -24,7 +24,7 @@ public:
 	virtual void InstrPimSetting() = 0;
 	virtual void InstrVcoSetting() = 0;
 	virtual void InstrTxOffsetSetting() = 0;
-	virtual void INstrRxOffsetSetting() = 0;
+	virtual void InstrRxOffsetSetting() = 0;
 };
 
 #endif

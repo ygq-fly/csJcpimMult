@@ -161,7 +161,7 @@ JIONTCOM_API void HwSetBandEnable(int iBand, JcBool isEnable);
 JIONTCOM_API void HwSetExit();
 JIONTCOM_API JcBool FnGet_Vco();
 JIONTCOM_API void HwSetIsExtBand(JcBool isUse);
-JIONTCOM_API void HwSetCoup(JcInt8 byCoup);
+JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
 JIONTCOM_API double HwGetCoup_Dsp(JcInt8 byCoup);
 JIONTCOM_API JcBool HwGet_Vco(double& real_val, double& vco_val);
 JIONTCOM_API JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier);
