@@ -423,7 +423,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	//---------------------------------------------------------------------------------
 	//设置中心频率
 	double freq_pim_khz = __pobj->GetPimFreq();
-	__pobj->ana->SetCenterFreq(freq_pim_khz);
+	__pobj->ana->InstrSetCenterFreq(freq_pim_khz);
 
 	return 0;
 }
@@ -620,17 +620,19 @@ double HwGetCoup_Dsp(uint8_t byCoup) {
 JcBool HwGet_Vco(double& real_val, double& vco_val) {
 	double vco_freq_mhz = 1334 + 2 * (2 * __pobj->now_band + __pobj->now_dut_port);
 	//OFFSET置零
-	__pobj->ana->InstrSetOffset(0);
-	__pobj->ana->SetCenterFreq(vco_freq_mhz * 1000);
-	__pobj->ana->InstrSetRbw(10 * 1000);
-	__pobj->ana->InstrSetVbw(10 * 1000);
-	__pobj->ana->InstrSetSpan(400 * 1000);
+	__pobj->ana->InstrVcoSetting();
+	//__pobj->ana->InstrSetOffset(0);
+	//__pobj->ana->InstrSetRbw(10 * 1000);
+	//__pobj->ana->InstrSetVbw(10 * 1000);
+	//__pobj->ana->InstrSetSpan(400 * 1000);
+	__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	//开始测量
 	real_val = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
-	__pobj->ana->InstrSetRbw(10);
-	__pobj->ana->InstrSetVbw(10);
-	__pobj->ana->InstrSetSpan(500);
+	__pobj->ana->InstrPimSetting();
+	//__pobj->ana->InstrSetRbw(10);
+	//__pobj->ana->InstrSetVbw(10);
+	//__pobj->ana->InstrSetSpan(500);
 
 	JcGetOffsetVco(vco_val, __pobj->now_band, __pobj->now_dut_port);
 	double dd = real_val - vco_val;
@@ -731,7 +733,7 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	if (js) return js;
 	//设置中心频率
 	double freq_pim_khz = __pobj->GetPimFreq();
-	__pobj->ana->SetCenterFreq(freq_pim_khz);
+	__pobj->ana->InstrSetCenterFreq(freq_pim_khz);
 
 	return JC_STATUS_SUCCESS;
 }
@@ -744,17 +746,10 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, uint8_t bySwitchBand) {
 	if (NULL == __pobj) return false;
 
 	double vco_freq_mhz = 1334 + 2 * bySwitchBand;
-	//OFFSET置零
-	__pobj->ana->InstrSetOffset(0);
-	__pobj->ana->InstrSetRbw(10 * 1000);
-	__pobj->ana->InstrSetVbw(10 * 1000);
-	__pobj->ana->InstrSetSpan(400 * 1000);
+	__pobj->ana->InstrVcoSetting();
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	//开始测量
 	vco = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
-	__pobj->ana->InstrSetRbw(10);
-	__pobj->ana->InstrSetVbw(10);
-	__pobj->ana->InstrSetSpan(500);
+	__pobj->ana->InstrPimSetting();
 	return vco >= -90 ? true : false;
 }
 //获取错误
@@ -837,12 +832,10 @@ JC_STATUS JcSetSig_Advanced(uint8_t byCarrier, uint8_t byBand, uint8_t byPort,
 		}
 	}
 	if (byCarrier == JC_CARRIER_TX1) {
-		//__pobj->offset_txPow1 = dOffset + internal_offset;
 		__pobj->offset_internal_txPow1 = internal_offset;
 		__pobj->sig1->InstrSetFreqPow(freq_khz, tx_true);
 	}
 	else if (byCarrier == JC_CARRIER_TX2){
-		//__pobj->offset_txPow2 = dOffset + internal_offset;
 		__pobj->offset_internal_txPow2 = internal_offset;
 		__pobj->sig2->InstrSetFreqPow(freq_khz, tx_true);
 	}
@@ -959,13 +952,8 @@ JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
 	double Rxfreq[256] = {0};
 	int freq_num = __pobj->offset.FreqHeader(OFFSET_RX, sband.c_str(), Rxfreq, 256);
 	double off[256] = {0};
-	__pobj->ana->InstrSetOffset(0);
-	__pobj->ana->InstrSetRef(-60);
-	__pobj->ana->InstrSetAtt(0);
-	__pobj->ana->InstrClosgAvg();
-	__pobj->ana->InstrSetRbw(10);
-	__pobj->ana->InstrSetVbw(10);
-	__pobj->ana->InstrSetSpan(500);
+	__pobj->ana->INstrRxOffsetSetting();
+
 	//设置保护值
 	JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, OFFSET_PROTECT_RX);
 	//开启功放
@@ -1013,8 +1001,6 @@ JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
 	}
 	//关闭功放
 	fnSetTxOn(false, JC_CARRIER_TX1);
-	//__pobj->ana->InstrSetAvg(2);
-
 
 	JC_STATUS s = __pobj->offset.Store_v2(OFFSET_RX, sband.c_str(), byDutPort, 0, 0, 0, off, freq_num);
 	if (s) {
@@ -1068,13 +1054,7 @@ JC_STATUS JcSetOffsetTx(uint8_t byInternalBand, uint8_t byDutPort,
 	}
 	else {
 		//默认方式，需设置频谱
-		__pobj->ana->InstrClosgAvg();
-		__pobj->ana->InstrSetRef(20);
-		__pobj->ana->InstrSetAtt(30);
-		__pobj->ana->InstrSetOffset(0);
-		__pobj->ana->InstrSetRbw(100);
-		__pobj->ana->InstrSetVbw(100);
-		__pobj->ana->InstrSetSpan(1000);
+		__pobj->ana->InstrTxOffsetSetting();
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 
@@ -1146,15 +1126,9 @@ JC_STATUS JcSetOffsetTx(uint8_t byInternalBand, uint8_t byDutPort,
 	}
 
 	//还原频谱设置
-	if (__pobj->ext_sen_index == 0) {
-		__pobj->ana->InstrSetOffset(0);
-		__pobj->ana->InstrSetRef(-60);
-		__pobj->ana->InstrSetAtt(0);
-		//__pobj->ana->InstrSetAvg(2);
-		__pobj->ana->InstrSetRbw(10);
-		__pobj->ana->InstrSetVbw(10);
-		__pobj->ana->InstrSetSpan(500);
-	}
+	if (__pobj->ext_sen_index == 0)
+		__pobj->ana->InstrPimSetting();
+	
 	return JC_STATUS_SUCCESS;
 }
 
@@ -1425,10 +1399,6 @@ int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {
 	return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-//VNA 测试 ！(请无视)
-//////////////////////////////////////////////////////////////////////////////////////////////
-
 void JcFindRsrc() {
 	char instrAddr[VI_FIND_BUFLEN];
 	ViUInt32 num;
@@ -1451,6 +1421,11 @@ void JcFindRsrc() {
 	_status = viClose(_defaultRm);
 	fflush(stdin);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//VNA 测试 ！(请无视)
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 
 void testcb(Callback_Get_RX_Offset_Point pHandler) {
 	double d = 1;

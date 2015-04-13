@@ -19,8 +19,12 @@ public:
 	virtual void InstrSetRbw(const double& rbw_hz) = 0;
 	virtual void InstrSetVbw(const double& vbw_hz) = 0;
 	virtual void InstrSetSpan(const double& span_hz) = 0;
-	virtual void SetCenterFreq(const double& freq_khz) = 0;
+	virtual void InstrSetCenterFreq(const double& freq_khz) = 0;
 
+	virtual void InstrPimSetting() = 0;
+	virtual void InstrVcoSetting() = 0;
+	virtual void InstrTxOffsetSetting() = 0;
+	virtual void INstrRxOffsetSetting() = 0;
 };
 
 #endif

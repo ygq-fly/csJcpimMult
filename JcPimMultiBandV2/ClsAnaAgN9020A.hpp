@@ -86,7 +86,7 @@ public:
 	double InstrGetAnalyzer(double freq_khz, bool isMax) {
 		double result_val = 0;
 		if (freq_khz != _freq_now){
-			SetCenterFreq(freq_khz);
+			InstrSetCenterFreq(freq_khz);
 			_freq_now = freq_khz;
 		}	
 
@@ -97,7 +97,7 @@ public:
 		//开始等待
 		if (AgWait() == false){
 
-			SetCenterFreq(freq_khz);
+			InstrSetCenterFreq(freq_khz);
 			_isCmdSucc = AgWrite("*CLS\n");
 			_isCmdSucc = AgWrite("INIT:IMM\n");
 			if (AgWait() == false)
@@ -157,9 +157,44 @@ public:
 	}
 
 	//设置中心频率
-	void SetCenterFreq(const double& freq_khz) {
+	void InstrSetCenterFreq(const double& freq_khz) {
 		SetParam(eParam::CENTER, freq_khz);
 		SetParam(eParam::MARK_X, freq_khz);
+	}
+
+	//仪器配置
+	void InstrPimSetting() {
+		InstrSetOffset(0);
+		InstrSetRef(-60);
+		InstrSetAtt(0);
+		InstrSetRbw(10);
+		InstrSetVbw(10);
+		InstrSetSpan(500);
+	}
+	void InstrVcoSetting() {
+		//OFFSET置零
+		InstrSetOffset(0);
+		InstrSetRbw(10 * 1000);
+		InstrSetVbw(10 * 1000);
+		InstrSetSpan(400 * 1000);
+	}
+	void InstrTxOffsetSetting() {
+		InstrClosgAvg();
+		InstrSetRef(20);
+		InstrSetAtt(30);
+		InstrSetOffset(0);
+		InstrSetRbw(100);
+		InstrSetVbw(100);
+		InstrSetSpan(1000);
+	}
+	void INstrRxOffsetSetting() {
+		InstrSetOffset(0);
+		InstrSetRef(-60);
+		InstrSetAtt(0);
+		InstrClosgAvg();
+		InstrSetRbw(10);
+		InstrSetVbw(10);
+		InstrSetSpan(500);
 	}
 
 private:
