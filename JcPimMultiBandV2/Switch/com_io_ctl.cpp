@@ -505,7 +505,7 @@ namespace ns_com_io_ctl{
 
 	void com_io_ctl::Message(const string&info)
 	{
-		MessageBoxA(NULL, info.c_str(), "Error!", MB_OK);
+		MessageBoxA(NULL, info.c_str(), "Error!", MB_TOPMOST);
 	}
 
 	string com_io_ctl::logGetLastError()

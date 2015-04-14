@@ -140,6 +140,7 @@ int main(int argc, char* argv[])
 	//std::thread t4([]() { std::cout << "Hello, C++11 thread\n"; });
 
 	//Test_pim();
+	MessageBox(NULL, L"111", L"111", MB_TOPMOST);
 	for (int i = 0; i < 1; i++) {
 		printf("==================No.%d=================\n", i);
 		Test_dll();
@@ -206,7 +207,7 @@ void Test_dll(){
 	//GPIB0::12::INSTR
 	bool isCont = true;
 	int s = setInit("0,0,0,0,0");
-	//int s = setInit("TCPIP0::192.168.1.3::5025::SOCKET,TCPIP0::192.168.1.4::5025::SOCKET,TCPIP0::192.168.1.2::inst0::INSTR,USB0::0x0957::0x2B18::MY51050018::0::INSTR");
+	//int s = setInit("TCPIP0::192.168.1.3::5025::SOCKET,TCPIP0::192.168.1.4::5025::SOCKET,TCPIP0::192.168.1.2::inst0::INSTR,USB0::0x0957::0x2B18::MY51050018::0::INSTR,0");
 	if (s == 0 && isCont == true) {
 		std::cout << "init success!" << std::endl;
 	}

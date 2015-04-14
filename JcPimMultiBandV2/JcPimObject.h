@@ -47,6 +47,7 @@ public:
 	bool now_status[4];
 	int now_vco_enbale[10];
 	int now_vco_threasold;
+	double now_tx_smooth_threasold;
 	int debug_time;
 	bool isUseExtBand;
 	std::string strErrorInfo;	
@@ -84,7 +85,8 @@ private:
 		isAllConn(false),
 		isSwhConn(false),
 		isExtSenConn(false),
-		now_vco_threasold(10),
+		now_vco_threasold(5),
+		now_tx_smooth_threasold(2),
 		debug_time(200),
 		isUseExtBand(true),
 		strErrorInfo("Not"),

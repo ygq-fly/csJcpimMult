@@ -17,6 +17,7 @@ namespace Util {
     int saveBitmapToFile(HBITMAP hbitmap, const wchar_t* wFileName);
     int setSleep(uint32_t millisecond);
     uint64_t get_tick_count();
+	void logged(const wchar_t* fmt, ...);
     void logging(const char* fmt, ...);
 }
 

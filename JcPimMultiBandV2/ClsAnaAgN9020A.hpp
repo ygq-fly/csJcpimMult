@@ -217,7 +217,7 @@ private:
 	}
 
 	//…Ë÷√
-	ViStatus SetParam(const eParam& param, const double& val) {
+	bool SetParam(const eParam& param, const double& val) {
 		std::stringstream sstemp;	
 		switch (param)
 		{

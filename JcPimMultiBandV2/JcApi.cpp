@@ -11,7 +11,7 @@
 
 #define OFFSET_TX_THREASOLD 0.05
 #define SMOOTH_TX_THREASOLD 2
-#define SMOOTH_VCO_THREASOLD 2
+#define SMOOTH_VCO_THREASOLD 5
 
 //#define JC_OFFSET_TX_SINGLE_DEBUG
 //#define JC_OFFSET_TX_DEBUG
@@ -70,7 +70,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		std::string sPath = conv.to_bytes(wsPath);
 		issqlconn = __pobj->offset.Dbconnect(sPath.c_str());
 		if (!issqlconn) {
-			MessageBoxW(NULL, L"DB Connected Error！", L"Error", MB_OK);
+			Util::logged(L"fnSetInit: DB Connected Error!");
 			//return JC_STATUS_ERROR_DATABASE_CONN_FAIL;
 		}
 #else
@@ -78,8 +78,12 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 #endif
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 		__pobj->debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
-		int vco_limit = GetPrivateProfileIntW(L"Settings", L"vco_limit", 10, wsPath_ini.c_str());
-		__pobj->now_vco_threasold = vco_limit == 5 ? SMOOTH_VCO_THREASOLD : vco_limit;
+		int vco_limit = GetPrivateProfileIntW(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
+		wchar_t w_tx_smooth[10] = { 0 };
+		GetPrivateProfileStringW(L"Settings", L"tx_smooth", L"2", w_tx_smooth, 10, wsPath_ini.c_str());
+		double tx_smooth = _wtof(w_tx_smooth);
+		__pobj->now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
+		__pobj->now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1, wsPath_ini.c_str());
 		__pobj->now_vco_enbale[1] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band1", 1, wsPath_ini.c_str());
 		__pobj->now_vco_enbale[2] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band2", 1, wsPath_ini.c_str());
@@ -114,11 +118,8 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 					__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
 					__pobj->sig1->InstrSession(viSession_Sig1);
 				}
-				else {
-					std::wstring wsinfo = L"Connect SG1 Fail: " + conv.from_bytes(vaddr[0]);
-					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
-				}
-
+				else 
+					Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", conv.from_bytes(vaddr[0]).c_str());	
 			}
 			//开始连接信号源2
 			if (vaddr[JC_DEVICE::SIGNAL2] != JC_DEVICE_NOT_ENABLE) {
@@ -128,10 +129,8 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 					__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
 					__pobj->sig2->InstrSession(viSession_Sig2);
 				}
-				else {
-					std::wstring wsinfo = L"Connect SG2 Fail: " + conv.from_bytes(vaddr[1]);
-					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
-				}
+				else 
+					Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", conv.from_bytes(vaddr[1]).c_str());			
 			}
 			//开始连接功率计
 			if (vaddr[JC_DEVICE::SENSOR] != JC_DEVICE_NOT_ENABLE) {
@@ -157,11 +156,8 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 					__pobj->now_status[JC_DEVICE::SENSOR] = __pobj->sen->InstrConnect(vaddr[3].c_str());
 				}
 
-				if (false == __pobj->now_status[3]){
-					std::wstring wsinfo = L"Connect PowerMeter Fail: " + conv.from_bytes(vaddr[3]);
-					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
-				}
-
+				if (false == __pobj->now_status[3])
+					Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", conv.from_bytes(vaddr[3]).c_str());
 			}
 			//开始连接频谱仪,初始化频谱仪
 			if (vaddr[JC_DEVICE::ANALYZER] != JC_DEVICE_NOT_ENABLE) {
@@ -172,8 +168,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 					__pobj->ana->InstrSession(viSession_Ana);
 				}
 				else {
-					std::wstring wsinfo = L"Connect SA Fail: " + conv.from_bytes(vaddr[2]);
-					MessageBoxW(NULL, wsinfo.c_str(), L"Error", MB_OK);
+					Util::logged(L"fnSetInit: Connect SA Fail! (%s)", conv.from_bytes(vaddr[2]).c_str());
 				}
 
 			}
@@ -195,7 +190,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				}
 			}
 			else
-				MessageBoxW(NULL, TEXT("Switch LoadMap Error！"), TEXT("Error"), MB_OK);
+				Util::logged(L"fnSetInit: Switch LoadMap Error! (%s)");
 		}
 
 		//判断连接
@@ -319,7 +314,7 @@ int fnCheckReceiveChannel(uint8_t byBandIndex, uint8_t byPort) {
 	fnSetMeasBand(byBandIndex);
 	int s = fnSetDutPort(byPort);
 	if (s <= -10000){
-		MessageBoxW(NULL, L"fnVco: Set Switch Error！", L"Error", MB_OK);
+		Util::logged(L"fnVco: Set Switch Error！");
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	}
 
@@ -330,8 +325,7 @@ int fnCheckReceiveChannel(uint8_t byBandIndex, uint8_t byPort) {
 	double vco_val = 0;
 
 	if (HwGet_Vco(real_val, vco_val) == FALSE){
-		std::wstring wErr = L"fnVco: VCO Error(" + std::to_wstring(real_val - vco_val) + L")！";
-		MessageBoxW(NULL, wErr.c_str(), L"Error", MB_OK);
+		Util::logged(L"fnVco: VCO Error (%lf)", real_val - vco_val);
 		return JC_STATUS_ERROR_CHECK_VCO_FAIL;	
 	}
 	else
@@ -383,7 +377,8 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	if (js) return js;
 	//---------------------------------------------------------------------------------
 	//开启功放
-	fnSetTxOn(true, JC_CARRIER_TX1TX2);
+	js = fnSetTxOn(true, JC_CARRIER_TX1TX2);
+	if (0 != js) return js;
 	//---------------------------------------------------------------------------------
 	//切换耦合器tx2开关
 	JcBool b = HwSetCoup(JC_COUP_TX2);
@@ -398,7 +393,10 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	if (js <= -10000) {
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
-		MessageBoxW(NULL, L"功放TX2输出错误！请检功率输出！", L"错误", MB_OK);
+		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
+			Util::logged(L"错误： TX2未检测到功率！请检功率输出！");
+		else
+			Util::logged(L"错误： TX2功率偏差过大！");
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -415,12 +413,16 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	if (js <= -10000) {
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
-		MessageBoxW(NULL, L"功放TX1输出错误！请检查功率输出！", L"错误", MB_OK);
+		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
+			Util::logged(L"错误： TX2未检测到功率！请检功率输出！");
+		else
+			Util::logged(L"错误： TX2功率偏差过大！");
 		return js;
 	}
 	//---------------------------------------------------------------------------------
 	//关闭功放
-	fnSetTxOn(false, JC_CARRIER_TX1TX2);
+	js = fnSetTxOn(false, JC_CARRIER_TX1TX2);
+	if (0 != js) return js;
 	//---------------------------------------------------------------------------------
 	//设置中心频率
 	double freq_pim_khz = __pobj->GetPimFreq();
@@ -435,6 +437,8 @@ int fnSetTxOn(JcBool bOn, uint8_t byCarrier){
 	bool isOn = bOn == 0 ? false : true;
 	if (byCarrier == JC_CARRIER_TX1TX2){
 		isSucc = __pobj->sig1->InstrOpenPow(isOn);
+		if (!isSucc)
+			return JC_STATUS_ERROR_SET_TX_ONOFF_FAIL;
 		isSucc &= __pobj->sig2->InstrOpenPow(isOn);
 	}
 	else if (byCarrier == JC_CARRIER_TX1)
@@ -462,7 +466,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(freq_pim_khz, cUnits);
 	if (dPimResult == JC_STATUS_ERROR){
-		MessageBoxW(NULL, TEXT("Spectrum Read Error！"), TEXT("Error"), MB_OK);
+		Util::logged(L"fnGetImResult: Spectrum Read Error!");
 		__pobj->strErrorInfo = "Spectrum read error!\r\n";
 		return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
 	}
@@ -488,7 +492,7 @@ int fnSetVBW(int iVBW, const JC_UNIT cUnits) {
 }
 
 int fnSendCmd(uint8_t byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
-	int s = 0;
+	bool b = 0;
 	int num = 0;
 	std::string scmd(cmd);
 	int n = scmd.find('?');
@@ -498,25 +502,25 @@ int fnSendCmd(uint8_t byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
 		if (n > 0)
 			num = __pobj->sig1->InstrWriteAndRead(cmd, cResult);
 		else
-			s = __pobj->sig1->InstrWrite(cmd);
+			b = __pobj->sig1->InstrWrite(cmd);
 		break;
 	case 1://SIG2
 		if (n > 0)
 			num = __pobj->sig2->InstrWriteAndRead(cmd, cResult);
 		else
-			s = __pobj->sig2->InstrWrite(cmd);
+			b = __pobj->sig2->InstrWrite(cmd);
 		break;
 	case 2://SA
 		if (n > 0)
 			num = __pobj->sen->InstrWriteAndRead(cmd, cResult);
 		else
-			s = __pobj->sen->InstrWrite(cmd);
+			b = __pobj->sen->InstrWrite(cmd);
 		break;
 	case 3://PM
 		if (n > 0)
 			num = __pobj->ana->InstrWriteAndRead(cmd, cResult);
 		else
-			s = __pobj->ana->InstrWrite(cmd);
+			b = __pobj->ana->InstrWrite(cmd);
 		break;
 	default:
 		break;
@@ -568,11 +572,9 @@ JcBool HwSetCoup(uint8_t byCoup) {
 	int iswitch = __pobj->now_band * 2 + __pobj->now_dut_port;
 	JcBool r = JcSetSwitch(iswitch, iswitch, iswitch, byCoup);	
 	Util::setSleep(250);
-	if (FALSE == r) {
-		wchar_t err[256] = { 0 };
-		swprintf_s(err, L"FnCoup: Switch-Coup-%d Error!", (int)byCoup);
-		MessageBoxW(NULL, err, L"Error", MB_OK);
-	}
+	if (FALSE == r) 
+		Util::logged(L"HwSetCoup: Switch-Coup-%d Error!", (int)byCoup);		
+	
 	return r;
 }
 
@@ -609,7 +611,7 @@ double HwGetCoup_Dsp(uint8_t byCoup) {
 	//sen += val;
 
 	double dd = tx_temp - sen;
-	if (dd > SMOOTH_TX_THREASOLD || dd < (SMOOTH_TX_THREASOLD * -1)) {
+	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) {
 		Util::setSleep(100);
 		//读2次后平均
 		sen = JcGetSen();
@@ -670,7 +672,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 			return JC_STATUS_ERROR_NO_FIND_POWER;
 		}
 
-		if (tx_deviate > SMOOTH_TX_THREASOLD || tx_deviate < (SMOOTH_TX_THREASOLD * -1)) {
+		if (tx_deviate > __pobj->now_tx_smooth_threasold || tx_deviate < (__pobj->now_tx_smooth_threasold * -1)) {
 			__pobj->dd1 = 0;
 			__pobj->dd2 = 0;
 			//检测错误后，关闭功放
@@ -681,7 +683,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 		else {
 			if (tx_deviate >= -0.15 && tx_deviate <= 0.15){
 				//if (__pobj->debug_enable == 1)
-				//	MessageBox(NULL, L"不调整", L"tips", MB_OK);
+				//	MessageBox(NULL, L"不调整", L"tips", MB_TOPMOST);
 				return JC_STATUS_SUCCESS;
 			}
 
@@ -694,16 +696,20 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 			//	info += L"调整前： " + std::to_wstring(tx_dsp) + L"\r\n";
 			//	info += L"td： " + std::to_wstring(tx_deviate) + L"\r\n";
 			//	info += L"dd： " + std::to_wstring(dd) + L"\r\n";
-			//	MessageBox(NULL, info.c_str(), L"tips", MB_OK);	
+			//	MessageBox(NULL, info.c_str(), L"tips", MB_TOPMOST);	
 			//}
 
 			if (byCarrier == JC_CARRIER_TX1) {
 				__pobj->dd1 = dd;
-				JcSetSig(JC_CARRIER_TX1, __pobj->now_txFreq1, __pobj->now_txPow1 + __pobj->offset_txPow1 + __pobj->offset_internal_txPow1 + dd);								
+				JcBool b = JcSetSig(JC_CARRIER_TX1, __pobj->now_txFreq1, __pobj->now_txPow1 + __pobj->offset_txPow1 + __pobj->offset_internal_txPow1 + dd);	
+				if (FALSE == b)
+					return -10000;
 			}
 			else if (byCarrier == JC_CARRIER_TX2) {
 				__pobj->dd2 = dd;
-				JcSetSig(JC_CARRIER_TX2, __pobj->now_txFreq2, __pobj->now_txPow2 + __pobj->offset_txPow2 + __pobj->offset_internal_txPow2 + dd);
+				JcBool b = JcSetSig(JC_CARRIER_TX2, __pobj->now_txFreq2, __pobj->now_txPow2 + __pobj->offset_txPow2 + __pobj->offset_internal_txPow2 + dd);
+				if (FALSE == b)
+					return -10000;
 			}
 			Util::setSleep(__pobj->debug_time);
 		}
@@ -788,17 +794,23 @@ JcBool JcGetSig_ExtRefStatus(uint8_t byCarrier) {
 }
 
 //设置功放参数 (打开关闭功放请使用HwSetTxOn())
-void JcSetSig(uint8_t byCarrier, double freq_khz, double pow_dbm) {
-	if (NULL == __pobj) return;
+JcBool JcSetSig(uint8_t byCarrier, double freq_khz, double pow_dbm) {
+	if (NULL == __pobj) return FALSE;
 
+	bool b = false;
 	if (byCarrier == JC_CARRIER_TX1)
-		__pobj->sig1->InstrSetFreqPow(freq_khz, pow_dbm);
+		b = __pobj->sig1->InstrSetFreqPow(freq_khz, pow_dbm);
 	else if (byCarrier == JC_CARRIER_TX2)
-		__pobj->sig2->InstrSetFreqPow(freq_khz, pow_dbm);	
+		b = __pobj->sig2->InstrSetFreqPow(freq_khz, pow_dbm);	
 	else if (byCarrier == JC_CARRIER_TX1TX2) {
-		__pobj->sig1->InstrSetFreqPow(freq_khz, pow_dbm);
-		__pobj->sig2->InstrSetFreqPow(freq_khz, pow_dbm);
+		b = __pobj->sig1->InstrSetFreqPow(freq_khz, pow_dbm);
+		b &= __pobj->sig2->InstrSetFreqPow(freq_khz, pow_dbm);
 	}
+
+	if (false == b)
+		Util::logged(L"JcSetSig: (%d)Error!", (int)byCarrier);
+
+	return b;
 }
 //设置功放参数(高级)
 JC_STATUS JcSetSig_Advanced(uint8_t byCarrier, uint8_t byBand, uint8_t byPort,
@@ -829,11 +841,19 @@ JC_STATUS JcSetSig_Advanced(uint8_t byCarrier, uint8_t byBand, uint8_t byPort,
 	}
 	if (byCarrier == JC_CARRIER_TX1) {
 		__pobj->offset_internal_txPow1 = internal_offset;
-		__pobj->sig1->InstrSetFreqPow(freq_khz, tx_true);
+		bool b = __pobj->sig1->InstrSetFreqPow(freq_khz, tx_true);
+		if (false == b) {
+			Util::logged(L"JcSetSig: (%d)Error!", (int)byCarrier);
+			return -10000;
+		}
 	}
 	else if (byCarrier == JC_CARRIER_TX2){
 		__pobj->offset_internal_txPow2 = internal_offset;
-		__pobj->sig2->InstrSetFreqPow(freq_khz, tx_true);
+		bool b = __pobj->sig2->InstrSetFreqPow(freq_khz, tx_true);
+		if (false == b) {
+			Util::logged(L"JcSetSig: (%d)Error!", (int)byCarrier);
+			return -10000;
+		}
 	}
 	return JC_STATUS_SUCCESS;
 }

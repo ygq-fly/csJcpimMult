@@ -102,6 +102,15 @@ uint64_t Util::get_tick_count() {
 #endif
 }
 
+void Util::logged(const wchar_t* fmt, ...) {
+	wchar_t wInfo[256] = { 0 };
+	va_list ap;
+	va_start(ap, fmt);
+	vswprintf_s(wInfo, fmt, ap);
+	va_end(ap);
+	MessageBoxW(NULL, wInfo, L"Tips", MB_TOPMOST);
+}
+
 void Util::logging(const char *fmt, ...) {
     static int file_no = 1;
     static FILE* pFile = NULL;

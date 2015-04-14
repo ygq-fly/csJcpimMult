@@ -176,7 +176,7 @@ JC_API void  JcGetError(char* msg, size_t max);
 JC_API JcBool JcGetDeviceStatus(JcInt8 byDevic);
 
 JC_API JcBool JcGetSig_ExtRefStatus(JcInt8 byCarrier);
-JC_API void  JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm);
+JC_API JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm);
 JC_API JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, JcInt8 byBand, JcInt8 byPort,
 								   double freq_khz, double pow_dbm,
 								   bool isOffset, double dExtOffset);
