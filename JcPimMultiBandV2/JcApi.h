@@ -1,5 +1,5 @@
-#ifndef _CLS_PIMRUNMODEL_H_
-#define _CLS_PIMRUNMODEL_H_
+#ifndef _SAN_JCAPI_H_
+#define _SAN_JCAPI_H_
 
 #ifdef __cplusplus
 extern "C" {

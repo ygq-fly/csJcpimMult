@@ -19,6 +19,9 @@
     <Filter Include="Switch">
       <UniqueIdentifier>{ee5600ab-4ddb-49a1-8a93-990119ef0b9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyUtil">
+      <UniqueIdentifier>{a909160e-5bd3-4a3d-8261-f986d6f00bd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -111,6 +114,12 @@
     <ClInclude Include="JcPimObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MyUtil\JcCommonAPI.h">
+      <Filter>MyUtil</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\CppSQLite3.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -133,6 +142,12 @@
     </ClCompile>
     <ClCompile Include="Switch\implementsetting.cpp">
       <Filter>Switch</Filter>
+    </ClCompile>
+    <ClCompile Include="MyUtil\JcCommonAPI.cpp">
+      <Filter>MyUtil</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdParty\CppSQLite3.cpp">
+      <Filter>3rdParty</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

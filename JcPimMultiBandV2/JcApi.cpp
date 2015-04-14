@@ -1,6 +1,7 @@
 #include "JcApi.h"
 #include "stdafx.h"
 #include "JcPimObject.h"
+#include "MyUtil\JcCommonAPI.h"
 
 #define __pobj JcPimObject::Instance()
 
@@ -228,7 +229,7 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 int fnSetExit(){
 	JcPimObject::release();
 	//必须2s的延时才会关闭连接
-	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	Util::setSleep(2000);
 	return 0;
 }
 
@@ -322,7 +323,7 @@ int fnCheckReceiveChannel(uint8_t byBandIndex, uint8_t byPort) {
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	}
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	Util::setSleep(500);
 
 	//开始测量
 	double real_val = 0;
@@ -391,7 +392,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		return -10000;
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	Util::setSleep(100);
 	//检测tx1功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX2);
 	if (js <= -10000) {
@@ -408,7 +409,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		return -10000;
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	Util::setSleep(100);
 	//检测tx2功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX1);
 	if (js <= -10000) {
@@ -566,7 +567,7 @@ void HwSetIsExtBand(JcBool isUse) {
 JcBool HwSetCoup(uint8_t byCoup) {
 	int iswitch = __pobj->now_band * 2 + __pobj->now_dut_port;
 	JcBool r = JcSetSwitch(iswitch, iswitch, iswitch, byCoup);	
-	std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	Util::setSleep(250);
 	if (FALSE == r) {
 		wchar_t err[256] = { 0 };
 		swprintf_s(err, L"FnCoup: Switch-Coup-%d Error!", (int)byCoup);
@@ -609,7 +610,7 @@ double HwGetCoup_Dsp(uint8_t byCoup) {
 
 	double dd = tx_temp - sen;
 	if (dd > SMOOTH_TX_THREASOLD || dd < (SMOOTH_TX_THREASOLD * -1)) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		Util::setSleep(100);
 		//读2次后平均
 		sen = JcGetSen();
 		sen += JcGetSen();
@@ -624,7 +625,7 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 	//OFFSET置零
 	__pobj->ana->InstrVcoSetting();
 	__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	Util::setSleep(100);
 	//开始测量
 	real_val = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
 	__pobj->ana->InstrPimSetting();
@@ -647,7 +648,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 	double tx_deviate = 0;
 	for (int i = 0; i < 4; i++){
 		if (i == 0)
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			Util::setSleep(100);
 		if (byCarrier == JC_CARRIER_TX1) {
 			//获取检测功率
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
@@ -704,7 +705,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 				__pobj->dd2 = dd;
 				JcSetSig(JC_CARRIER_TX2, __pobj->now_txFreq2, __pobj->now_txPow2 + __pobj->offset_txPow2 + __pobj->offset_internal_txPow2 + dd);
 			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(__pobj->debug_time));
+			Util::setSleep(__pobj->debug_time);
 		}
 	}
 	return JC_STATUS_SUCCESS;
@@ -742,7 +743,7 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, uint8_t bySwitchBand) {
 
 	double vco_freq_mhz = 1334 + 2 * bySwitchBand;
 	__pobj->ana->InstrVcoSetting();
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	Util::setSleep(100);
 	vco = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
 	__pobj->ana->InstrPimSetting();
 	return vco >= -90 ? true : false;
@@ -1050,7 +1051,7 @@ JC_STATUS JcSetOffsetTx(uint8_t byInternalBand, uint8_t byDutPort,
 	else {
 		//默认方式，需设置频谱
 		__pobj->ana->InstrTxOffsetSetting();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		Util::setSleep(500);
 	}
 
 	//获取当前频段显示字符
@@ -1085,7 +1086,7 @@ JC_STATUS JcSetOffsetTx(uint8_t byInternalBand, uint8_t byDutPort,
 		pow->InstrSetFreqPow(txfreq[0] * 1000, OFFSET_PROTECT_TX);
 		pow->InstrOpenPow(true);
 		//----------------------------------------------------------------------------------------------
-		std::this_thread::sleep_for(std::chrono::milliseconds(400));
+		Util::setSleep(400);
 		//开始 自动生成 TX1 校准数据
 		for (int i = 0; i < freq_num; ++i) {
 			//单点校准
@@ -1175,7 +1176,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 			}
 			
             if (v <= -50) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                Util::setSleep(1000);
                 continue;
             }
 	
@@ -1183,7 +1184,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 			r = des_p_dbm - (v + loss_db);
 			double temp = p_true + r;
 			if (p_true >= SIGNAL_SOURCE_MAX_POW){
-				std::this_thread::sleep_for(std::chrono::milliseconds(300));
+				Util::setSleep(300);
 				continue;
 			}
 			else
@@ -1222,7 +1223,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 			return JC_STATUS_ERROR_SET_TX_OUT_RANGE;
 		}	
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(400));
+	Util::setSleep(400);
 	double sen = JcGetSen();
 	sen += JcGetSen();
 	sen += JcGetSen();
@@ -1422,7 +1423,7 @@ void testcb(Callback_Get_RX_Offset_Point pHandler) {
 	for (int i = 0; i < 5; ++i) {
 		d += i;
 		f++;
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		Util::setSleep(1000);
 		if (pHandler != 0)
 			pHandler(f, d);
 	}

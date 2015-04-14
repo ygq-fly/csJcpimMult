@@ -79,6 +79,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="3rdParty\CppSQLite3.h" />
     <ClInclude Include="3rdParty\NrpControl2.h" />
     <ClInclude Include="3rdParty\rsnrpz.h" />
     <ClInclude Include="3rdParty\sqlite3.h" />
@@ -101,6 +102,7 @@
     <ClInclude Include="IfSignalSource.hpp" />
     <ClInclude Include="IfVna.hpp" />
     <ClInclude Include="Interface.h" />
+    <ClInclude Include="MyUtil\JcCommonAPI.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ClsJcSwitch.h" />
@@ -111,9 +113,11 @@
     <ClInclude Include="ClsSenAgU2000A.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="3rdParty\CppSQLite3.cpp" />
     <ClCompile Include="3rdParty\sqlite3.c" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JcApi.cpp" />
+    <ClCompile Include="MyUtil\JcCommonAPI.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="ClsJcSwitch.cpp" />
     <ClCompile Include="Switch\com_io_ctl.cpp" />

@@ -6,8 +6,8 @@
 //  Copyright (c) 2014Äê ___SAN___. All rights reserved.
 //
 
-#ifndef __MyTest__JcOffsetDB__
-#define __MyTest__JcOffsetDB__
+#ifndef __SAN__JcOffsetDB__
+#define __SAN__JcOffsetDB__
 
 #include "stdafx.h"
 

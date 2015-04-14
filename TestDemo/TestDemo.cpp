@@ -205,7 +205,7 @@ void Test_dll(){
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
 	//GPIB0::12::INSTR
 	bool isCont = true;
-	int s = setInit("0,0,0,0,1");
+	int s = setInit("0,0,0,0,0");
 	//int s = setInit("TCPIP0::192.168.1.3::5025::SOCKET,TCPIP0::192.168.1.4::5025::SOCKET,TCPIP0::192.168.1.2::inst0::INSTR,USB0::0x0957::0x2B18::MY51050018::0::INSTR");
 	if (s == 0 && isCont == true) {
 		std::cout << "init success!" << std::endl;

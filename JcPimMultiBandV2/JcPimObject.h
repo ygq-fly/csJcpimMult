@@ -1,5 +1,5 @@
-#ifndef _JCPIMPARAM_H_
-#define _JCPIMPARAM_H_
+#ifndef _SAN_JCPIMPARAM_H_
+#define _SAN_JCPIMPARAM_H_
 
 #include "ClsVnaAgE5062A.hpp"
 #include "ClsSigAgN5181A.hpp"
