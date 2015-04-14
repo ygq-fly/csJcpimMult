@@ -2,6 +2,7 @@
 #define _CLS_AGILENT_HPP_
 
 #include "stdafx.h"
+#include "MyUtil\JcCommonAPI.h"
 
 class ClsInstrAgilent
 {
@@ -46,7 +47,6 @@ public:
 	bool AgWrite(const char* c_cmd) {
 		_viStatus = viPrintf(_viSession, const_cast<char*>(c_cmd));
 		return !_viStatus;
-		//return _viStatus;
 	}
 
 	//写入并等待读取（返回读取字节长度）
@@ -97,10 +97,8 @@ public:
 			viQueryf(_viSession, "*ESR?\n", "%ld", &_esr);
 			if (_esr & 1)
 				break;
-			//(need windows.h support!)
-			//sleep(100);
-			//need c++11 support!
-			std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+			Util::setSleep(20);
 		}
 		return true;
 	}
@@ -112,8 +110,8 @@ public:
 			unsigned long retCount = 0;
 			unsigned char  error_message[256] = { 0 };
 
-			_viStatus=viPrintf(_viSession, "SYST:ERR?\n");
-			_viStatus=viRead(_viSession, error_message, 256, &retCount);
+			_viStatus = viPrintf(_viSession, "SYST:ERR?\n");
+			_viStatus = viRead(_viSession, error_message, 256, &retCount);
 			//viQueryf(_viSession, "")
 			printf("Error: %s\n", error_message);
 		}

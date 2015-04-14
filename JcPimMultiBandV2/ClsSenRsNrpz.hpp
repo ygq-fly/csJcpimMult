@@ -148,7 +148,7 @@ private:
 			_viStatus = rsnrpz_chan_isMeasurementComplete(sid, CHANNEL1, &complete);
 			PrintError(_viStatus, _viSession);
 			//Sleep(199);
-			std::this_thread::sleep_for(std::chrono::milliseconds(20));
+			Util::setSleep(20);
 		}
 		//ªÒ»°÷µ
 		_viStatus = rsnrpz_meass_fetchMeasurement(sid, CHANNEL1, &val);

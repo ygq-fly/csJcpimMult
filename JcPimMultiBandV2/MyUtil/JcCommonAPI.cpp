@@ -102,6 +102,13 @@ uint64_t Util::get_tick_count() {
 #endif
 }
 
+double Util::getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double DefaultVal, const wchar_t* FilePath) {
+	wchar_t w_value[10] = { 0 };
+	GetPrivateProfileStringW(AppName, KeyName, std::to_wstring(DefaultVal).c_str(), w_value, 10, FilePath);
+	double val = _wtof(w_value);
+	return val;
+}
+
 void Util::logged(const wchar_t* fmt, ...) {
 	wchar_t wInfo[256] = { 0 };
 	va_list ap;

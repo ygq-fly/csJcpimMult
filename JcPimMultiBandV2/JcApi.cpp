@@ -78,10 +78,8 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 #endif
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 		__pobj->debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
-		int vco_limit = GetPrivateProfileIntW(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
-		wchar_t w_tx_smooth[10] = { 0 };
-		GetPrivateProfileStringW(L"Settings", L"tx_smooth", L"2", w_tx_smooth, 10, wsPath_ini.c_str());
-		double tx_smooth = _wtof(w_tx_smooth);
+		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
+		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
 		__pobj->now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		__pobj->now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1, wsPath_ini.c_str());

@@ -46,7 +46,7 @@ public:
 	bool isExtSenConn;
 	bool now_status[4];
 	int now_vco_enbale[10];
-	int now_vco_threasold;
+	double now_vco_threasold;
 	double now_tx_smooth_threasold;
 	int debug_time;
 	bool isUseExtBand;

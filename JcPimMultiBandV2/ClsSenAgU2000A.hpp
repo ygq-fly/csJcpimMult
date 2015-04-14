@@ -49,7 +49,7 @@ public:
 	//init
 	void InstrSenInit(){
 		AgWrite("*RST\n");
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		Util::setSleep(200);
 		AgWrite("SYST:PRES DEF\n");
 		AgWrite("FREQ 1000MHz\n");
 		AgWrite("UNIT:POW dBm\n");

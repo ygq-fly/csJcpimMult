@@ -7,7 +7,7 @@
 
 #include "../stdafx.h"
 
-#define log(fmt, ...) Util::logging("<%s>|<%d>|<%s>," fmt "\r\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+#define Jclogging(fmt, ...) Util::logging("<%s>|<%d>|<%s>," fmt "\r\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 
 namespace Util {
     int getMyPath(OUT wchar_t* w_path, uint16_t max, const wchar_t* module_name);
@@ -17,6 +17,7 @@ namespace Util {
     int saveBitmapToFile(HBITMAP hbitmap, const wchar_t* wFileName);
     int setSleep(uint32_t millisecond);
     uint64_t get_tick_count();
+	double getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double DefaultVal, const wchar_t* FilePath);
 	void logged(const wchar_t* fmt, ...);
     void logging(const char* fmt, ...);
 }

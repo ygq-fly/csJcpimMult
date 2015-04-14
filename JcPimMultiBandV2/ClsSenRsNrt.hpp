@@ -61,7 +61,7 @@ public:
 			_esr = 0;
 			viQueryf(_viSession, "*OPC?\n", "%ld", &_esr);
 			if (_esr & 1) break;
-			std::this_thread::sleep_for(std::chrono::milliseconds(300));
+			Util::setSleep(300);
 		}
 
 		if (_isAver)
