@@ -76,15 +76,15 @@ typedef int(*pSetInit)(char*);
 //JIONTCOM_API int fnSetExit();
 typedef int(*pSetExit)();
 //JIONTCOM_API int fnSetMeasBand(BYTE_ byBandIndex);
-typedef int(*pSetMeasBand)(char);
+typedef int(*pSetMeasBand)(uint8_t);
 //JIONTCOM_API int fnSetImAvg(BYTE_ byAvgTime);
-typedef int(*pSetImAvg)(char);
+typedef int(*pSetImAvg)(uint8_t);
 //JIONTCOM_API int fnSetDutPort(BYTE_ byPort);
-typedef int(*pSetDutPort)(char);
+typedef int(*pSetDutPort)(uint8_t);
 //JIONTCOM_API int fnSetImOrder(BYTE_ byImOrder);
-typedef int(*pSetImOrder)(char);
+typedef int(*pSetImOrder)(uint8_t);
 //JIONTCOM_API int fnCheckReceiveChannel(BYTE_ byBandIndex, BYTE_ byPort);
-typedef int(*pCheckReceiveChannel)(char, char);
+typedef int(*pCheckReceiveChannel)(uint8_t, uint8_t);
 //JIONTCOM_API int fnCheckTwoSignalROSC();
 typedef int(*pCheckTwoSignalROSC)();
 //JIONTCOM_API int fnSetTxPower(double dTxPower1, double dTxPower2,
@@ -93,7 +93,7 @@ typedef int(*pSetTxPower)(double, double, double, double);
 //JIONTCOM_API int fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const UNIT_ cUnits);
 typedef int(*pSetTxFreqs)(double, double, const char*);
 //JIONTCOM_API int fnSetTxOn(BOOL_ bOn, BYTE_ byCarrier = 0);
-typedef int(*pSetTxOn)(BOOL, char);
+typedef int(*pSetTxOn)(BOOL, uint8_t);
 //JIONTCOM_API int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const UNIT_ cUnits);
 typedef int(*pGetImResult)(double&, double&, const char*);
 //JIONTCOM_API int fnSetSpan(int iSpan, const UNIT_ cUnits);
@@ -107,11 +107,13 @@ typedef int(*pGetSpectrumType)(char*);
 typedef int(*pGetError)(char*, size_t);
 //JC_API double JcGetSen();
 typedef double(*pJcGetSen)();
+//JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
+typedef BOOL(*pHwSetCoup)(uint8_t);
 
 //JC_API long JcGetOffsetRxNum(BYTE_ byInternalBand);
-typedef long(*pGetOffsetRxNum)(char);
+typedef long(*pGetOffsetRxNum)(uint8_t);
 //JC_API long JcGetOffsetTxNum(BYTE_ byInternalBand);
-typedef long(*pGetOffsetTxNum)(char);
+typedef long(*pGetOffsetTxNum)(uint8_t);
 //JC_API JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 //								 BYTE_ byInternalBand, BYTE_ byDutPort,
 //								 double freq_mhz);
@@ -120,11 +122,11 @@ typedef int(*pGetOffsetRx)(double&, char, char, double);
 //								 BYTE_ byInternalBand, BYTE_ byDutPort,
 //								 BYTE_ coup, BYTE_ real_or_dsp,
 //								 double freq_mhz, double tx_dbm);
-typedef int(*pGetOffsetTx)(double&, char, char, char, char, double, double);
+typedef int(*pGetOffsetTx)(double&, uint8_t, uint8_t, uint8_t, uint8_t, double, double);
 //JC_API JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, BYTE_ byInternalBand, BYTE_ byDutport);
-typedef int(*pGetOffsetVco)(double&, char, char);
+typedef int(*pGetOffsetVco)(double&, uint8_t, uint8_t);
 //JC_API JC_STATUS JcSetOffsetVco(BYTE_ byInternalBand, BYTE_ byDutport, double val);
-typedef int(*pSetOffsetVco)(char, char, double);
+typedef int(*pSetOffsetVco)(uint8_t, uint8_t, double);
 
 typedef int(*pGetDllVersion)(int&, int&, int&, int&);
 
@@ -138,8 +140,10 @@ int main(int argc, char* argv[])
 	//std::thread t4([]() { std::cout << "Hello, C++11 thread\n"; });
 
 	//Test_pim();
-	Test_dll();
-	
+	for (int i = 0; i < 1; i++) {
+		printf("==================No.%d=================\n", i);
+		Test_dll();
+	}
 	getchar();
 	return 0;
 }
@@ -168,6 +172,8 @@ void Test_dll(){
 	pGetImResult getImResult = (pGetImResult)GetProcAddress(hinst, "fnGetImResult");
 	pGetSpectrumType getSpectrumType = (pGetSpectrumType)GetProcAddress(hinst, "fnGetSpectrumType");
 
+
+	pHwSetCoup hwSetCoup = (pHwSetCoup)GetProcAddress(hinst, "HwSetCoup");
 	pJcGetSen jcGetSen = (pJcGetSen)GetProcAddress(hinst, "JcGetSen");
 
 	pGetError getError = (pGetError)GetProcAddress(hinst, "JcGetError");
@@ -199,37 +205,37 @@ void Test_dll(){
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
 	//GPIB0::12::INSTR
 	bool isCont = true;
-	int s = setInit("0,0,0,USB::0x0aad::0x000c::102838,0");
+	int s = setInit("0,0,0,0,1");
 	//int s = setInit("TCPIP0::192.168.1.3::5025::SOCKET,TCPIP0::192.168.1.4::5025::SOCKET,TCPIP0::192.168.1.2::inst0::INSTR,USB0::0x0957::0x2B18::MY51050018::0::INSTR");
 	if (s == 0 && isCont == true) {
 		std::cout << "init success!" << std::endl;
-		//s = setMeasBand(2);
-		//s = setDutPort(0);
-		s = [](pCheckReceiveChannel p){
-			for (int a = 0; a < 10; ++a){
-				for (int i = 0; i < 7; i++){
-					for (int j = 0; j < 2; j++){
-						std::cout << "Switch: " << i << " , " << j << std::endl;
-						int s = p(i, j);
-						if (s < 0) {
-							if (s == -10014)
-								std::cout << "Switch error!" << std::endl;
-							else
-								std::cout << " Check VCO error!" << std::endl;
-
-							return s;
-						}
-					}
-				}
-			}
-			return 0;
-		}(checkReceiveChannel);
 	}
 	else {
 		char msg[512] = { 0 };
 		getError(msg, 512);
 		std::cout << msg << std::endl;
 	}
+
+	//for (int i = 0; i < 7; ++i) {
+	//	for (int j = 0; j < 2; ++j) {
+	//		setMeasBand(i);
+	//		int s = setDutPort(j);
+	//		if (s <= -10000)
+	//			printf("band: %d - port: %d error!\n", i, j);
+	//		else
+	//			printf("band: %d - port: %d\n", i, j);
+	//		Sleep(100);
+	//		for (int m = 0; m < 2; ++m) {
+	//			BOOL b = hwSetCoup(m);
+	//			if(b == FALSE)
+	//				printf("coup: %d error!\n", m);
+	//			else 
+	//				printf("coup: %d\n", m);
+	//			Sleep(100);
+	//		}
+	//	}
+	//}
+
 
 	//¼ì²â
 	std::cout << std::endl;
@@ -249,6 +255,7 @@ void Test_dll(){
 
 	s = setExit();
 	std::cout << "Exit!" << std::endl;
+
 	FreeLibrary(hinst);
 }
 

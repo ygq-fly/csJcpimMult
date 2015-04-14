@@ -143,7 +143,7 @@ public:
 	//	_LTE2600 = 5,
 	//	_LTE700 = 6
 	//};
-	uint8_t GetExtBandToIntBand(const char& byExtMeasBand) {
+	uint8_t GetExtBandToIntBand(const uint8_t& byExtMeasBand) {
 		uint8_t sband;
 		switch (byExtMeasBand)
 		{
@@ -160,7 +160,7 @@ public:
 		return sband;
 	}
 
-	std::string GetBandString(const char& MeasBand) {
+	std::string GetBandString(const uint8_t& MeasBand) {
 		std::string sband;
 		switch (MeasBand)
 		{

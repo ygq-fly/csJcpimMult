@@ -51,7 +51,7 @@ bool ClsJcSwitch::SwitchConnect() {
 	//连接所有模块
 	_isConn = _cic.Connect();
 	_cic.GetHostsCtrl(_hosts);
-	for (int i = 0; i < _moduleList.size(); i++) {
+	for (size_t i = 0; i < _moduleList.size(); i++) {
 		if (_hosts[_moduleList[i]].state)
 			_info += (_moduleList[i] + ":Connected\r\n");
 		else {
