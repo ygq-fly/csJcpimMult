@@ -48,9 +48,10 @@ public:
 	int now_vco_enbale[10];
 	double now_vco_threasold;
 	double now_tx_smooth_threasold;
+	double now_tx_smooth_accuracy;
 	int debug_time;
 	bool isUseExtBand;
-	std::string strErrorInfo;	
+	std::string strErrorInfo;
 
 public:
 	ViSession viDefaultRM;
@@ -87,6 +88,7 @@ private:
 		isExtSenConn(false),
 		now_vco_threasold(5),
 		now_tx_smooth_threasold(2),
+		now_tx_smooth_accuracy(0.15),
 		debug_time(200),
 		isUseExtBand(true),
 		strErrorInfo("Not"),
@@ -212,10 +214,12 @@ public:
 		return dFreq;
 	}
 
-	std::string ToString(double val) {
-		auto str = std::to_string(val);
-		str.erase(str.find_last_not_of('0') + 1, std::string::npos);
-		return str;
+	void LoggingWrite(std::string strLog) {
+		std::string strTime;
+		Util::getNowTime(strTime);
+		strLog = "==>(" + strTime + ")" + strLog;
+		Util::logging(strLog.c_str());
+		
 	}
 
 	//Sigleton model

@@ -65,7 +65,7 @@ public:
 		//viQueryf(_viSession, const_cast<char*>(c_cmd), "%#t", &retCount, buf);
 
 		if (retCount) 
-			std::memcpy(rbuf, buf, retCount);
+			memcpy(rbuf, buf, retCount);
 
 		return retCount;
 	}

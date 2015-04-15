@@ -94,9 +94,9 @@ public:
 	//功放开关
 	bool InstrOpenPow(bool bOpen) {
 		if (bOpen)
-			_isCmdSucc = AgWrite("OUTP ON\n");
+			_isCmdSucc = AgWrite("OUTP:STAT ON\n");
 		else
-			_isCmdSucc = AgWrite("OUTP OFF\n");
+			_isCmdSucc = AgWrite("OUTP:STAT OFF\n");
 
 		if (_isCmdSucc) _bOpen = bOpen;
 

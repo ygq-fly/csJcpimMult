@@ -74,11 +74,17 @@ int Util::saveBitmapToFile(HBITMAP hbitmap, const wchar_t *wFileName) {
 
 int Util::setSleep(uint32_t millisecond) {
 #ifdef _WIN32
-    Sleep(millisecond);
+	Sleep(millisecond);
 #else
     usleep(millisecond);
 #endif
     return 0;
+}
+
+std::string Util::ToString(double val) {
+	auto str = std::to_string(val);
+	str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+	return str;
 }
 
 uint64_t Util::get_tick_count() {
@@ -109,13 +115,22 @@ double Util::getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double
 	return val;
 }
 
+void Util::getNowTime(OUT std::string& strTime) {
+	SYSTEMTIME sysTime;
+	GetLocalTime(&sysTime);
+	char cTime[256];
+	sprintf_s(cTime, "%04d-%02d-%02d, %02d:%02d:%02d.%03d", sysTime.wYear, sysTime.wMonth, sysTime.wDay,
+		sysTime.wHour, sysTime.wMinute, sysTime.wSecond, sysTime.wMilliseconds);
+	strTime.assign(cTime);
+}
+
 void Util::logged(const wchar_t* fmt, ...) {
 	wchar_t wInfo[256] = { 0 };
 	va_list ap;
 	va_start(ap, fmt);
 	vswprintf_s(wInfo, fmt, ap);
 	va_end(ap);
-	MessageBoxW(NULL, wInfo, L"Tips", MB_TOPMOST);
+	MessageBoxW(GetForegroundWindow(), wInfo, L"Tips", MB_TOPMOST);
 }
 
 void Util::logging(const char *fmt, ...) {
@@ -134,6 +149,7 @@ void Util::logging(const char *fmt, ...) {
         if(TRUE != SetFileAttributesA(log_name, FILE_ATTRIBUTE_HIDDEN)) {
             //return;
         }
+
         if (NULL == pFile)
             return;
     }

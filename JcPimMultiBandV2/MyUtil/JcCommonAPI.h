@@ -16,10 +16,13 @@ namespace Util {
     int getFileSize(const wchar_t* w_path);
     int saveBitmapToFile(HBITMAP hbitmap, const wchar_t* wFileName);
     int setSleep(uint32_t millisecond);
+	std::string ToString(double val);
     uint64_t get_tick_count();
 	double getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double DefaultVal, const wchar_t* FilePath);
+	void getNowTime(OUT std::string& strTime);
 	void logged(const wchar_t* fmt, ...);
     void logging(const char* fmt, ...);
+	
 }
 
 #endif //CLION_ONE_JCCOMMONAPI_H

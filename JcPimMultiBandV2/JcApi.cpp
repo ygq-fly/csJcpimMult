@@ -80,8 +80,10 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		__pobj->debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
 		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
 		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
+		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 2, wsPath_ini.c_str());
 		__pobj->now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		__pobj->now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
+		__pobj->now_tx_smooth_accuracy = tx_accuracy <= 0 ? 0.15 : tx_accuracy;
 		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1, wsPath_ini.c_str());
 		__pobj->now_vco_enbale[1] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band1", 1, wsPath_ini.c_str());
 		__pobj->now_vco_enbale[2] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band2", 1, wsPath_ini.c_str());
@@ -608,6 +610,9 @@ double HwGetCoup_Dsp(uint8_t byCoup) {
 	sen = sen / 3 + val;
 	//sen += val;
 
+	std::string strLog = "start Dsp-Coup-" + std::to_string(byCoup) + "\r\n";
+	strLog += "   Avg3rd_1: " + std::to_string(sen) + " \r\n";
+
 	double dd = tx_temp - sen;
 	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) {
 		Util::setSleep(100);
@@ -616,6 +621,8 @@ double HwGetCoup_Dsp(uint8_t byCoup) {
 		sen += JcGetSen();
 		sen += JcGetSen();
 		sen = sen / 3 + val;
+		strLog += "   Avg3rd_2: " + std::to_string(sen) + " \r\n";
+		JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 	}
 	return sen;
 }
@@ -632,7 +639,7 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 
 	JcGetOffsetVco(vco_val, __pobj->now_band, __pobj->now_dut_port);
 	double dd = real_val - vco_val;
-	//std::cout << dd << std::endl;
+
 	//if (dd > SMOOTH_VCO_THREASOLD || dd < (SMOOTH_VCO_THREASOLD*-1))
 	if (dd > __pobj->now_vco_threasold || dd < (__pobj->now_vco_threasold * -1))
 		return 0;
@@ -643,9 +650,10 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 //检测功放稳定度(必须功放开启后检测) return dd
 JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 	double tx_dsp = 0;
-	std::wstring info = L"";
 	dd = 0;
 	double tx_deviate = 0;
+	std::string strLog = "start smooth-tx-" + std::to_string(byCarrier) + "\r\n";
+
 	for (int i = 0; i < 4; i++){
 		if (i == 0)
 			Util::setSleep(100);
@@ -653,20 +661,25 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 			//获取检测功率
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
 			//获取偏差值
-			tx_deviate = __pobj->now_txPow1 + __pobj->offset_txPow1 - tx_dsp;
-			info += L"TX1第 " + std::to_wstring(i) + L" 次\r\n";			
+			tx_deviate = __pobj->now_txPow1 + __pobj->offset_txPow1 - tx_dsp;	
 		}
 		else if (byCarrier == JC_CARRIER_TX2) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX2);
 			tx_deviate = __pobj->now_txPow2 + __pobj->offset_txPow2 - tx_dsp;
-			info += L"TX2第 " + std::to_wstring(i) + L" 次\r\n";
 		}
 		else
 			return JC_STATUS_ERROR_SET_BOSH_USE_TX1TX2;
 
+		strLog += "   No.: " + std::to_string(i) + "\r\n";
+		strLog += "   tx_dsp: " + std::to_string(tx_dsp) + "\r\n";
+		strLog += "   tx_deviate: " + std::to_string(tx_deviate) + "\r\n";
+		strLog += "   dd: " + std::to_string(dd) + "\r\n";
+
 		//未检测功率时
 		if (tx_dsp <= 33){
-			__pobj->strErrorInfo = "PowerSmooth: No find Power!";
+			__pobj->strErrorInfo = "   PowerSmooth: No find Power!\r\n";
+			strLog += __pobj->strErrorInfo;
+			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			return JC_STATUS_ERROR_NO_FIND_POWER;
 		}
 
@@ -674,28 +687,20 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 			__pobj->dd1 = 0;
 			__pobj->dd2 = 0;
 			//检测错误后，关闭功放
-			//FnSetTxOn(false, byCarrier);
-			__pobj->strErrorInfo = "PowerSmooth: Power's Smooth out Allowable Range\r\n";
+			//FnSetTxOn(false, byCarrier);		
+			__pobj->strErrorInfo = "   PowerSmooth: Power's Smooth out Allowable Range\r\n";
+			strLog += __pobj->strErrorInfo;
+			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			return JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
 		}
 		else {
-			if (tx_deviate >= -0.15 && tx_deviate <= 0.15){
-				//if (__pobj->debug_enable == 1)
-				//	MessageBox(NULL, L"不调整", L"tips", MB_TOPMOST);
-				return JC_STATUS_SUCCESS;
-			}
+			if (tx_deviate >= -0.15 && tx_deviate <= 0.15)
+				return JC_STATUS_SUCCESS;	
 
 			if (i == 0)
 				dd += tx_deviate * 0.9;
 			else
 				dd += (tx_deviate * 0.6);
-
-			//if (__pobj->debug_enable == 1) {
-			//	info += L"调整前： " + std::to_wstring(tx_dsp) + L"\r\n";
-			//	info += L"td： " + std::to_wstring(tx_deviate) + L"\r\n";
-			//	info += L"dd： " + std::to_wstring(dd) + L"\r\n";
-			//	MessageBox(NULL, info.c_str(), L"tips", MB_TOPMOST);	
-			//}
 
 			if (byCarrier == JC_CARRIER_TX1) {
 				__pobj->dd1 = dd;
@@ -968,11 +973,15 @@ JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
 	double off[256] = {0};
 	__pobj->ana->InstrRxOffsetSetting();
 
+	std::string strLog = "start offset-rx-" +
+		std::to_string(byInternalBand) + "-" +
+		std::to_string(byDutPort) + "\r\n";
+
 	//设置保护值
 	JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, OFFSET_PROTECT_RX);
 	//开启功放
 	fnSetTxOn(true, JC_CARRIER_TX1);
-	std::this_thread::sleep_for(std::chrono::microseconds(200));
+	Util::setSleep(300);
 	//VCO
 	double vco = 0;
 	if (JcGetVcoDsp(vco, byInternalBand * 2 + byDutPort) == false) {
@@ -987,7 +996,7 @@ JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
 	for (int i = 0; i < freq_num; ++i) {		
 		//设置
 		JcSetSig(JC_CARRIER_TX1, Rxfreq[i] * 1000, OFFSET_PROTECT_RX);
-		std::this_thread::sleep_for(std::chrono::microseconds(200));
+		Util::setSleep(200);
 		//读取
 		double v = JcGetAna(Rxfreq[i] * 1000, false);
 		if (v == JC_STATUS_ERROR){
@@ -1002,7 +1011,9 @@ JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
 			//错误，关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
 			//__pobj->ana->InstrSetAvg(2);
-			__pobj->strErrorInfo = "RxOffset: No Find Power(-90)!\r\n";
+			__pobj->strErrorInfo = "   RxOffset: No Find Power(-90)!\r\n";
+			strLog += __pobj->strErrorInfo;
+			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			return JC_STATUS_ERROR;
 		}
 		//开始回调
@@ -1170,15 +1181,17 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 
 	double p_true = OFFSET_PROTECT_TX;
 	resulte = 0;
+	std::string strLog = "start offset-tx\r\n";
+
 	for (int i = 0; i < 6; i++) {
 		//设置
 		pow->InstrSetFreqPow(des_f_mhz * 1000, p_true);
-		std::this_thread::sleep_for(std::chrono::microseconds(800));
+		Util::setSleep(100);
 		//读取
 		double v = -10000;
 		double r = 0;
 
-		for (size_t a = 0; a < 3; a++){
+		for (size_t a = 0; a < 3; a++) {
 			if (__pobj->ext_sen_index == 1)
 				//外部传感器，读取数值
 				v = __pobj->ext_sen->InstrGetSesnor();
@@ -1192,17 +1205,21 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 					return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
 				}
 			}
+
+			strLog += "   freq: " + std::to_string(des_f_mhz) +
+						"  val: " + std::to_string(v) + "\r\n";
 			
+			//判断1
             if (v <= -50) {
                 Util::setSleep(1000);
                 continue;
             }
 	
-			//计算
+			//判断2
 			r = des_p_dbm - (v + loss_db);
 			double temp = p_true + r;
 			if (p_true >= SIGNAL_SOURCE_MAX_POW){
-				Util::setSleep(300);
+				Util::setSleep(1000);
 				continue;
 			}
 			else
@@ -1212,7 +1229,9 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 		//检测
 		if (v <= -50) {
 			pow->InstrOpenPow(false);
-			__pobj->strErrorInfo = "TxOffset: This Channel can not find Power!\r\n";
+			__pobj->strErrorInfo = "   TxOffset: This Channel can not find Power!\r\n";
+			strLog += __pobj->strErrorInfo;
+			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			if (v <= -10000)
 				__pobj->strErrorInfo = "TxOffset: External Sensor read error!\r\n";
 			return JC_STATUS_ERROR;
@@ -1237,7 +1256,9 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 
 		if (p_true >= SIGNAL_SOURCE_MAX_POW) {
 			pow->InstrOpenPow(false);
-			__pobj->strErrorInfo = "TxOffset: This Channel's power so big!\r\n";
+			__pobj->strErrorInfo = "   TxOffset: This Channel's power so big!\r\n";
+			strLog += __pobj->strErrorInfo;
+			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			return JC_STATUS_ERROR_SET_TX_OUT_RANGE;
 		}	
 	}
