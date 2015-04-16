@@ -13,11 +13,7 @@
 #pragma once
 
 #include "implementsetting.h"
-#include <Winsock2.h>
-#include <mswsock.h>
-
-#pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "mswsock.lib")
+#include "../stdafx.h"
 
 namespace ns_com_io_ctl{
 	using  namespace std;

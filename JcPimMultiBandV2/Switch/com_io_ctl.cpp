@@ -11,7 +11,6 @@
 2015.3.6
 	增加网络连接异步操作函数：IOConnetBegin,IOConnectEnd
 *------------------------------------------------------------------------------*/
-#include "../stdafx.h"
 #include "com_io_ctl.h"
 
 namespace ns_com_io_ctl{

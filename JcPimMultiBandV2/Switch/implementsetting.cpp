@@ -16,7 +16,6 @@
 	存在问题：正常连接中，硬件因异常断线，而网络虚电路存在，偶尔无法复位模块。解决办法
 			 依次调用DisConnect、Connet函数。			
 *------------------------------------------------------------------------------*/
-#include "../StdAfx.h"
 #include "implementsetting.h"
 
 namespace ns_com_io_ctl

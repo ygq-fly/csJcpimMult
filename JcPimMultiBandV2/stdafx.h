@@ -31,10 +31,20 @@
 #include "3rdParty/rsnrpz.h"
 #include "3rdParty\/sqlite3.h"
 
-#define OUT
+#include <Winsock2.h>
+#include <mswsock.h>
+#include <bitset>
+#include <fstream>
+#include <list>
+#include <map>
+#include <regex>
+
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "mswsock.lib")
 
 #pragma comment(lib, "Version.lib")
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
+#define OUT
 
 // TODO: reference additional headers your program requires here

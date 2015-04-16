@@ -12,18 +12,8 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <bitset>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <list>
-#include <map>
-#include <regex>
+#include "../StdAfx.h"
 #include "switch_info.h"
-//#include <Windows.h>
 
 namespace ns_com_io_ctl
 {
