@@ -67,16 +67,22 @@ void ClsAnaRsFspSerial::InstrSetAvg(const int& avg_time)
 {
     //[SENSe<1|2>:]AVERage:COUNt 0 to 32767
     char const *set_aver_count = "AVER:COUN %d%s\n";
+	if (avg_time > 0) 
+		CommonSet("AVER:COUN %d\n", avg_time);
+	else 
+		InstrClose();
 }
 void ClsAnaRsFspSerial::InstrClosgAvg()
 {
     //[SENSe<1|2>:]AVERage[:STATe<1...3>] ON | OFF
-    char const *set_aver_state = "AVER OFF\n";
+    //char const *set_aver_state = "AVER OFF\n";
+	CommonSet("AVER OFF\n");
 }
 void ClsAnaRsFspSerial::InstrSetOffset(const double& pow_dbm)
 {
     //[SENSe<1|2>:]FREQuency:OFFSet <numeric_value>
-    char const *set_freq_offset = "FREQ:OFFS %.0f%s\n";
+    //char const *set_freq_offset = "FREQ:OFFS %.0f%s\n";
+	CommonSet("FREQ:OFFS %lf dBm\n", pow_dbm);
 }
 
 // void InstrSetAttRef(const int& att, const int& reflevel) = 0;
@@ -84,12 +90,14 @@ void ClsAnaRsFspSerial::InstrSetOffset(const double& pow_dbm)
 
 void ClsAnaRsFspSerial::InstrSetAtt(const int& att)
 {//INPut<1|2>:ATTenuation 0 to 70/75dB
-    char const *set_att = "INP:ATT %d%s\n";
+    //char const *set_att = "INP:ATT %d%s\n";
+	CommonSet("INP:ATT %d dB\n", att);
 }
 void ClsAnaRsFspSerial::InstrSetRef(const int& reflevel)
 {
     //DISPlay[:WINDow<1|2>]:TRACe<1...3>:Y[:SCALe]:RLEVel -130dBm to 30dBm
-    char const *set_disp_rlevel = "DISP:TRAC:Y:RLEV %d%s\n";
+    //char const *set_disp_rlevel = "DISP:TRAC:Y:RLEV %d%s\n";
+	CommonSet("DISP:TRAC:Y:RLEV %d dBm\n", reflevel);
 }
 void ClsAnaRsFspSerial::InstrSetRbw(const double& rbw_hz)
 {
@@ -132,14 +140,14 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
     if (pp < 0 || pp >= PRESET_PARAMETER_TOTAL)
         return ;
     
-//    InstrSetSpan (freq_span[pp]);
-//    SetCenterFreq (freq_center[pp]);
-//    InstrSetVbw (list_vbw[pp]);
-//    InstrSetRbw (list_rbw[pp]);
-//    InstrSetRef (list_rlev[pp]);
-//    InstrSetAtt (list_att[pp]);
-//    InstrSetOffset (freq_offset[pp]);
-//    InstrSetAvg (adverage[pp]);
+    InstrSetSpan (freq_span[pp]);
+    InstrSetCenterFreq (freq_center[pp]);
+    InstrSetVbw (list_vbw[pp]);
+    InstrSetRbw (list_rbw[pp]);
+    InstrSetRef (list_rlev[pp]);
+    InstrSetAtt (list_att[pp]);
+    InstrSetOffset (freq_offset[pp]);
+    InstrSetAvg (adverage[pp]);
     
 }
 
