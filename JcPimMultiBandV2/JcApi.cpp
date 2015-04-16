@@ -22,12 +22,8 @@ JcBool _debug_enable = 0;
 
 std::wstring _startPath = [](){
 	wchar_t wcBuff[512] = { 0 };
-	HINSTANCE hpatch = GetModuleHandleW(L"JcPimMultiBandV2.dll");
-	GetModuleFileNameW(hpatch, wcBuff, 1024);
-	std::wstring wsPath(wcBuff);
-	wsPath = wsPath.substr(0, wsPath.rfind(L'\\'));
-
-	std::wstring wsPath_ini = wsPath + L"\\JcConfig.ini";
+	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
+	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
 	_switch_enable[0] = GetPrivateProfileIntW(L"Connect_Enable", L"band0", 1, wsPath_ini.c_str());
 	_switch_enable[1] = GetPrivateProfileIntW(L"Connect_Enable", L"band1", 1, wsPath_ini.c_str());
 	_switch_enable[2] = GetPrivateProfileIntW(L"Connect_Enable", L"band2", 1, wsPath_ini.c_str());
@@ -37,7 +33,7 @@ std::wstring _startPath = [](){
 	_switch_enable[6] = GetPrivateProfileIntW(L"Connect_Enable", L"band6", 1, wsPath_ini.c_str());
 	_debug_enable = GetPrivateProfileIntW(L"Settings", L"debug", 0, wsPath_ini.c_str());
 
-	return wsPath;
+	return std::wstring(wcBuff);
 }();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +41,7 @@ std::wstring _startPath = [](){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int fnSetInit(JC_ADDRESS cDeviceAddr) {
-	bool issqlconn = false;
+	bool isSqlConn = false;
 	//加载pim对象
 	if (NULL != __pobj) {
 
@@ -68,8 +64,8 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		std::wstring wsPath = _startPath + L"\\JcOffset.db";
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
 		std::string sPath = conv.to_bytes(wsPath);
-		issqlconn = __pobj->offset.Dbconnect(sPath.c_str());
-		if (!issqlconn) {
+		isSqlConn = __pobj->offset.Dbconnect(sPath.c_str());
+		if (!isSqlConn) {
 			Util::logged(L"fnSetInit: DB Connected Error!");
 			//return JC_STATUS_ERROR_DATABASE_CONN_FAIL;
 		}
@@ -196,17 +192,17 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		//判断连接
 		__pobj->isAllConn = __pobj->now_status[0] & __pobj->now_status[1] & __pobj->now_status[2] & __pobj->now_status[3];
 		__pobj->isAllConn &= __pobj->isSwhConn;
-		__pobj->isAllConn &= issqlconn;
+		__pobj->isAllConn &= isSqlConn;
 		//记录错误信息
 		__pobj->strErrorInfo = ("SIG1 Connected: " + std::to_string(__pobj->now_status[0]) + "\r\n");
 		__pobj->strErrorInfo += ("SIG2 Connected: " + std::to_string(__pobj->now_status[1]) + "\r\n");
 		__pobj->strErrorInfo += ("Spectrum Connected: " + std::to_string(__pobj->now_status[2]) + "\r\n");
 		__pobj->strErrorInfo += ("Sensor Connected: " + std::to_string(__pobj->now_status[3]) + "\r\n");
-		std::string swhinfo = __pobj->swh->SwitchGetInfo();
-		__pobj->strErrorInfo += swhinfo;
-		if (!issqlconn) {
+		std::string strSwhInfo = __pobj->swh->SwitchGetInfo();
+		__pobj->strErrorInfo += strSwhInfo;
+		if (!isSqlConn) {
 			__pobj->strErrorInfo += "DataBaseConnected: ";
-			__pobj->strErrorInfo += std::to_string(issqlconn);
+			__pobj->strErrorInfo += std::to_string(isSqlConn);
 			__pobj->strErrorInfo += "(JcOffset.db 's Path Error!)\r\n";
 		}
 
@@ -251,7 +247,7 @@ int fnSetExit(){
 //int csCmd, CString & csResult)	通用透传接口	byDevice : 仪器序号(00:sg1, 01 : sg2, 02 : sa,03 : Pm), csCmd : 仪器指令, csResult : 指令返回结果
 //int GetSpectrumType(CString & csSpectrumType)	获取频谱仪类型
 
-int fnSetMeasBand(uint8_t byBandIndex){
+int fnSetMeasBand(JcInt8 byBandIndex){
 	if (__pobj->isUseExtBand)
 		__pobj->now_band = __pobj->GetExtBandToIntBand(byBandIndex);
 	else
@@ -260,7 +256,7 @@ int fnSetMeasBand(uint8_t byBandIndex){
 	return 0;
 }
 
-int fnSetImAvg(uint8_t byAvgTime) {
+int fnSetImAvg(JcInt8 byAvgTime) {
 	if (byAvgTime < 1) byAvgTime = 1;
 	__pobj->now_imAvg = byAvgTime;
 	//设置频谱仪平均
@@ -269,21 +265,21 @@ int fnSetImAvg(uint8_t byAvgTime) {
 }
 
 //请先设置 HwSetMeasBand
-int fnSetDutPort(uint8_t byPort) {
+int fnSetDutPort(JcInt8 byPort) {
 	__pobj->dd1 = 0;
 	__pobj->dd2 = 0;
 	__pobj->now_dut_port = byPort;
 	//Band转换开关参数
 	//byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
-	int iswitch = __pobj->now_band * 2 + byPort;
-	JcBool b = JcSetSwitch(iswitch, iswitch, iswitch, JC_COUP_TX2);
+	int iSwitch = __pobj->now_band * 2 + byPort;
+	JcBool b = JcSetSwitch(iSwitch, iSwitch, iSwitch, JC_COUP_TX2);
 	if (TRUE == b)
 		return 0;
 	else
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 }
 
-int fnSetImOrder(uint8_t byImOrder) {
+int fnSetImOrder(JcInt8 byImOrder) {
 	//设置当前测试互调阶数,默认3
 	switch (byImOrder)
 	{
@@ -304,10 +300,10 @@ int fnSetImOrder(uint8_t byImOrder) {
 	return 0;
 }
 
-int fnCheckReceiveChannel(uint8_t byBandIndex, uint8_t byPort) {
+int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 	if (__pobj->isUseExtBand){
-		uint8_t bytemp = __pobj->GetExtBandToIntBand(byBandIndex);
-		if (__pobj->now_vco_enbale[bytemp] == 0)
+		JcInt8 byTemp = __pobj->GetExtBandToIntBand(byBandIndex);
+		if (__pobj->now_vco_enbale[byTemp] == 0)
 			return 0;
 	}
 	
@@ -432,7 +428,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 }
 
 //开启功放
-int fnSetTxOn(JcBool bOn, uint8_t byCarrier){
+int fnSetTxOn(JcBool bOn, JcInt8 byCarrier){
 	bool isSucc = false;
 	bool isOn = bOn == 0 ? false : true;
 	if (byCarrier == JC_CARRIER_TX1TX2){
@@ -491,7 +487,7 @@ int fnSetVBW(int iVBW, const JC_UNIT cUnits) {
 	return 0;
 }
 
-int fnSendCmd(uint8_t byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
+int fnSendCmd(JcInt8 byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
 	bool b = 0;
 	int num = 0;
 	std::string scmd(cmd);
@@ -568,9 +564,9 @@ void HwSetIsExtBand(JcBool isUse) {
 }
 
 //设置当前功放的耦合器
-JcBool HwSetCoup(uint8_t byCoup) {
-	int iswitch = __pobj->now_band * 2 + __pobj->now_dut_port;
-	JcBool r = JcSetSwitch(iswitch, iswitch, iswitch, byCoup);	
+JcBool HwSetCoup(JcInt8 byCoup) {
+	int iSwitch = __pobj->now_band * 2 + __pobj->now_dut_port;
+	JcBool r = JcSetSwitch(iSwitch, iSwitch, iSwitch, byCoup);	
 	Util::setSleep(250);
 	if (FALSE == r) 
 		Util::logged(L"HwSetCoup: Switch-Coup-%d Error!", (int)byCoup);		
@@ -579,7 +575,7 @@ JcBool HwSetCoup(uint8_t byCoup) {
 }
 
 //读取当前功放功率值(tx1或tx2)
-double HwGetCoup_Dsp(uint8_t byCoup) {
+double HwGetCoup_Dsp(JcInt8 byCoup) {
 	double val = 0;
 	double tx_temp = 0;
 	if (byCoup == JC_COUP_TX1) {
@@ -648,7 +644,7 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 }
 
 //检测功放稳定度(必须功放开启后检测) return dd
-JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
+JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 	double tx_dsp = 0;
 	dd = 0;
 	double tx_deviate = 0;
@@ -694,7 +690,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, uint8_t byCarrier){
 			return JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
 		}
 		else {
-			if (tx_deviate >= -0.15 && tx_deviate <= 0.15)
+			if (tx_deviate >= (__pobj->now_tx_smooth_accuracy * -1) && tx_deviate <= __pobj->now_tx_smooth_accuracy)
 				return JC_STATUS_SUCCESS;	
 
 			if (i == 0)
@@ -747,7 +743,7 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 //扩展API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, uint8_t bySwitchBand) {
+JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	if (NULL == __pobj) return false;
 
 	double vco_freq_mhz = 1334 + 2 * bySwitchBand;
@@ -768,7 +764,7 @@ void JcGetError(char* msg, size_t max) {
 }
 
 //获取各个模块状态
-JcBool JcGetDeviceStatus(uint8_t byDevice) {
+JcBool JcGetDeviceStatus(JcInt8 byDevice) {
 	if (NULL == __pobj) return false;
 
 	if (byDevice > 4 || byDevice < 0)
@@ -780,7 +776,7 @@ JcBool JcGetDeviceStatus(uint8_t byDevice) {
 }
 
 //获取外部refence状态
-JcBool JcGetSig_ExtRefStatus(uint8_t byCarrier) {
+JcBool JcGetSig_ExtRefStatus(JcInt8 byCarrier) {
 	if (NULL == __pobj) return 0;
 	bool isExt = false;
 
@@ -797,7 +793,7 @@ JcBool JcGetSig_ExtRefStatus(uint8_t byCarrier) {
 }
 
 //设置功放参数 (打开关闭功放请使用HwSetTxOn())
-JcBool JcSetSig(uint8_t byCarrier, double freq_khz, double pow_dbm) {
+JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm) {
 	if (NULL == __pobj) return FALSE;
 
 	bool b = false;
@@ -816,7 +812,7 @@ JcBool JcSetSig(uint8_t byCarrier, double freq_khz, double pow_dbm) {
 	return b;
 }
 //设置功放参数(高级)
-JC_STATUS JcSetSig_Advanced(uint8_t byCarrier, uint8_t byBand, uint8_t byPort,
+JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, JcInt8 byBand, JcInt8 byPort,
 							double freq_khz, double pow_dbm,
 							bool isOffset, double dExtOffset) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
@@ -826,7 +822,7 @@ JC_STATUS JcSetSig_Advanced(uint8_t byCarrier, uint8_t byBand, uint8_t byPort,
 	double internal_offset = 0;
 	if (isOffset) {
 		//开始获取内部校准
-		uint8_t coup = byCarrier - 1;
+		JcInt8 coup = byCarrier - 1;
 		//所有校准数据以mhz为单位，注意转换
 		int s = JcGetOffsetTx(internal_offset, byBand, byPort, coup, JC_OFFSET_REAL, freq_khz / 1000, pow_dbm);
 		if (s) {
@@ -861,7 +857,7 @@ JC_STATUS JcSetSig_Advanced(uint8_t byCarrier, uint8_t byBand, uint8_t byPort,
 	return JC_STATUS_SUCCESS;
 }
 //读取当前SIG功率值(tx1或tx2) return sen
-double JcGetSig_CoupDsp(uint8_t byCoup, uint8_t byBand, uint8_t byPort,
+double JcGetSig_CoupDsp(JcInt8 byCoup, JcInt8 byBand, JcInt8 byPort,
 						double freq_khz, double pow_dbm, double dExtOffset) {
 	double val = 0;
 	//所有校准数据以mhz为单位，注意转换
@@ -937,7 +933,7 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
 
 //获取Rx校准
 JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
-						uint8_t byInternalBand, uint8_t byDutPort,
+						JcInt8 byInternalBand, JcInt8 byDutPort,
 						double freq_mhz){
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
@@ -952,7 +948,7 @@ JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 		return JC_STATUS_SUCCESS;
 }
 
-long JcGetOffsetRxNum(uint8_t byInternalBand){
+long JcGetOffsetRxNum(JcInt8 byInternalBand){
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//获取Rx校准点
@@ -962,7 +958,7 @@ long JcGetOffsetRxNum(uint8_t byInternalBand){
 }
 
 //自动校准接收Rx (校准前请确认连线)，（只使用JC_TX1来校准）
-JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
+JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 						double loss_db, Callback_Get_RX_Offset_Point pHandler) {
 
 	//获取当前频段显示字符
@@ -1042,8 +1038,8 @@ JC_STATUS JcSetOffsetRx(uint8_t byInternalBand, uint8_t byDutPort,
 
 //获取tx校准(band:当前频段，dutport:当前测试端口，coup:当前测试功放)
 JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
-						uint8_t byInternalBand, uint8_t byDutPort,
-						uint8_t coup, uint8_t real_or_dsp,
+						JcInt8 byInternalBand, JcInt8 byDutPort,
+						JcInt8 coup, JcInt8 real_or_dsp,
 						double freq_mhz, double tx_dbm) {
 
 	//获取当前频段显示字符
@@ -1059,7 +1055,7 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 		return JC_STATUS_SUCCESS;
 }
 
-long JcGetOffsetTxNum(uint8_t byInternalBand) {
+long JcGetOffsetTxNum(JcInt8 byInternalBand) {
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//获取Tx校准频点
@@ -1069,7 +1065,7 @@ long JcGetOffsetTxNum(uint8_t byInternalBand) {
 }
 
 //自动校准发射Tx (校准前请确认连线)，(band:当前频段，dutport:当前测试端kou), 同时校准tx1,tx2
-JC_STATUS JcSetOffsetTx(uint8_t byInternalBand, uint8_t byDutPort,
+JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 						double des_p_dbm, double loss_db,
 						Callback_Get_TX_Offset_Point pHandler) {
 
@@ -1262,7 +1258,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 			return JC_STATUS_ERROR_SET_TX_OUT_RANGE;
 		}	
 	}
-	Util::setSleep(400);
+	Util::setSleep(300);
 	double sen = JcGetSen();
 	sen += JcGetSen();
 	sen += JcGetSen();
@@ -1281,7 +1277,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 }
 
 
-JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, uint8_t byInternalBand, uint8_t byDutport) {
+JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, JcInt8 byInternalBand, JcInt8 byDutport) {
 	std::string sband = __pobj->GetBandString(byInternalBand);
 
 	offset_vco = __pobj->offset.OffsetVco(sband.c_str(), byDutport);
@@ -1293,7 +1289,7 @@ JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, uint8_t byInternalBand, uin
 		return JC_STATUS_SUCCESS;
 }
 
-JC_STATUS JcSetOffsetVco(uint8_t byInternalBand, uint8_t byDutport, double val) {
+JC_STATUS JcSetOffsetVco(JcInt8 byInternalBand, JcInt8 byDutport, double val) {
 	std::string sband = __pobj->GetBandString(byInternalBand);
 
 	int s = __pobj->offset.Store_vco_single(sband.c_str(), byDutport, val);

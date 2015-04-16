@@ -25,4 +25,4 @@ namespace Util {
 	
 }
 
-#endif //CLION_ONE_JCCOMMONAPI_H
+#endif //_SAN_JCCOMMONAPI_H

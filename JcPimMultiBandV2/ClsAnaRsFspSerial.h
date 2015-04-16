@@ -21,9 +21,6 @@
 #include "ClsInstrAgilent.hpp"
 
 
-
-
-
 class ClsAnaRsFspSerial : public IfAnalyzer, public ClsInstrAgilent
 {
 public:
@@ -61,6 +58,8 @@ public:
 public:
     //重置仪表的参数 
     void Preset(enum preset_parameter pp);
+private:
+    bool CommonSet(char const *command, ...);
 };
 
 

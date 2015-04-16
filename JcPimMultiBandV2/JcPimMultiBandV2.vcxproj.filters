@@ -120,6 +120,9 @@
     <ClInclude Include="3rdParty\CppSQLite3.h">
       <Filter>3rdParty</Filter>
     </ClInclude>
+    <ClInclude Include="MyUtil\JcException.hpp">
+      <Filter>MyUtil</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

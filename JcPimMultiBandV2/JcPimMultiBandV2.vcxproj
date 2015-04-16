@@ -103,6 +103,7 @@
     <ClInclude Include="IfVna.hpp" />
     <ClInclude Include="Interface.h" />
     <ClInclude Include="MyUtil\JcCommonAPI.h" />
+    <ClInclude Include="MyUtil\JcException.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ClsJcSwitch.h" />
