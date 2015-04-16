@@ -29,7 +29,7 @@
 
 #include "3rdParty/visa.h"
 #include "3rdParty/rsnrpz.h"
-#include "3rdParty\/sqlite3.h"
+#include "3rdParty/sqlite3.h"
 
 #include <Winsock2.h>
 #include <mswsock.h>

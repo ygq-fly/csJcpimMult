@@ -166,6 +166,7 @@ public:
 	void InstrPimSetting() {
 		InstrSetOffset(0);
 		InstrSetRef(-60);
+		InstrClosgAvg();
 		InstrSetAtt(0);
 		InstrSetRbw(10);
 		InstrSetVbw(10);
@@ -190,14 +191,7 @@ public:
 		InstrSetSpan(1000);
 	}
 	void InstrRxOffsetSetting() {
-		//OFFSET÷√¡„
-		InstrSetOffset(0);
-		InstrSetRef(-60);
-		InstrSetAtt(0);
-		InstrClosgAvg();
-		InstrSetRbw(10);
-		InstrSetVbw(10);
-		InstrSetSpan(500);
+		InstrPimSetting();
 	}
 
 private:

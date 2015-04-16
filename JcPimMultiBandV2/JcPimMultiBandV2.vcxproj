@@ -105,6 +105,8 @@
     <ClInclude Include="MyUtil\JcCommonAPI.h" />
     <ClInclude Include="MyUtil\JcException.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RohdeSchwarz\ClsAnaRsFspSerial.h" />
+    <ClInclude Include="RohdeSchwarz\ClsSigRsSMxSerial.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ClsJcSwitch.h" />
     <ClInclude Include="Switch\com_io_ctl.h" />
@@ -119,6 +121,8 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JcApi.cpp" />
     <ClCompile Include="MyUtil\JcCommonAPI.cpp" />
+    <ClCompile Include="RohdeSchwarz\ClsAnaRsFspSerial.cpp" />
+    <ClCompile Include="RohdeSchwarz\ClsSigRsSMxSerial.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="ClsJcSwitch.cpp" />
     <ClCompile Include="Switch\com_io_ctl.cpp" />

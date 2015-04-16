@@ -140,7 +140,8 @@ int main(int argc, char* argv[])
 	//std::thread t4([]() { std::cout << "Hello, C++11 thread\n"; });
 
 	//Test_pim();
-	MessageBox(NULL, L"111", L"111", MB_SYSTEMMODAL);
+	int a = !0;
+	printf("a=%d\n", a);
 	for (int i = 0; i < 1; i++) {
 		printf("==================No.%d=================\n", i);
 		Test_dll();

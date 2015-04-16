@@ -22,6 +22,9 @@
     <Filter Include="MyUtil">
       <UniqueIdentifier>{a909160e-5bd3-4a3d-8261-f986d6f00bd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RohdeSchwarz">
+      <UniqueIdentifier>{442ab4b1-cb66-4102-8295-31c2a4c5a468}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -123,6 +126,12 @@
     <ClInclude Include="MyUtil\JcException.hpp">
       <Filter>MyUtil</Filter>
     </ClInclude>
+    <ClInclude Include="RohdeSchwarz\ClsAnaRsFspSerial.h">
+      <Filter>RohdeSchwarz</Filter>
+    </ClInclude>
+    <ClInclude Include="RohdeSchwarz\ClsSigRsSMxSerial.h">
+      <Filter>RohdeSchwarz</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -151,6 +160,12 @@
     </ClCompile>
     <ClCompile Include="3rdParty\CppSQLite3.cpp">
       <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="RohdeSchwarz\ClsAnaRsFspSerial.cpp">
+      <Filter>RohdeSchwarz</Filter>
+    </ClCompile>
+    <ClCompile Include="RohdeSchwarz\ClsSigRsSMxSerial.cpp">
+      <Filter>RohdeSchwarz</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -17,6 +17,19 @@
 //#define JC_OFFSET_TX_DEBUG
 //#define JC_OFFSET_RX_DEBUG
 
+//功率计标识
+#define INSTR_AG_U2000_SERIES 0
+#define INSTR_RS_NRT_SERIES 1
+#define INSTR_RS_NRPZ_SERIES 2
+
+//信号源标识
+#define INSTR_AG_MXG_SERIES 10
+#define INSTR_RS_SM_SERIES 11
+
+//频谱仪标识
+#define INSTR_AG_MXA_SERIES 20
+#define INSTR_RS_FS_SERIES 21
+
 JcBool _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 JcBool _debug_enable = 0;
 
@@ -73,13 +86,14 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		//isconn = __pobj->offset.Dbconnect("D:\\Sync_ProJects\\Jointcom\\JcPimMultiBandV2\\Debug\\JcOffset.db");
 #endif
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
-		__pobj->debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
 		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
 		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 2, wsPath_ini.c_str());
 		__pobj->now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		__pobj->now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		__pobj->now_tx_smooth_accuracy = tx_accuracy <= 0 ? 0.15 : tx_accuracy;
+
+		__pobj->debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
 		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1, wsPath_ini.c_str());
 		__pobj->now_vco_enbale[1] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band1", 1, wsPath_ini.c_str());
 		__pobj->now_vco_enbale[2] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band2", 1, wsPath_ini.c_str());
@@ -111,8 +125,15 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				s = viOpen(__pobj->viDefaultRM, const_cast<char*>(vaddr[0].c_str()), VI_NULL, VI_NULL, &viSession_Sig1);
 				if (s == VI_SUCCESS) {
 					__pobj->now_status[JC_DEVICE::SIGNAL1] = true;
-					__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
-					__pobj->sig1->InstrSession(viSession_Sig1);
+					index_signal1 = JcGetIDN(viSession_Sen);
+					if (index_signal1 == INSTR_AG_MXG_SERIES){
+						__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
+						__pobj->sig1->InstrSession(viSession_Sig1);
+					}
+					else if (index_signal1 == INSTR_RS_SM_SERIES) {
+						__pobj->sig1 = std::make_shared<ClsSigRsSMxSerial>();
+						__pobj->sig1->InstrSession(viSession_Sig2);
+					}
 				}
 				else 
 					Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", conv.from_bytes(vaddr[0]).c_str());	
@@ -122,8 +143,15 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				s = viOpen(__pobj->viDefaultRM, const_cast<char*>(vaddr[1].c_str()), VI_NULL, VI_NULL, &viSession_Sig2);
 				if (s == VI_SUCCESS) {
 					__pobj->now_status[JC_DEVICE::SIGNAL2] = true;
-					__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
-					__pobj->sig2->InstrSession(viSession_Sig2);
+					index_signal2 = JcGetIDN(viSession_Sen);
+					if (index_signal2 == INSTR_AG_MXG_SERIES) {
+						__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
+						__pobj->sig2->InstrSession(viSession_Sig2);
+					}
+					else if (index_signal2 == INSTR_RS_SM_SERIES) {
+						__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>();
+						__pobj->sig2->InstrSession(viSession_Sig2);
+					}
 				}
 				else 
 					Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", conv.from_bytes(vaddr[1]).c_str());			
@@ -136,18 +164,18 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 				if (s == VI_SUCCESS) {
 					__pobj->now_status[JC_DEVICE::SENSOR] = true;
 					index_sensor = JcGetIDN(viSession_Sen);
-					if (index_sensor == INSTR_AG_U2000) {
+					if (index_sensor == INSTR_AG_U2000_SERIES) {
 						__pobj->sen = std::make_shared<ClsSenAgU2000A>();
 						__pobj->sen->InstrSession(viSession_Sen);
 					}
-					else if (index_sensor == INSTR_RS_NRT) {
+					else if (index_sensor == INSTR_RS_NRT_SERIES) {
 						__pobj->sen = std::make_shared<ClsSenRsNrt>();
 						__pobj->sen->InstrSession(viSession_Sen);
 					}
 				}
 				//RS仪表连接
 				else {
-					index_sensor = INSTR_RS_NRPZ;
+					index_sensor = INSTR_RS_NRPZ_SERIES;
 					__pobj->sen = std::make_shared<ClsSenRsNrpz>();
 					__pobj->now_status[JC_DEVICE::SENSOR] = __pobj->sen->InstrConnect(vaddr[3].c_str());
 				}
@@ -743,6 +771,88 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 //扩展API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+JcBool JcConnSig(JcInt8 byDevice, JC_UNIT cAddr) {
+	ViSession viSession = VI_NULL;
+	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
+	if (s == VI_SUCCESS) {
+		int index = JcGetIDN(viSession);
+		//安捷伦
+		if (index == INSTR_AG_MXG_SERIES){
+			if (byDevice == JC_DEVICE::SIGNAL1) {
+				__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
+				__pobj->sig1->InstrSession(viSession);
+			}
+			else if (byDevice == JC_DEVICE::SIGNAL2) {
+				__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
+				__pobj->sig2->InstrSession(viSession);
+			}
+		}
+		//罗德斯瓦茨
+		else if (index == INSTR_RS_SM_SERIES) {
+			if (byDevice == JC_DEVICE::SIGNAL1) {
+				__pobj->sig1 = std::make_shared<ClsSigRsSMxSerial>();
+				__pobj->sig1->InstrSession(viSession);
+			}
+			else if (byDevice == JC_DEVICE::SIGNAL2) {
+				__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>();
+				__pobj->sig2->InstrSession(viSession);
+			}
+		}
+	}
+
+	__pobj->now_status[byDevice] = !s;
+	return !s;
+}
+
+JcBool JcConnAna(JC_UNIT cAddr) {
+	ViSession viSession = VI_NULL;
+	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
+	if (s == VI_SUCCESS) {
+		int index = JcGetIDN(viSession);
+		//安捷伦
+		if (index == INSTR_AG_MXA_SERIES) {
+			__pobj->ana = std::make_shared<ClsAnaAgN9020A>();
+			__pobj->ana->InstrSession(viSession);
+		}
+		//罗德斯瓦茨
+		else if (index == INSTR_RS_FS_SERIES) {
+			__pobj->ana = std::make_shared<ClsAnaRsFspSerial>();
+			__pobj->ana->InstrSession(viSession);
+		}
+	}
+
+	__pobj->now_status[JC_DEVICE::ANALYZER] = !s;
+	return !s;
+}
+
+JcBool JcConnSen(JC_UNIT cAddr) {
+	ViSession viSession = VI_NULL;
+	bool isConn = false;
+	//安捷伦仪表连接
+	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
+	if (s == VI_SUCCESS) {
+		int index = JcGetIDN(viSession);
+		if (index == INSTR_AG_U2000_SERIES) {
+			__pobj->sen = std::make_shared<ClsSenAgU2000A>();
+			__pobj->sen->InstrSession(viSession);
+		}
+		else if (index == INSTR_RS_NRT_SERIES) {
+			__pobj->sen = std::make_shared<ClsSenRsNrt>();
+			__pobj->sen->InstrSession(viSession);
+		}
+		isConn = !s;
+	}
+	//RS仪表连接
+	else {
+		//int index = INSTR_RS_NRPZ_SERIES;
+		__pobj->sen = std::make_shared<ClsSenRsNrpz>();
+		isConn = __pobj->sen->InstrConnect(cAddr);
+	}
+
+	__pobj->now_status[JC_DEVICE::SENSOR] = isConn;
+	return isConn;
+}
+
 JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	if (NULL == __pobj) return false;
 
@@ -1315,18 +1425,18 @@ JcBool JcSetOffsetTX_Config(int iAnalyzer, const JC_ADDRESS Device_Info) {
 		if (s == VI_SUCCESS) {
 			__pobj->isExtSenConn = true;
 			index_sensor = JcGetIDN(ext_visession);
-			if (index_sensor == INSTR_AG_U2000) {
+			if (index_sensor == INSTR_AG_U2000_SERIES) {
 				__pobj->ext_sen = std::make_shared<ClsSenAgU2000A>();
 				__pobj->ext_sen->InstrSession(ext_visession);
 			}
-			else if (index_sensor == INSTR_RS_NRT) {
+			else if (index_sensor == INSTR_RS_NRT_SERIES) {
 				__pobj->ext_sen = std::make_shared<ClsSenRsNrt>();
 				__pobj->ext_sen->InstrSession(ext_visession);
 			}
 		}
 		//RS仪表连接
 		else {
-			index_sensor = INSTR_RS_NRPZ;
+			index_sensor = INSTR_RS_NRPZ_SERIES;
 			__pobj->ext_sen = std::make_shared<ClsSenRsNrpz>();
 			__pobj->isExtSenConn = __pobj->ext_sen->InstrConnect(Device_Info);
 		}
@@ -1364,23 +1474,24 @@ int JcGetIDN(unsigned long viSession) {
 		while (std::getline(iss, stemp, ',')) {
 			vinfo.push_back(stemp);
 		}
-		std::cout << vinfo[1] << std::endl;
+
+		//功率计
 		if (vinfo[1] == "U2000A" || vinfo[1] == "U2001A" || vinfo[1] == "U2002A")
-			iDeviceIDN = INSTR_AG_U2000;
+			iDeviceIDN = INSTR_AG_U2000_SERIES;
 		else if (vinfo[1] == "NRT01" || vinfo[1] == "NRT02" || vinfo[1] == "NRT03")
-			iDeviceIDN = INSTR_RS_NRT;
-		else if (vinfo[1] == "")
-			iDeviceIDN = INSTR_AG_N9000;
-		else if (vinfo[1] == "")
-			iDeviceIDN = INSTR_AG_N5180;
-		else if (vinfo[1] == "")
-			iDeviceIDN = 4;
-		else if (vinfo[1] == "")
-			iDeviceIDN = 5;
-		else if (vinfo[1] == "")
-			iDeviceIDN = 6;
-		else if (vinfo[1] == "")
-			iDeviceIDN = 7;
+			iDeviceIDN = INSTR_RS_NRT_SERIES;
+		else if (vinfo[1] == "NRPZ")
+			iDeviceIDN = INSTR_RS_NRPZ_SERIES;
+		//信号源
+		else if (vinfo[1] == "N5171A" || vinfo[1] == "N5172A" || vinfo[1] == "N5181A" || vinfo[1] == "N5182A" || vinfo[1] == "N5183A")
+			iDeviceIDN = INSTR_AG_MXG_SERIES;
+		else if (vinfo[1] == "SMA100A" || vinfo[1] == "SMB100A" || vinfo[1] == "SMC100A" || vinfo[1] == "SMU200A")
+			iDeviceIDN = INSTR_RS_SM_SERIES;
+		//频谱仪
+		else if (vinfo[1] == "N9000A" || vinfo[1] == "N9010A" || vinfo[1] == "N9020A" || vinfo[1] == "N9030A" || vinfo[1] == "N9038A")
+			iDeviceIDN = INSTR_AG_MXA_SERIES;
+		else if (vinfo[1] == "FSP" || vinfo[1] == "FSU" || vinfo[1] == "FSV")
+			iDeviceIDN = INSTR_RS_FS_SERIES;
 	}
 	return iDeviceIDN;
 }

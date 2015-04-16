@@ -10,6 +10,9 @@
 #include "ClsSenRsNrpz.hpp"
 #include "ClsSenRsNrt.hpp"
 
+#include "RohdeSchwarz\ClsAnaRsFspSerial.h"
+#include "RohdeSchwarz\ClsSigRsSMxSerial.h"
+
 #include "JcOffsetDB.hpp"
 
 #include "stdafx.h"
