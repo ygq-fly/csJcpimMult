@@ -27,9 +27,10 @@ public:
 #define PRESET_PARAMETER_TOTAL      3
 enum preset_parameter
 {
-    preset_default       =  0,               
-    preset_mensuration,                      /**< 测试模式 */
-    preset_calibration,                      /**< 校准模式 */
+	preset_no_set = -1,
+	preset_default=0,
+	preset_mensuration,
+	preset_calibration,
 };
 
 //    SignalAnalyzer sa;
@@ -60,12 +61,17 @@ public:
 	virtual void InstrVcoSetting();
 	virtual void InstrTxOffsetSetting();
 	virtual void InstrRxOffsetSetting();
+	virtual void InstrSetSweepTime(int count_ms);
 
 public:
+	ClsAnaRsFspSerial() :
+		pp_(preset_parameter::preset_no_set)
+	{}
     //重置仪表的参数 
     void Preset(enum preset_parameter pp);
 private:
     bool CommonSet(char const *command, ...);
+	enum preset_parameter pp_;
 };
 
 

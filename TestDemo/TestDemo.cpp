@@ -105,6 +105,10 @@ typedef int(*pGetSpectrumType)(char*);
 
 //JC_API void  JcGetError(char* msg, size_t max);
 typedef int(*pGetError)(char*, size_t);
+//JC_API double JcGetAna(double freq_khz, bool isMax);
+typedef double(*pJcGetAna)(double, bool);
+//JC_API JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm);
+typedef BOOL(*pJcSetSig)(uint8_t, double, double);
 //JC_API double JcGetSen();
 typedef double(*pJcGetSen)();
 //JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
@@ -140,8 +144,6 @@ int main(int argc, char* argv[])
 	//std::thread t4([]() { std::cout << "Hello, C++11 thread\n"; });
 
 	//Test_pim();
-	int a = !0;
-	printf("a=%d\n", a);
 	for (int i = 0; i < 1; i++) {
 		printf("==================No.%d=================\n", i);
 		Test_dll();
@@ -174,8 +176,9 @@ void Test_dll(){
 	pGetImResult getImResult = (pGetImResult)GetProcAddress(hinst, "fnGetImResult");
 	pGetSpectrumType getSpectrumType = (pGetSpectrumType)GetProcAddress(hinst, "fnGetSpectrumType");
 
-
 	pHwSetCoup hwSetCoup = (pHwSetCoup)GetProcAddress(hinst, "HwSetCoup");
+	pJcGetAna jcGetAna = (pJcGetAna)GetProcAddress(hinst, "JcGetAna");
+	pJcSetSig jcSetSig = (pJcSetSig)GetProcAddress(hinst, "JcSetSig");
 	pJcGetSen jcGetSen = (pJcGetSen)GetProcAddress(hinst, "JcGetSen");
 
 	pGetError getError = (pGetError)GetProcAddress(hinst, "JcGetError");
@@ -207,8 +210,8 @@ void Test_dll(){
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
 	//GPIB0::12::INSTR
 	bool isCont = true;
-	int s = setInit("0,0,0,0,0");
-	//int s = setInit("TCPIP0::192.168.1.3::5025::SOCKET,TCPIP0::192.168.1.4::5025::SOCKET,TCPIP0::192.168.1.2::inst0::INSTR,USB0::0x0957::0x2B18::MY51050018::0::INSTR,0");
+	//int s = setInit("0,0,0,0,0");
+	int s = setInit("TCPIP0::192.168.1.3::5025::SOCKET,TCPIP0::192.168.1.4::5025::SOCKET,TCPIP0::192.168.1.5::inst0::INSTR,USB0::0x0957::0x2B18::MY51070014::0::INSTR,0");
 	if (s == 0 && isCont == true) {
 		std::cout << "init success!" << std::endl;
 	}
@@ -218,26 +221,14 @@ void Test_dll(){
 		std::cout << msg << std::endl;
 	}
 
-	//for (int i = 0; i < 7; ++i) {
-	//	for (int j = 0; j < 2; ++j) {
-	//		setMeasBand(i);
-	//		int s = setDutPort(j);
-	//		if (s <= -10000)
-	//			printf("band: %d - port: %d error!\n", i, j);
-	//		else
-	//			printf("band: %d - port: %d\n", i, j);
-	//		Sleep(100);
-	//		for (int m = 0; m < 2; ++m) {
-	//			BOOL b = hwSetCoup(m);
-	//			if(b == FALSE)
-	//				printf("coup: %d error!\n", m);
-	//			else 
-	//				printf("coup: %d\n", m);
-	//			Sleep(100);
-	//		}
-	//	}
-	//}
-
+	double ana = jcGetAna(930, false);
+	printf("ana: %lf\n", ana);
+	BOOL B = jcSetSig(1, 930, -60);
+	printf("set sig1: %d\n", B);
+	B = jcSetSig(2, 960, -60);
+	printf("set sig2: %d\n", B);
+	double sen = jcGetSen();
+	printf("sen: %lf\n", sen);
 
 	//¼ì²â
 	std::cout << std::endl;

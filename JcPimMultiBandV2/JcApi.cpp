@@ -37,6 +37,7 @@ std::wstring _startPath = [](){
 	wchar_t wcBuff[512] = { 0 };
 	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
 	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
+
 	_switch_enable[0] = GetPrivateProfileIntW(L"Connect_Enable", L"band0", 1, wsPath_ini.c_str());
 	_switch_enable[1] = GetPrivateProfileIntW(L"Connect_Enable", L"band1", 1, wsPath_ini.c_str());
 	_switch_enable[2] = GetPrivateProfileIntW(L"Connect_Enable", L"band2", 1, wsPath_ini.c_str());
@@ -44,7 +45,7 @@ std::wstring _startPath = [](){
 	_switch_enable[4] = GetPrivateProfileIntW(L"Connect_Enable", L"band4", 1, wsPath_ini.c_str());
 	_switch_enable[5] = GetPrivateProfileIntW(L"Connect_Enable", L"band5", 1, wsPath_ini.c_str());
 	_switch_enable[6] = GetPrivateProfileIntW(L"Connect_Enable", L"band6", 1, wsPath_ini.c_str());
-	_debug_enable = GetPrivateProfileIntW(L"Settings", L"debug", 0, wsPath_ini.c_str());
+	_debug_enable     = GetPrivateProfileIntW(L"Settings",       L"debug", 0, wsPath_ini.c_str());
 
 	return std::wstring(wcBuff);
 }();
@@ -86,153 +87,69 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		//isconn = __pobj->offset.Dbconnect("D:\\Sync_ProJects\\Jointcom\\JcPimMultiBandV2\\Debug\\JcOffset.db");
 #endif
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
-		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
-		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
-		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 2, wsPath_ini.c_str());
-		__pobj->now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
-		__pobj->now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
-		__pobj->now_tx_smooth_accuracy = tx_accuracy <= 0 ? 0.15 : tx_accuracy;
 
-		__pobj->debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[1] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band1", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[2] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band2", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[3] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band3", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[4] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band4", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[5] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band5", 1, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[6] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band6", 1, wsPath_ini.c_str());
+		double vco_limit   = Util::getIniDouble(L"Settings", L"vco_limit",   5, wsPath_ini.c_str());
+		double tx_smooth   = Util::getIniDouble(L"Settings", L"tx_smooth",   2, wsPath_ini.c_str());
+		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 2, wsPath_ini.c_str());
+
+		__pobj->now_vco_threasold       = vco_limit   <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
+		__pobj->now_tx_smooth_threasold = tx_smooth   <= 0 ? SMOOTH_TX_THREASOLD  : tx_smooth;
+		__pobj->now_tx_smooth_accuracy  = tx_accuracy <= 0 ? 0.15 : tx_accuracy;
+
+		__pobj->debug_time		  = GetPrivateProfileIntW(L"Settings",   L"time",      200, wsPath_ini.c_str());
+		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1,   wsPath_ini.c_str());
+		__pobj->now_vco_enbale[1] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band1", 1,   wsPath_ini.c_str());
+		__pobj->now_vco_enbale[2] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band2", 1,   wsPath_ini.c_str());
+		__pobj->now_vco_enbale[3] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band3", 1,   wsPath_ini.c_str());
+		__pobj->now_vco_enbale[4] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band4", 1,   wsPath_ini.c_str());
+		__pobj->now_vco_enbale[5] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band5", 1,   wsPath_ini.c_str());
+		__pobj->now_vco_enbale[6] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band6", 1,   wsPath_ini.c_str());
 
 		//开始连接
-		std::string strConnMsg = "Connected Info:\r\n";
-
-		ViSession viSession_Ana = VI_NULL;
-		ViSession viSession_Sen = VI_NULL;
-		ViSession viSession_Sig1 = VI_NULL;
-		ViSession viSession_Sig2 = VI_NULL;
-		ViStatus s = VI_NULL;
-		int index_sensor = -1;
-		int index_analyzer = -1;
-		int index_signal1 = -1;
-		int index_signal2 = -1;
-
-		s = viOpenDefaultRM(&__pobj->viDefaultRM);
+		std::string strConnMsg = "";
+		ViStatus s = viOpenDefaultRM(&__pobj->viDefaultRM);
 		if (s) return false;
 
-		if (vaddr.size() >= 4) {
-			//开始连接信号源1
-			if (vaddr[JC_DEVICE::SIGNAL1] != JC_DEVICE_NOT_ENABLE) {
-				//__pobj->now_status[JC_DEVICE::SIGNAL1] = __pobj->sig1->InstrConnect(vaddr[0].c_str());
-				s = viOpen(__pobj->viDefaultRM, const_cast<char*>(vaddr[0].c_str()), VI_NULL, VI_NULL, &viSession_Sig1);
-				if (s == VI_SUCCESS) {
-					__pobj->now_status[JC_DEVICE::SIGNAL1] = true;
-					index_signal1 = JcGetIDN(viSession_Sen);
-					if (index_signal1 == INSTR_AG_MXG_SERIES){
-						__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
-						__pobj->sig1->InstrSession(viSession_Sig1);
-					}
-					else if (index_signal1 == INSTR_RS_SM_SERIES) {
-						__pobj->sig1 = std::make_shared<ClsSigRsSMxSerial>();
-						__pobj->sig1->InstrSession(viSession_Sig2);
-					}
-				}
-				else 
-					Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", conv.from_bytes(vaddr[0]).c_str());	
-			}
-			//开始连接信号源2
-			if (vaddr[JC_DEVICE::SIGNAL2] != JC_DEVICE_NOT_ENABLE) {
-				s = viOpen(__pobj->viDefaultRM, const_cast<char*>(vaddr[1].c_str()), VI_NULL, VI_NULL, &viSession_Sig2);
-				if (s == VI_SUCCESS) {
-					__pobj->now_status[JC_DEVICE::SIGNAL2] = true;
-					index_signal2 = JcGetIDN(viSession_Sen);
-					if (index_signal2 == INSTR_AG_MXG_SERIES) {
-						__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
-						__pobj->sig2->InstrSession(viSession_Sig2);
-					}
-					else if (index_signal2 == INSTR_RS_SM_SERIES) {
-						__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>();
-						__pobj->sig2->InstrSession(viSession_Sig2);
-					}
-				}
-				else 
-					Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", conv.from_bytes(vaddr[1]).c_str());			
-			}
-			//开始连接功率计
-			if (vaddr[JC_DEVICE::SENSOR] != JC_DEVICE_NOT_ENABLE) {
-				//安捷伦仪表连接
-				__pobj->now_status[JC_DEVICE::SENSOR] = false;
-				s = viOpen(__pobj->viDefaultRM, const_cast<char*>(vaddr[3].c_str()), VI_NULL, VI_NULL, &viSession_Sen);
-				if (s == VI_SUCCESS) {
-					__pobj->now_status[JC_DEVICE::SENSOR] = true;
-					index_sensor = JcGetIDN(viSession_Sen);
-					if (index_sensor == INSTR_AG_U2000_SERIES) {
-						__pobj->sen = std::make_shared<ClsSenAgU2000A>();
-						__pobj->sen->InstrSession(viSession_Sen);
-					}
-					else if (index_sensor == INSTR_RS_NRT_SERIES) {
-						__pobj->sen = std::make_shared<ClsSenRsNrt>();
-						__pobj->sen->InstrSession(viSession_Sen);
-					}
-				}
-				//RS仪表连接
-				else {
-					index_sensor = INSTR_RS_NRPZ_SERIES;
-					__pobj->sen = std::make_shared<ClsSenRsNrpz>();
-					__pobj->now_status[JC_DEVICE::SENSOR] = __pobj->sen->InstrConnect(vaddr[3].c_str());
-				}
+		if (vaddr.size() < 5) return JC_STATUS_ERROR;
 
-				if (false == __pobj->now_status[3])
-					Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", conv.from_bytes(vaddr[3]).c_str());
-			}
-			//开始连接频谱仪,初始化频谱仪
-			if (vaddr[JC_DEVICE::ANALYZER] != JC_DEVICE_NOT_ENABLE) {
-				s = viOpen(__pobj->viDefaultRM, const_cast<char*>(vaddr[2].c_str()), VI_NULL, VI_NULL, &viSession_Ana);
-				if (s == VI_SUCCESS) {
-					__pobj->now_status[JC_DEVICE::ANALYZER] = true;
-					__pobj->ana = std::make_shared<ClsAnaAgN9020A>();
-					__pobj->ana->InstrSession(viSession_Ana);
-				}
-				else {
-					Util::logged(L"fnSetInit: Connect SA Fail! (%s)", conv.from_bytes(vaddr[2]).c_str());
-				}
+		if ("0" != vaddr[0]){
+			if (false == JcConnSig(0, const_cast<char*>(vaddr[0].c_str())))
+				Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", conv.from_bytes(vaddr[0]).c_str());
+		}
 
-			}
-			//开始连接开关
-			__pobj->swh = std::make_shared<ClsJcSwitch>();
-			if (__pobj->swh->SwitchInit()){
+		if ("0" != vaddr[1]){
+			if (false == JcConnSig(1, const_cast<char*>(vaddr[1].c_str())))
+				Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", conv.from_bytes(vaddr[1]).c_str());
+		}
 
-				if (vaddr[JC_DEVICE::SWITCH] != JC_DEVICE_NOT_ENABLE) {
-					//设置使能
-					for (int i = 0; i < 7; ++i) {
-						if (_switch_enable[i] == 0)
-							__pobj->swh->SwitchSetEnable(i, false);
-						else
-							__pobj->swh->SwitchSetEnable(i, true);
-					}
+		if ("0" != vaddr[3]) {
+			if (false == JcConnSen(const_cast<char*>(vaddr[3].c_str())))
+				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", conv.from_bytes(vaddr[3]).c_str());
+		}
 
-					//开始连接
-					__pobj->isSwhConn = __pobj->swh->SwitchConnect();
-				}
-			}
-			else
-				Util::logged(L"fnSetInit: Switch LoadMap Error! (%s)");
+		if ("0" != vaddr[2]) {
+			if (false == JcConnAna(const_cast<char*>(vaddr[2].c_str())))
+				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", conv.from_bytes(vaddr[2]).c_str());
+		}
+
+		if ("0" != vaddr[4]) {
+			if (false == JcConnSwh())
+				strConnMsg = __pobj->swh->SwitchGetInfo();
 		}
 
 		//判断连接
-		__pobj->isAllConn = __pobj->now_status[0] & __pobj->now_status[1] & __pobj->now_status[2] & __pobj->now_status[3];
+		__pobj->isAllConn = __pobj->now_status[0] & __pobj->now_status[1] 
+							& __pobj->now_status[2] & __pobj->now_status[3];
 		__pobj->isAllConn &= __pobj->isSwhConn;
 		__pobj->isAllConn &= isSqlConn;
 		//记录错误信息
-		__pobj->strErrorInfo = ("SIG1 Connected: " + std::to_string(__pobj->now_status[0]) + "\r\n");
+		__pobj->strErrorInfo  = ("SIG1 Connected: " + std::to_string(__pobj->now_status[0]) + "\r\n");
 		__pobj->strErrorInfo += ("SIG2 Connected: " + std::to_string(__pobj->now_status[1]) + "\r\n");
 		__pobj->strErrorInfo += ("Spectrum Connected: " + std::to_string(__pobj->now_status[2]) + "\r\n");
 		__pobj->strErrorInfo += ("Sensor Connected: " + std::to_string(__pobj->now_status[3]) + "\r\n");
-		std::string strSwhInfo = __pobj->swh->SwitchGetInfo();
-		__pobj->strErrorInfo += strSwhInfo;
-		if (!isSqlConn) {
-			__pobj->strErrorInfo += "DataBaseConnected: ";
-			__pobj->strErrorInfo += std::to_string(isSqlConn);
-			__pobj->strErrorInfo += "(JcOffset.db 's Path Error!)\r\n";
-		}
+		__pobj->strErrorInfo += strConnMsg;
+		if (!isSqlConn)
+			__pobj->strErrorInfo += ("DB Connected: " + std::to_string(isSqlConn) + "(JcOffset.db no find!)\r\n");
 
 		//启用接收外部频段
 		HwSetIsExtBand(TRUE);
@@ -771,7 +688,7 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 //扩展API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-JcBool JcConnSig(JcInt8 byDevice, JC_UNIT cAddr) {
+JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 	ViSession viSession = VI_NULL;
 	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
 	if (s == VI_SUCCESS) {
@@ -798,13 +715,15 @@ JcBool JcConnSig(JcInt8 byDevice, JC_UNIT cAddr) {
 				__pobj->sig2->InstrSession(viSession);
 			}
 		}
+		else 
+			return FALSE;	
 	}
 
 	__pobj->now_status[byDevice] = !s;
 	return !s;
 }
 
-JcBool JcConnAna(JC_UNIT cAddr) {
+JcBool JcConnAna(JC_ADDRESS cAddr) {
 	ViSession viSession = VI_NULL;
 	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
 	if (s == VI_SUCCESS) {
@@ -819,13 +738,15 @@ JcBool JcConnAna(JC_UNIT cAddr) {
 			__pobj->ana = std::make_shared<ClsAnaRsFspSerial>();
 			__pobj->ana->InstrSession(viSession);
 		}
+		else
+			return FALSE;
 	}
 
 	__pobj->now_status[JC_DEVICE::ANALYZER] = !s;
 	return !s;
 }
 
-JcBool JcConnSen(JC_UNIT cAddr) {
+JcBool JcConnSen(JC_ADDRESS cAddr) {
 	ViSession viSession = VI_NULL;
 	bool isConn = false;
 	//安捷伦仪表连接
@@ -840,6 +761,8 @@ JcBool JcConnSen(JC_UNIT cAddr) {
 			__pobj->sen = std::make_shared<ClsSenRsNrt>();
 			__pobj->sen->InstrSession(viSession);
 		}
+		else
+			return FALSE;
 		isConn = !s;
 	}
 	//RS仪表连接
@@ -850,6 +773,27 @@ JcBool JcConnSen(JC_UNIT cAddr) {
 	}
 
 	__pobj->now_status[JC_DEVICE::SENSOR] = isConn;
+	return isConn;
+}
+
+JcBool JcConnSwh() {
+	__pobj->swh = std::make_shared<ClsJcSwitch>();
+	bool isConn = false;
+	if (__pobj->swh->SwitchInit()){
+		for (int i = 0; i < 7; ++i) {
+			if (_switch_enable[i] == 0)
+				__pobj->swh->SwitchSetEnable(i, false);
+			else
+				__pobj->swh->SwitchSetEnable(i, true);
+		}
+
+		//开始连接
+		isConn = __pobj->swh->SwitchConnect();
+	}
+	else
+		Util::logged(L"fnSetInit: Switch LoadMap Error!");
+	
+	__pobj->isSwhConn = isConn;
 	return isConn;
 }
 

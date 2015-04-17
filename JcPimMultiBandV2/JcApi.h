@@ -163,7 +163,10 @@ JIONTCOM_API JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //À©Õ¹API
 /////////////////////////////////////////////////////////////////////////////////////////////
-
+JC_API JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr);
+JC_API JcBool JcConnAna(JC_ADDRESS cAddr);
+JC_API JcBool JcConnSen(JC_ADDRESS cAddr);
+JC_API JcBool JcConnSwh();
 JC_API JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand);
 JC_API void  JcGetError(char* msg, size_t max);
 JC_API JcBool JcGetDeviceStatus(JcInt8 byDevic);
