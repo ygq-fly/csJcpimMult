@@ -221,14 +221,16 @@ void Test_dll(){
 		std::cout << msg << std::endl;
 	}
 
-	double ana = jcGetAna(930, false);
-	printf("ana: %lf\n", ana);
 	BOOL B = jcSetSig(1, 930, -60);
 	printf("set sig1: %d\n", B);
 	B = jcSetSig(2, 960, -60);
 	printf("set sig2: %d\n", B);
-	double sen = jcGetSen();
-	printf("sen: %lf\n", sen);
+	for (int i = 0; i < 10; i++) {
+		double ana = jcGetAna(930, false);
+		printf("ana: %lf\n", ana);
+		double sen = jcGetSen();
+		printf("sen: %lf\n", sen);
+	}
 
 	//¼ì²â
 	std::cout << std::endl;

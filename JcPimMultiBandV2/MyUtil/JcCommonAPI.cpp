@@ -166,3 +166,15 @@ void Util::logging(const char *fmt, ...) {
         file_no++;
     }
 }
+
+void Util::strTrim(std::string& str) {
+	str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
+}
+
+bool Util::strFind(const std::string& str, const char* str_find) {
+	int n = str.find(str_find);
+	if (n >= 0)
+		return true;
+	else
+		return false;
+}

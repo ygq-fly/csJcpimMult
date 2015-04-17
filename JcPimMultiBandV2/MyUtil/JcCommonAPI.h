@@ -22,7 +22,8 @@ namespace Util {
 	void getNowTime(OUT std::string& strTime);
 	void logged(const wchar_t* fmt, ...);
     void logging(const char* fmt, ...);
-	
+	void strTrim(std::string& str);
+	bool strFind(const std::string& str, const char* str_find);
 }
 
 #endif //_SAN_JCCOMMONAPI_H

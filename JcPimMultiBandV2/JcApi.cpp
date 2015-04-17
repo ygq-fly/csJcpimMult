@@ -1409,33 +1409,37 @@ int JcGetIDN(unsigned long viSession) {
 	int iDeviceIDN = -1;
 	unsigned char buf[128] = { 0 };
 	unsigned long retCount = 0;
-	viQueryf(viSession, "*IDN?\n", "%#t", &retCount, buf);
+	//int s = viQueryf(viSession, "*IDN?\n", "%#t", &retCount, buf);
+	int s = viPrintf(viSession, "*IDN?\n");
+	s = viRead(viSession, buf, 128, &retCount);
 
 	if (retCount) {
-		std::istringstream iss((char*)buf);
-		std::vector<std::string> vinfo;
-		std::string stemp;
-		while (std::getline(iss, stemp, ',')) {
-			vinfo.push_back(stemp);
-		}
-
-		//功率计
-		if (vinfo[1] == "U2000A" || vinfo[1] == "U2001A" || vinfo[1] == "U2002A")
+		std::string strIdn((char*)buf);
+		if      (Util::strFind(strIdn, "U2000A")  || Util::strFind(strIdn, "U2001A")  || Util::strFind(strIdn, "U2002A"))
 			iDeviceIDN = INSTR_AG_U2000_SERIES;
-		else if (vinfo[1] == "NRT01" || vinfo[1] == "NRT02" || vinfo[1] == "NRT03")
+		else if (Util::strFind(strIdn, "NRT"))
 			iDeviceIDN = INSTR_RS_NRT_SERIES;
-		else if (vinfo[1] == "NRPZ")
+		else if (Util::strFind(strIdn, "NRPZ"))
 			iDeviceIDN = INSTR_RS_NRPZ_SERIES;
 		//信号源
-		else if (vinfo[1] == "N5171A" || vinfo[1] == "N5172A" || vinfo[1] == "N5181A" || vinfo[1] == "N5182A" || vinfo[1] == "N5183A")
+		else if (Util::strFind(strIdn, "N5171A")  || Util::strFind(strIdn, "N5172A")  || 
+				 Util::strFind(strIdn, "N5181A")  || Util::strFind(strIdn, "N5182A")  || 
+				 Util::strFind(strIdn, "N5183A"))
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
-		else if (vinfo[1] == "SMA100A" || vinfo[1] == "SMB100A" || vinfo[1] == "SMC100A" || vinfo[1] == "SMU200A")
+		else if (Util::strFind(strIdn, "SMA100A") || Util::strFind(strIdn, "SMB100A") || 
+				 Util::strFind(strIdn, "SMC100A") || Util::strFind(strIdn, "SMU200A"))
 			iDeviceIDN = INSTR_RS_SM_SERIES;
 		//频谱仪
-		else if (vinfo[1] == "N9000A" || vinfo[1] == "N9010A" || vinfo[1] == "N9020A" || vinfo[1] == "N9030A" || vinfo[1] == "N9038A")
+		else if (Util::strFind(strIdn, "N9000A")  || Util::strFind(strIdn, "N9010A")  || 
+				 Util::strFind(strIdn, "N9020A")  || Util::strFind(strIdn, "N9030A")  || 
+				 Util::strFind(strIdn, "N9038A"))
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
-		else if (vinfo[1] == "FSP" || vinfo[1] == "FSU" || vinfo[1] == "FSV")
+		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;
+		else{
+			std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+			Util::logged(L"JcGetIDN: We Cannot Support (%s)!", conv.from_bytes(strIdn).c_str());
+		}
 	}
 	return iDeviceIDN;
 }
@@ -1453,10 +1457,8 @@ int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {
 
 	std::wstring wPath = _startPath + L"\\JcPimMultiBandV2.dll";
 	verBufferSize = GetFileVersionInfoSize(wPath.c_str(), NULL);
-	if (verBufferSize > 0 && verBufferSize <= sizeof(verBuffer))
-	{
-		if (TRUE == GetFileVersionInfo(wPath.c_str(), NULL, verBufferSize, verBuffer))
-		{
+	if (verBufferSize > 0 && verBufferSize <= sizeof(verBuffer)) {
+		if (TRUE == GetFileVersionInfo(wPath.c_str(), NULL, verBufferSize, verBuffer)) {
 			UINT length;
 			VS_FIXEDFILEINFO *verInfo = NULL;
 
@@ -1464,8 +1466,7 @@ int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {
 				verBuffer,
 				TEXT("\\"),
 				reinterpret_cast<LPVOID*>(&verInfo),
-				&length))
-			{
+				&length)) {
 				major = HIWORD(verInfo->dwProductVersionMS);
 				minor = LOWORD(verInfo->dwProductVersionMS);
 				build = HIWORD(verInfo->dwProductVersionLS);
@@ -1491,8 +1492,7 @@ void JcFindRsrc() {
 	std::cout << "Num:  " << num << std::endl;
 	std::cout << "Addr: " << instrAddr << std::endl;
 	
-	while (--num)
-	{
+	while (--num) {
 		_status = viFindNext(findlist, instrAddr);
 		std::cout << "Addr: " << instrAddr << std::endl;
 	}
