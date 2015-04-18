@@ -28,8 +28,8 @@ public:
 		return AgConnect(c_addr);
 	}
 
-	void InstrSession(unsigned long viConnectedSession) {
-		AgSession(viConnectedSession);
+	void InstrSession(unsigned long viConnectedSession, const char* cIdn) {
+		AgSession(viConnectedSession, cIdn);
 	}
 
 	bool InstrWrite(const char* c_cmd) {

@@ -42,8 +42,8 @@ public:
 		return isconn;
 	}
 
-	void InstrSession(unsigned long viConnectedSession) {
-		AgSession(viConnectedSession);
+	void InstrSession(unsigned long viConnectedSession, const char* cIdn) {
+		AgSession(viConnectedSession, cIdn);
 		//连接成功即开始初始化
 		InstrInit();
 	}
@@ -95,14 +95,9 @@ public:
 		//执行扫描
 		_isCmdSucc = AgWrite("INIT:IMM\n");
 		//开始等待
-		if (AgWait() == false){
-
-			InstrSetCenterFreq(freq_khz);
-			_isCmdSucc = AgWrite("*CLS\n");
-			_isCmdSucc = AgWrite("INIT:IMM\n");
-			if (AgWait() == false)
-				return -10000;
-		}
+		if (AgWait() == false)
+			return -10000;
+	
 		//读取
 		result_val = ReadMarkY(isMax);
 		return result_val;

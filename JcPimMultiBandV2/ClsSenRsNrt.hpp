@@ -25,8 +25,8 @@ public:
 		return isconn;
 	}
 
-	void InstrSession(unsigned long viConnectedSession) {
-		AgSession(viConnectedSession);
+	void InstrSession(unsigned long viConnectedSession, const char* cIdn) {
+		AgSession(viConnectedSession, cIdn);
 		ReadyToSet();
 	}
 

@@ -26,7 +26,7 @@ public:
 public:
     bool InstrConnect(const char* c_addr);
 
-    void InstrSession(unsigned long viConnectedSession);
+	void InstrSession(unsigned long viConnectedSession, const char* cIdn);
 
     bool InstrWrite(const char* c_cmd);
 

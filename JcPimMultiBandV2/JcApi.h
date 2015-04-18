@@ -218,7 +218,7 @@ JC_API void  JcSetOffsetTX_Config_Close();
 
 JC_API int JcGetSwtichEnable(int byInternalBandIndex);
 JC_API int JcGetDllVersion(int &major, int &minor, int &build, int &revision);
-JC_API int  JcGetIDN(unsigned long viSession);
+JC_API int  JcGetIDN(unsigned long viSession, char* cIdn);
 JC_API void JcFindRsrc();
 
 ///////////////////////////////////////////////////////////////////////////////////////////

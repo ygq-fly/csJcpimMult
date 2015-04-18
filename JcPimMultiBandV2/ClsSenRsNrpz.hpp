@@ -44,7 +44,7 @@ public:
 		return _isConn;
 	}
 
-	void InstrSession(unsigned long viConnectedSession) {
+	void InstrSession(unsigned long viConnectedSession, const char* cIdn) {
 		_viSession = viConnectedSession;
 		_isConn = true;
 	}

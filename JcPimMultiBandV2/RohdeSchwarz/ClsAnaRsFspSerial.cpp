@@ -24,9 +24,9 @@ bool ClsAnaRsFspSerial::InstrConnect(const char* c_addr)
 	return isconn;
 }
 
-void ClsAnaRsFspSerial::InstrSession(unsigned long viConnectedSession)
+void ClsAnaRsFspSerial::InstrSession(unsigned long viConnectedSession, const char* cIdn)
 {
-	AgSession(viConnectedSession);
+	AgSession(viConnectedSession, cIdn);
 	//连接成功即开始初始化
 	InstrInit();
 }
@@ -48,6 +48,7 @@ bool ClsAnaRsFspSerial::InstrConnStatus()const
 
 void ClsAnaRsFspSerial::InstrClose()
 {
+	Util::setSleep(100);
 	AgClose();
 }
 
@@ -55,16 +56,36 @@ void ClsAnaRsFspSerial::InstrInit()
 {
     AgWrite("*CLS\n");
     AgWrite("*RST\n");
+	//rs仪表需要实时显示
     AgWrite("SYST:DISP:UPD ON\n");
-//    Preset (preset_default);
+	AgWrite("CALC:MARK1 ON\n");
+    Preset (preset_default);
+
+	//------------------------write by san-------------------
+	InstrSetCenterFreq(637 * 1000);
+	//请注意!
+	//RS仪表在连续测量模式下无法使用主动触发检测信号
+	//aglient的支持！
+	//以下条命令必须执行
+	AgWrite("INIT:CONT OFF\n");
+	//------------------------write by san-------------------
 }
 
 double ClsAnaRsFspSerial::InstrGetAnalyzer(double freq_khz, bool isMax)
 {
-	char const *mark_x = "CALC:MARK1:X %.3f%s\n";
+	char const *mark_x = "CALC:MARK1:X %lf%s\n";
 	char const *mark_max = "CALC:MARK1:MAX\n";
-
 	char const *mark_y = "CALC:MARK1:Y?\n";
+
+	//------------------------write by san-------------------
+	//请注意!
+	//必须添加主动触发检测信号
+	InstrSetCenterFreq(freq_khz);
+	bool isCmdSucc = AgWrite("*CLS\n");
+	isCmdSucc = AgWrite("INIT\n");
+	if (false == AgWait())
+		return -10000;
+	//------------------------write by san-------------------
 
 	if (isMax == true)
 		CommonSet(mark_max);
@@ -84,11 +105,16 @@ double ClsAnaRsFspSerial::InstrGetAnalyzer(double freq_khz, bool isMax)
 void ClsAnaRsFspSerial::InstrSetAvg(const int& avg_time)
 {
     //[SENSe<1|2>:]AVERage:COUNt 0 to 32767
-    char const *set_aver_count = "AVER:COUN %d%s\n";
-	if (avg_time > 0) 
+    //char const *set_aver_count = "AVER:COUN %d%s\n";
+
+	//------------------------write by san-------------------
+	if (avg_time > 0) {
+		//AgWrite("AVER ON\n"); //当前华为不使用
 		CommonSet("AVER:COUN %d\n", avg_time);
-	else 
-		InstrClose();
+	}
+	else
+		InstrClosgAvg();
+	//------------------------write by san-------------------
 }
 void ClsAnaRsFspSerial::InstrClosgAvg()
 {
@@ -138,7 +164,7 @@ void ClsAnaRsFspSerial::InstrSetSpan(const double& span_hz)
 void ClsAnaRsFspSerial::InstrSetCenterFreq(const double& freq_khz)
 {
     //[SENSe<1|2>:]FREQuency:CENTer 0 to fmax
-    char const *set_freq_center = "FREQ:CENT %.3f%s\n";
+    char const *set_freq_center = "FREQ:CENT %lf%s\n";
     CommonSet (set_freq_center, freq_khz, "KHz");
 }
 
@@ -148,22 +174,29 @@ void ClsAnaRsFspSerial::InstrSetSweepTime(int count_ms) {
 
 void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 {
-	static const double freq_span[PRESET_PARAMETER_TOTAL] = { 500, 0, 0 };
-	static const int freq_aver[PRESET_PARAMETER_TOTAL] = { 0, 1, 0 };
-	static const double freq_vbw[PRESET_PARAMETER_TOTAL] = { 10, 100, 0 };
-	static const double freq_rbw[PRESET_PARAMETER_TOTAL] = { 10, 30, 0 };
+	//------------------------write by san-------------------
+	//SPAN:       0 HZ		,	400*1000 HZ		,	1000
+	//BW:         30 HZ		,	10*1000			,	100
+	//VBW:        100 HZ	,	10*1000			,	100
+	//SWEEP TIME: 1 ms		,	1 ms			,	1ms
 
-	static const int sweep_time[PRESET_PARAMETER_TOTAL] = { 1, 1, 0 };
+	//AVERGE:     0			,	0				,	0
+	//REFLEVEL:   -60		,	-60				,	20
+	//OFFSET:     0			,	0				,	0
+	//ATT:        0			,	0				,	30
+	//------------------------write by san-------------------
+	static const double freq_span       [PRESET_PARAMETER_TOTAL] = {  0,    400000,  1000 };
+	static const double freq_rbw        [PRESET_PARAMETER_TOTAL] = {  30,   10000,   100  };
+	static const double freq_vbw        [PRESET_PARAMETER_TOTAL] = {  100,  10000,   100  };
+	static const int    sweep_time      [PRESET_PARAMETER_TOTAL] = {  1,    1,       1    };
 
-	static const int disp_rlev[PRESET_PARAMETER_TOTAL] = { -60, 0, 0 };
-	static const double disp_rlev_offset[PRESET_PARAMETER_TOTAL] = { 0, 0, 0 };
+	static const int    freq_aver       [PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
+	static const int    disp_rlev       [PRESET_PARAMETER_TOTAL] = { -60,  -60,      20   };
+	static const double disp_rlev_offset[PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
+	static const int    input_att       [PRESET_PARAMETER_TOTAL] = {  0,    0,       30   };
+	
 
-	static const int input_att[PRESET_PARAMETER_TOTAL] = { 0, 0, 0 };
-
-	if (pp < 0 || pp >= PRESET_PARAMETER_TOTAL)
-		return;
-
-	if (pp_ == pp)
+	if (pp < 0 || pp >= PRESET_PARAMETER_TOTAL || pp_ == pp)
 		return;
 
 	pp_ = pp;
@@ -171,15 +204,14 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	InstrSetSpan(freq_span[pp]);
 	InstrSetVbw(freq_vbw[pp]);
 	InstrSetRbw(freq_rbw[pp]);
-	InstrSetAvg(freq_aver[pp]);
-
 	InstrSetSweepTime(sweep_time[pp]);
-
+	InstrSetAtt(input_att[pp]);
+	InstrSetAvg(freq_aver[pp]);
+	//------------------------write by san-------------------
+	//ref level需放最后执行！
+	//------------------------write by san-------------------
 	InstrSetRef(disp_rlev[pp]);
 	InstrSetOffset(disp_rlev_offset[pp]);
-
-	InstrSetAtt(input_att[pp]);
-    
 }
 
 bool ClsAnaRsFspSerial::CommonSet(char const *command, ...)
@@ -192,11 +224,12 @@ bool ClsAnaRsFspSerial::CommonSet(char const *command, ...)
     vsnprintf_s(command_data, 1023, command, ap);
     va_end(ap);
     
-    cout<<command_data<<endl;
+    //cout<<command_data<<endl;
     
     return InstrWrite(command_data);
 }
 
+//------------------------write by san-------------------
 void ClsAnaRsFspSerial::InstrPimSetting() {
 	Preset(preset_parameter::preset_default);
 }
@@ -212,4 +245,5 @@ void ClsAnaRsFspSerial::InstrTxOffsetSetting() {
 void ClsAnaRsFspSerial::InstrRxOffsetSetting() {
 	Preset(preset_parameter::preset_default);
 }
+//------------------------write by san-------------------
 

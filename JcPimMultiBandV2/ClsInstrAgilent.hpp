@@ -12,7 +12,8 @@ public:
 		_viDefaultRM(VI_NULL),
 		_viSession(VI_NULL),
 		_isConn(false),
-		_esr(0)
+		_esr(0),
+		_strIDN("")
 	{}
 
 	~ClsInstrAgilent() {}
@@ -33,10 +34,11 @@ public:
 	}
 
 	//开始连接
-	void AgSession(ViSession viConnectedSession) {
+	void AgSession(ViSession viConnectedSession, std::string Idn) {
 		//_viDefaultRM = viRM;
 		_viSession = viConnectedSession;
-
+		_strIDN = Idn;
+		printf("%s", _strIDN.c_str());
 		//if (_viSession != VI_NULL)
 		//	AgWrite("*RST\n");
 
@@ -89,6 +91,7 @@ public:
 	bool AgWait() {
 		viPrintf(_viSession, "*OPC\n");
 		_esr = 0;
+		//根据visa超时时间,设置500次
 		for (int i = 0; i <= 500; i++)
 		{
 			if (i == 500)
@@ -124,6 +127,7 @@ protected:
 	ViSession _viDefaultRM;
 	ViSession _viSession;
 	ViUInt16 _esr;
+	std::string _strIDN;
 };
 
 #endif

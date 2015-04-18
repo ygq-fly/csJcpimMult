@@ -19,6 +19,8 @@
 
 struct JcPimObject
 {
+#define LINEFEED_CHAR 0x0D
+#define TIMEOUT_VALUE 10000
 public:
 	char now_band;
 	char now_dut_port;
@@ -222,7 +224,27 @@ public:
 		Util::getNowTime(strTime);
 		strLog = "==>(" + strTime + ")" + strLog;
 		Util::logging(strLog.c_str());
-		
+	}
+
+	void JcSetViAttribute(ViSession vi){
+		char cInfo[32] = { 0 };
+		int s = viGetAttribute(vi, 0xBFFF0001UL, &cInfo);
+		//超时时间:0x3FFF001AUL
+		s = viSetAttribute(vi, 0x3FFF001AUL, TIMEOUT_VALUE);
+		//write by san
+		if (0 == strcmp(cInfo, "INSTR")) {
+			//获取设备连接类型：0x3FFF0171UL
+			//memset(cInfo, 0, sizeof(cInfo));
+			//s = viGetAttribute(vi, 0x3FFF0171UL, &cInfo);
+			//1-gpib;2-vxi;3-gpib_vxi;4-asrl(串口);5-pxi;6-tcpip;7-usb
+			//..todo
+		}
+		else if (0 == strcmp(cInfo, "SOCKET")) {
+			//设置TERM_CHAR返回结束码:0x3FFF0018UL，(windows可以设置/r)
+			//s = viSetAttribute(vi, 0x3FFF0018UL, LINEFEED_CHAR);
+			//设置TERM_CHAR(必须要设置):0x3FFF0038UL
+			s = viSetAttribute(vi, 0x3FFF0038UL, VI_TRUE);
+		}
 	}
 
 	//Sigleton model

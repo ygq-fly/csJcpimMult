@@ -11,14 +11,25 @@
 bool ClsSigRsSMxSerial::InstrConnect(const char* c_addr){
     //return AgConnect(c_addr);
     bool isconn = AgConnect(c_addr);
-    if (isconn)
-        AgWrite("*RST\n");
+	if (isconn) {
+		AgWrite("*RST\n");
+		//------------------------write by san-------------------
+		//AgWrite("*CLS\n");
+		//AgWrite("ROSC:SOUR INT\n");
+		AgWrite("ROSC:SOUR EXT\n");
+		//------------------------write by san-------------------
+	}
     return isconn;
 }
 
-void ClsSigRsSMxSerial::InstrSession(unsigned long viConnectedSession) {
-    AgSession(viConnectedSession);
-    AgWrite("*RST\n");
+void ClsSigRsSMxSerial::InstrSession(unsigned long viConnectedSession, const char* cIdn) {
+	AgSession(viConnectedSession, cIdn);
+
+	AgWrite("*RST\n");
+	//------------------------write by san-------------------
+	AgWrite("ROSC:SOUR EXT\n");
+	//------------------------write by san-------------------
+	
 }
 
 bool ClsSigRsSMxSerial::InstrWrite(const char* c_cmd) {
@@ -95,30 +106,44 @@ bool ClsSigRsSMxSerial::InstrPowStatus() const {
 bool ClsSigRsSMxSerial::InstrGetReferenceStatus() {
 
     long ret = 0;
-    bool reslute = false;
-    
-    ret = AgWrite("*CLS\n");
+    bool reslute = true;
+
+	ret - AgWrite("*CLS\n");
     ret = AgWrite("ROSC:SOUR INT\n");
-    Sleep (2000);
     ret = AgWrite("ROSC:SOUR EXT\n");
-    Sleep (2000);
-    
-    char buf[1024] = { 0 };    
-    ret = AgWriteAndRead("SYST:ERR?\n", buf);
-    
-    if (ret <= 0)
-        return reslute;
+	Sleep(3000);
 
-    std::string temp(buf);
-    
-    if (temp.find("reference") == std::string::npos)
-        reslute = true;
-    else
-        reslute = false;
+	//uint64_t tick_start = Util::get_tick_count();
+	//反复读取错误记录
+	for (;;) {
+		//模仿纳特检测方法， 最多检测时钟同步线3秒
+		//uint64_t tick_stop = Util::get_tick_count();
+		//if (3000 < (tick_stop - tick_start))
+		//	break;
 
+		//开始读取错误
+		char buf[1024] = { 0 };
+		ret = AgWriteAndRead("SYST:ERR?\n", buf);
+
+		if (ret <= 0)
+			return reslute;
+
+		//检测到关键字后返回
+		std::string temp(buf);
+		if (temp.find("reference") != std::string::npos){
+			printf("%s\n", buf);
+			reslute = false;
+			break;
+		}
+
+		//无错误直接返回
+		if (temp.find("No error") != std::string::npos)
+			break;	
+	}
     return reslute;
 }
 
+//why Init() return ReferenceStatus??
 bool ClsSigRsSMxSerial::InstrInit()
 {
     

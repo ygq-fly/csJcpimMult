@@ -688,31 +688,34 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 //扩展API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
-	ViSession viSession = VI_NULL;
-	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
+	ViSession vi = VI_NULL;
+	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &vi);
 	if (s == VI_SUCCESS) {
-		int index = JcGetIDN(viSession);
+		JcPimObject::Instance()->JcSetViAttribute(vi);
+		char cIdn[128] = { 0 };
+		int index = JcGetIDN(vi, cIdn);
 		//安捷伦
 		if (index == INSTR_AG_MXG_SERIES){
 			if (byDevice == JC_DEVICE::SIGNAL1) {
 				__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
-				__pobj->sig1->InstrSession(viSession);
+				__pobj->sig1->InstrSession(vi, cIdn);
 			}
 			else if (byDevice == JC_DEVICE::SIGNAL2) {
 				__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
-				__pobj->sig2->InstrSession(viSession);
+				__pobj->sig2->InstrSession(vi, cIdn);
 			}
 		}
 		//罗德斯瓦茨
 		else if (index == INSTR_RS_SM_SERIES) {
 			if (byDevice == JC_DEVICE::SIGNAL1) {
 				__pobj->sig1 = std::make_shared<ClsSigRsSMxSerial>();
-				__pobj->sig1->InstrSession(viSession);
+				__pobj->sig1->InstrSession(vi, cIdn);
 			}
 			else if (byDevice == JC_DEVICE::SIGNAL2) {
 				__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>();
-				__pobj->sig2->InstrSession(viSession);
+				__pobj->sig2->InstrSession(vi, cIdn);
 			}
 		}
 		else 
@@ -724,19 +727,21 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 }
 
 JcBool JcConnAna(JC_ADDRESS cAddr) {
-	ViSession viSession = VI_NULL;
-	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
+	ViSession vi = VI_NULL;
+	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &vi);
 	if (s == VI_SUCCESS) {
-		int index = JcGetIDN(viSession);
+		JcPimObject::Instance()->JcSetViAttribute(vi);
+		char cIdn[128] = { 0 };
+		int index = JcGetIDN(vi, cIdn);
 		//安捷伦
 		if (index == INSTR_AG_MXA_SERIES) {
 			__pobj->ana = std::make_shared<ClsAnaAgN9020A>();
-			__pobj->ana->InstrSession(viSession);
+			__pobj->ana->InstrSession(vi, cIdn);
 		}
 		//罗德斯瓦茨
 		else if (index == INSTR_RS_FS_SERIES) {
 			__pobj->ana = std::make_shared<ClsAnaRsFspSerial>();
-			__pobj->ana->InstrSession(viSession);
+			__pobj->ana->InstrSession(vi, cIdn);
 		}
 		else
 			return FALSE;
@@ -747,19 +752,21 @@ JcBool JcConnAna(JC_ADDRESS cAddr) {
 }
 
 JcBool JcConnSen(JC_ADDRESS cAddr) {
-	ViSession viSession = VI_NULL;
+	ViSession vi = VI_NULL;
 	bool isConn = false;
 	//安捷伦仪表连接
-	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &viSession);
+	ViStatus s = viOpen(__pobj->viDefaultRM, cAddr, VI_NULL, VI_NULL, &vi);
 	if (s == VI_SUCCESS) {
-		int index = JcGetIDN(viSession);
+		JcPimObject::Instance()->JcSetViAttribute(vi);
+		char cIdn[128] = { 0 };
+		int index = JcGetIDN(vi, cIdn);
 		if (index == INSTR_AG_U2000_SERIES) {
 			__pobj->sen = std::make_shared<ClsSenAgU2000A>();
-			__pobj->sen->InstrSession(viSession);
+			__pobj->sen->InstrSession(vi, cIdn);
 		}
 		else if (index == INSTR_RS_NRT_SERIES) {
 			__pobj->sen = std::make_shared<ClsSenRsNrt>();
-			__pobj->sen->InstrSession(viSession);
+			__pobj->sen->InstrSession(vi, cIdn);
 		}
 		else
 			return FALSE;
@@ -1368,14 +1375,14 @@ JcBool JcSetOffsetTX_Config(int iAnalyzer, const JC_ADDRESS Device_Info) {
 		ViStatus s = viOpen(__pobj->viDefaultRM, const_cast<char*>(Device_Info), VI_NULL, 5000, &ext_visession);
 		if (s == VI_SUCCESS) {
 			__pobj->isExtSenConn = true;
-			index_sensor = JcGetIDN(ext_visession);
+			index_sensor = JcGetIDN(ext_visession, NULL);
 			if (index_sensor == INSTR_AG_U2000_SERIES) {
 				__pobj->ext_sen = std::make_shared<ClsSenAgU2000A>();
-				__pobj->ext_sen->InstrSession(ext_visession);
+				__pobj->ext_sen->InstrSession(ext_visession, "");
 			}
 			else if (index_sensor == INSTR_RS_NRT_SERIES) {
 				__pobj->ext_sen = std::make_shared<ClsSenRsNrt>();
-				__pobj->ext_sen->InstrSession(ext_visession);
+				__pobj->ext_sen->InstrSession(ext_visession, "");
 			}
 		}
 		//RS仪表连接
@@ -1405,15 +1412,17 @@ void JcSetOffsetTX_Config_Close() {
 //OTHER FUNC
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-int JcGetIDN(unsigned long viSession) {
+int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 	int iDeviceIDN = -1;
-	unsigned char buf[128] = { 0 };
+	unsigned char buf[1024] = { 0 };
 	unsigned long retCount = 0;
 	//int s = viQueryf(viSession, "*IDN?\n", "%#t", &retCount, buf);
-	int s = viPrintf(viSession, "*IDN?\n");
-	s = viRead(viSession, buf, 128, &retCount);
-
+	int s = viPrintf(vi, "*IDN?\n");
+	s = viRead(vi, buf, 1024, &retCount);
+	
 	if (retCount) {
+		if (NULL != cIdn)
+			memcpy(cIdn, buf, retCount);
 		std::string strIdn((char*)buf);
 		if      (Util::strFind(strIdn, "U2000A")  || Util::strFind(strIdn, "U2001A")  || Util::strFind(strIdn, "U2002A"))
 			iDeviceIDN = INSTR_AG_U2000_SERIES;

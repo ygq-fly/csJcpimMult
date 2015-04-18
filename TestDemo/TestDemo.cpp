@@ -114,6 +114,11 @@ typedef double(*pJcGetSen)();
 //JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
 typedef BOOL(*pHwSetCoup)(uint8_t);
 
+//JC_API void   JcSetAna_RefLevelOffset(double offset);
+typedef void(*pJcSetAna_RefLevelOffset)(double);
+//JC_API JcBool JcGetSig_ExtRefStatus(JcInt8 byCarrier);
+typedef BOOL(*pJcGetSig_ExtRefStatus)(uint8_t);
+
 //JC_API long JcGetOffsetRxNum(BYTE_ byInternalBand);
 typedef long(*pGetOffsetRxNum)(uint8_t);
 //JC_API long JcGetOffsetTxNum(BYTE_ byInternalBand);
@@ -180,6 +185,7 @@ void Test_dll(){
 	pJcGetAna jcGetAna = (pJcGetAna)GetProcAddress(hinst, "JcGetAna");
 	pJcSetSig jcSetSig = (pJcSetSig)GetProcAddress(hinst, "JcSetSig");
 	pJcGetSen jcGetSen = (pJcGetSen)GetProcAddress(hinst, "JcGetSen");
+	pJcGetSig_ExtRefStatus jcGetSig_ExtRefStatus = (pJcGetSig_ExtRefStatus)GetProcAddress(hinst, "JcGetSig_ExtRefStatus");
 
 	pGetError getError = (pGetError)GetProcAddress(hinst, "JcGetError");
 	pGetOffsetRx getOffsetRx = (pGetOffsetRx)GetProcAddress(hinst, "JcGetOffsetRx");
@@ -194,24 +200,24 @@ void Test_dll(){
 	int v1, v2, v3, v4;
 	getDllVersion(v1, v2, v3, v4);
 	std::cout << "Version: "<<v1 << ',' << v2 << ',' << v3 << ',' << v4 << std::endl;
-
-	int r = [test](){	
-		return test(3, 4);
-	}();
-
-	std::cout << r << std::endl;
-	std::string cmd = "this ext reference!";
-	int a = cmd.find("Ext");
-	if (a != -1){
-		std::cout << "find ext" << std::endl;
-	}
 	
+	//TCPIP0::192.168.1.3::5025::SOCKET
+	std::string addr_sig1 = "TCPIP0::192.168.1.3::5025::SOCKET";
+	//TCPIP0::192.168.1.4::5025::SOCKET
+	std::string addr_sig2 = "TCPIP0::192.168.1.4::5025::SOCKET";
+	//std::string addr_ana = "TCPIP0::192.168.1.5::inst0::INSTR";
+	//GPIB0::20::INSTR
+	std::string addr_ana = "GPIB0::20::INSTR";
 	//USB::0x0aad::0x000c::102838
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
-	//GPIB0::12::INSTR
+	//USB0::0x0957::0x2B18::MY51050018::0::INSTR
+	std::string addr_sen = "0";
+
+	std::string addr_swh = "0";
+	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen + "," + addr_swh;
 	bool isCont = true;
 	//int s = setInit("0,0,0,0,0");
-	int s = setInit("TCPIP0::192.168.1.3::5025::SOCKET,TCPIP0::192.168.1.4::5025::SOCKET,TCPIP0::192.168.1.5::inst0::INSTR,USB0::0x0957::0x2B18::MY51070014::0::INSTR,0");
+	int s = setInit(const_cast<char*>(addr.c_str()));
 	if (s == 0 && isCont == true) {
 		std::cout << "init success!" << std::endl;
 	}
@@ -225,11 +231,15 @@ void Test_dll(){
 	printf("set sig1: %d\n", B);
 	B = jcSetSig(2, 960, -60);
 	printf("set sig2: %d\n", B);
-	for (int i = 0; i < 10; i++) {
-		double ana = jcGetAna(930, false);
-		printf("ana: %lf\n", ana);
-		double sen = jcGetSen();
-		printf("sen: %lf\n", sen);
+	
+	for (int i = 0; i < 5; i++) {
+
+		jcGetSig_ExtRefStatus(1);
+		//jcGetSig_ExtRefStatus(2);
+		//double ana = jcGetAna(930, false);
+		//printf("ana: %lf\n", ana);
+		//double sen = jcGetSen();
+		//printf("sen: %lf\n", sen);
 	}
 
 	//¼ì²â

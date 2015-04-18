@@ -25,18 +25,18 @@ class ClsAnaRsFspSerial : public IfAnalyzer, public ClsInstrAgilent
 {
 public:
 #define PRESET_PARAMETER_TOTAL      3
-enum preset_parameter
-{
-	preset_no_set = -1,
-	preset_default=0,
-	preset_mensuration,
-	preset_calibration,
-};
+	enum preset_parameter
+	{
+		preset_no_set = -1,
+		preset_default = 0,
+		preset_mensuration = 1,
+		preset_calibration = 2
+	};
 
 //    SignalAnalyzer sa;
 public:
 	bool InstrConnect(const char* c_addr);
-	void InstrSession(unsigned long viConnectedSession);
+	void InstrSession(unsigned long viConnectedSession, const char* cIdn);
 	bool InstrWrite(const char* c_cmd);
 	long InstrWriteAndRead(const char* c_cmd, char* rbuf);
 	bool InstrConnStatus() const;
