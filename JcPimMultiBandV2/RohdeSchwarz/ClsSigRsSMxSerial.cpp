@@ -108,42 +108,44 @@ bool ClsSigRsSMxSerial::InstrGetReferenceStatus() {
     long ret = 0;
     bool reslute = true;
 
-	ret - AgWrite("*CLS\n");
-    ret = AgWrite("ROSC:SOUR INT\n");
-    ret = AgWrite("ROSC:SOUR EXT\n");
-	Sleep(3000);
+	//------------------------write by san-------------------
+	//主动检测及其不稳定，总共4秒的延时完全不稳定！
+	//抛弃，干脆照搬纳特实现方法！
+	//ret - AgWrite("*CLS\n");
+	//ret = AgWrite("ROSC:SOUR INT\n");
+	//Sleep(2000);
+	//ret = AgWrite("ROSC:SOUR EXT\n");
+	//Sleep(2000);
+	//------------------------write by san-------------------
 
-	//uint64_t tick_start = Util::get_tick_count();
-	//反复读取错误记录
+	//照搬纳特实现
+	uint64_t tick_start = Util::get_tick_count();
 	for (;;) {
 		//模仿纳特检测方法， 最多检测时钟同步线3秒
-		//uint64_t tick_stop = Util::get_tick_count();
-		//if (3000 < (tick_stop - tick_start))
-		//	break;
+		uint64_t tick_stop = Util::get_tick_count();
+		if (3000 < (tick_stop - tick_start))
+			break;
 
 		//开始读取错误
 		char buf[1024] = { 0 };
-		ret = AgWriteAndRead("SYST:ERR?\n", buf);
-
-		if (ret <= 0)
-			return reslute;
+		if (0 >= AgWriteAndRead("SYST:ERR?\n", buf))
+			return false;
 
 		//检测到关键字后返回
 		std::string temp(buf);
-		if (temp.find("reference") != std::string::npos){
-			printf("%s\n", buf);
+		if (std::string::npos != temp.find("reference")){
+			//printf("%s\n", buf);
 			reslute = false;
 			break;
 		}
 
 		//无错误直接返回
-		if (temp.find("No error") != std::string::npos)
-			break;	
+		if (std::string::npos != temp.find("No error"))
+			break;
 	}
     return reslute;
 }
 
-//why Init() return ReferenceStatus??
 bool ClsSigRsSMxSerial::InstrInit()
 {
     

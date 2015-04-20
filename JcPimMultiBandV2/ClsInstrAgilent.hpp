@@ -38,7 +38,7 @@ public:
 		//_viDefaultRM = viRM;
 		_viSession = viConnectedSession;
 		_strIDN = Idn;
-		printf("%s", _strIDN.c_str());
+		//printf("%s", _strIDN.c_str());
 		//if (_viSession != VI_NULL)
 		//	AgWrite("*RST\n");
 

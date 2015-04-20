@@ -48,7 +48,6 @@ bool ClsAnaRsFspSerial::InstrConnStatus()const
 
 void ClsAnaRsFspSerial::InstrClose()
 {
-	Util::setSleep(100);
 	AgClose();
 }
 
