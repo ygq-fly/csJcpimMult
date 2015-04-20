@@ -2,10 +2,10 @@
 
 #include "ClsSigRsSMxSerial.h"
 
-#include <windows.h>
-
-#include <iostream>
-#include <string>
+//#include <windows.h>
+//
+//#include <iostream>
+//#include <string>
 
 
 bool ClsSigRsSMxSerial::InstrConnect(const char* c_addr){

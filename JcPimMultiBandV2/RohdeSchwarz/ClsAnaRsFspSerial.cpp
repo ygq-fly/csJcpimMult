@@ -121,11 +121,15 @@ void ClsAnaRsFspSerial::InstrClosgAvg()
     //char const *set_aver_state = "AVER OFF\n";
 	CommonSet("AVER OFF\n");
 }
-void ClsAnaRsFspSerial::InstrSetOffset(const double& pow_dbm)
+void ClsAnaRsFspSerial::InstrSetOffset(const double& pow_db)
 {
     //[SENSe<1|2>:]FREQuency:OFFSet <numeric_value>
     //char const *set_freq_offset = "FREQ:OFFS %.0f%s\n";
-	CommonSet("DISP:TRAC:Y:RLEV:OFFS %lf dBm\n", pow_dbm);
+
+	//------------------------write by san-------------------
+	//注意 OFFSET的单位为dB，非dBm
+	CommonSet("DISP:TRAC:Y:RLEV:OFFS %lf dB\n", pow_db);
+	//------------------------write by san-------------------
 }
 
 // void InstrSetAttRef(const int& att, const int& reflevel) = 0;
