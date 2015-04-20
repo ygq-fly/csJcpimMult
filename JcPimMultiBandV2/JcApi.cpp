@@ -10,8 +10,6 @@
 #define SIGNAL_SOURCE_MAX_POW 8
 
 #define OFFSET_TX_THREASOLD 0.05
-#define SMOOTH_TX_THREASOLD 2
-#define SMOOTH_VCO_THREASOLD 5
 
 //#define JC_OFFSET_TX_SINGLE_DEBUG
 //#define JC_OFFSET_TX_DEBUG
@@ -29,26 +27,6 @@
 //频谱仪标识
 #define INSTR_AG_MXA_SERIES 20
 #define INSTR_RS_FS_SERIES 21
-
-JcBool _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
-JcBool _debug_enable = 0;
-
-std::wstring _startPath = [](){
-	wchar_t wcBuff[512] = { 0 };
-	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
-	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
-
-	_switch_enable[0] = GetPrivateProfileIntW(L"Connect_Enable", L"band0", 1, wsPath_ini.c_str());
-	_switch_enable[1] = GetPrivateProfileIntW(L"Connect_Enable", L"band1", 1, wsPath_ini.c_str());
-	_switch_enable[2] = GetPrivateProfileIntW(L"Connect_Enable", L"band2", 1, wsPath_ini.c_str());
-	_switch_enable[3] = GetPrivateProfileIntW(L"Connect_Enable", L"band3", 1, wsPath_ini.c_str());
-	_switch_enable[4] = GetPrivateProfileIntW(L"Connect_Enable", L"band4", 1, wsPath_ini.c_str());
-	_switch_enable[5] = GetPrivateProfileIntW(L"Connect_Enable", L"band5", 1, wsPath_ini.c_str());
-	_switch_enable[6] = GetPrivateProfileIntW(L"Connect_Enable", L"band6", 1, wsPath_ini.c_str());
-	_debug_enable     = GetPrivateProfileIntW(L"Settings",       L"debug", 0, wsPath_ini.c_str());
-
-	return std::wstring(wcBuff);
-}();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //初始化与释放
@@ -75,9 +53,8 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 
 		//开始连接数据库
 #ifdef WIN32
-		std::wstring wsPath = _startPath + L"\\JcOffset.db";
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-		std::string sPath = conv.to_bytes(wsPath);
+		std::string sPath = conv.to_bytes(_startPath + L"\\JcOffset.db");
 		isSqlConn = __pobj->offset.Dbconnect(sPath.c_str());
 		if (!isSqlConn) {
 			Util::logged(L"fnSetInit: DB Connected Error!");
@@ -86,24 +63,6 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 #else
 		//isconn = __pobj->offset.Dbconnect("D:\\Sync_ProJects\\Jointcom\\JcPimMultiBandV2\\Debug\\JcOffset.db");
 #endif
-		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
-
-		double vco_limit   = Util::getIniDouble(L"Settings", L"vco_limit",   5, wsPath_ini.c_str());
-		double tx_smooth   = Util::getIniDouble(L"Settings", L"tx_smooth",   2, wsPath_ini.c_str());
-		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 2, wsPath_ini.c_str());
-
-		__pobj->now_vco_threasold       = vco_limit   <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
-		__pobj->now_tx_smooth_threasold = tx_smooth   <= 0 ? SMOOTH_TX_THREASOLD  : tx_smooth;
-		__pobj->now_tx_smooth_accuracy  = tx_accuracy <= 0 ? 0.15 : tx_accuracy;
-
-		__pobj->debug_time		  = GetPrivateProfileIntW(L"Settings",   L"time",      200, wsPath_ini.c_str());
-		__pobj->now_vco_enbale[0] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band0", 1,   wsPath_ini.c_str());
-		__pobj->now_vco_enbale[1] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band1", 1,   wsPath_ini.c_str());
-		__pobj->now_vco_enbale[2] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band2", 1,   wsPath_ini.c_str());
-		__pobj->now_vco_enbale[3] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band3", 1,   wsPath_ini.c_str());
-		__pobj->now_vco_enbale[4] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band4", 1,   wsPath_ini.c_str());
-		__pobj->now_vco_enbale[5] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band5", 1,   wsPath_ini.c_str());
-		__pobj->now_vco_enbale[6] = GetPrivateProfileIntW(L"VCO_Enable", L"vco_band6", 1,   wsPath_ini.c_str());
 
 		//开始连接
 		std::string strConnMsg = "";
@@ -482,6 +441,7 @@ int fnGetSpectrumType(char* cSpectrumType) {
 //HW-API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//无需初始化可设置
 void HwSetBandEnable(int iBand, JcBool isEnable) {
 	if (iBand < 0 || iBand > 6)
 		return;

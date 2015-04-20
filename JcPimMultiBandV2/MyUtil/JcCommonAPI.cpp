@@ -133,23 +133,30 @@ void Util::logged(const wchar_t* fmt, ...) {
 	MessageBoxW(GetForegroundWindow(), wInfo, L"Tips", MB_TOPMOST);
 }
 
-void Util::logging(const char *fmt, ...) {
+void Util::logging(const wchar_t* log_file, const char *fmt, ...) {
     static int file_no = 1;
     static FILE* pFile = NULL;
     if(NULL == pFile) {
-        char log_name[64];
-        uint32_t  pid = 637;
+		wchar_t log_name[1024];
+        //char log_name[1024];
 #ifdef _WIN32
-        _snprintf_s(log_name, 64, ".log_%d_%d", pid, file_no);
-		fopen_s(&pFile, log_name, "a");
+        //_snprintf_s(log_name, 1024, "%s_%d", log_file, file_no);
+		//fopen_s(&pFile, log_name, "a");
+		//使用wchar_t
+		swprintf_s(log_name, L"%s_%d", log_file, file_no);
+		_wfopen_s(&pFile, log_name, L"a");
+		//不需要隐身了
+		//if(TRUE != SetFileAttributesW(log_name, FILE_ATTRIBUTE_HIDDEN)) {
+		//	//return;
+		//}
 #else
-		snprintf(log_name, 64, ".log_%d_%d", pid, file_no);
-		pFile = fopen(log_name, "a");
-#endif
-        if(TRUE != SetFileAttributesA(log_name, FILE_ATTRIBUTE_HIDDEN)) {
-            //return;
-        }
-
+		//snprintf(log_name, 1024, "%s_%d", log_file, file_no);
+		//pFile = fopen(log_name, "a");
+		//使用wchar_t
+		swprintf(log_name, L"%s_%d", log_file, file_no);
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+		pFile = fopen((myconv.to_bytes(log_name)).c_str(), "a");
+#endif		
         if (NULL == pFile)
             return;
     }
@@ -178,3 +185,4 @@ bool Util::strFind(const std::string& str, const char* str_find) {
 	else
 		return false;
 }
+

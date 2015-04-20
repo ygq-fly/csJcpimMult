@@ -87,8 +87,6 @@ bool ClsSigRsSMxSerial::InstrOpenPow(bool bOpen)
     std::string statON = std::string(":SOUR") + std::to_string(_sourTunnel) + ":OUTP:STAT ON\n";
     std::string statOFF;
 
-
-
     if (bOpen)
         _isCmdSucc = AgWrite("OUTP:STAT ON\n");
     else
@@ -128,7 +126,7 @@ bool ClsSigRsSMxSerial::InstrGetReferenceStatus() {
 
 		//开始读取错误
 		char buf[1024] = { 0 };
-		if (0 >= AgWriteAndRead("SYST:ERR?\n", buf))
+		if (AgWriteAndRead("SYST:ERR?\n", buf) >= 0)
 			return false;
 
 		//检测到关键字后返回

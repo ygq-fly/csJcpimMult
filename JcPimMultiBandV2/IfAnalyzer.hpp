@@ -11,7 +11,7 @@ public:
 	virtual double InstrGetAnalyzer(double freq_khz, bool isMax) = 0;
 	virtual void InstrSetAvg(const int& avg_time) = 0;
 	virtual void InstrClosgAvg() = 0;
-	virtual void InstrSetOffset(const double& pow_dbm) = 0;
+	virtual void InstrSetOffset(const double& pow_db) = 0;
 	//virtual void InstrSetAttRef(const int& att, const int& reflevel) = 0;
 	//virtual void InstrSetRbwSpan(const int& rbw_hz, const int& span_hz) = 0;
 	virtual void InstrSetAtt(const int& att) = 0;

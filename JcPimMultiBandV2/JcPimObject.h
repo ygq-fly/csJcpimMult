@@ -17,6 +17,27 @@
 
 #include "stdafx.h"
 
+#define SMOOTH_TX_THREASOLD 2
+#define SMOOTH_VCO_THREASOLD 5
+
+static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
+static int _debug_enable = 0;
+
+static std::wstring _startPath = [](){
+	wchar_t wcBuff[512] = { 0 };
+	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
+	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
+
+	for (int i = 0; i < 7; i++){
+		wchar_t param[10] = { 0 };
+		swprintf_s(param, L"band%d", i);
+		_switch_enable[i] = GetPrivateProfileIntW(L"Connect_Enable", param, 1, wsPath_ini.c_str());
+	}
+	_debug_enable = GetPrivateProfileIntW(L"Settings", L"debug", 0, wsPath_ini.c_str());
+
+	return std::wstring(wcBuff);
+}();
+
 struct JcPimObject
 {
 #define LINEFEED_CHAR 0x0D
@@ -57,6 +78,7 @@ public:
 	int debug_time;
 	bool isUseExtBand;
 	std::string strErrorInfo;
+	std::wstring wstrLogPath;
 
 public:
 	ViSession viDefaultRM;
@@ -107,12 +129,54 @@ private:
 
 		for (int i = 0; i < 10; ++i){
 			now_vco_enbale[i] = 1;
-		}	
+		}
+
+		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
+
+		for (int i = 0; i < 7; i++){
+			wchar_t key[10] = { 0 };
+			swprintf_s(key, L"vco_band%d", i);
+			now_vco_enbale[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
+		}
+
+		debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
+		//PATH
+		wchar_t temp[1024] = { 0 };
+		GetPrivateProfileStringW(L"PATH", L"logging_file_path", L"", temp, 1024, wsPath_ini.c_str());
+		wstrLogPath = std::wstring(temp);
+		double vco_limit   = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
+		double tx_smooth   = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
+		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 2, wsPath_ini.c_str());
+
+		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
+		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
+		now_tx_smooth_accuracy = tx_accuracy <= 0 ? 0.15 : tx_accuracy;
 	}
 
 	~JcPimObject() {}
 
 public:
+	void JcSetViAttribute(ViSession vi){
+		char cInfo[32] = { 0 };
+		int s = viGetAttribute(vi, 0xBFFF0001UL, &cInfo);
+		//超时时间:0x3FFF001AUL
+		s = viSetAttribute(vi, 0x3FFF001AUL, TIMEOUT_VALUE);
+		//write by san
+		if (0 == strcmp(cInfo, "INSTR")) {
+			//获取设备连接类型：0x3FFF0171UL
+			//memset(cInfo, 0, sizeof(cInfo));
+			//s = viGetAttribute(vi, 0x3FFF0171UL, &cInfo);
+			//1-gpib;2-vxi;3-gpib_vxi;4-asrl(串口);5-pxi;6-tcpip;7-usb
+			//..todo
+		}
+		else if (0 == strcmp(cInfo, "SOCKET")) {
+			//设置TERM_CHAR返回结束码:0x3FFF0018UL，(windows可以设置/r)
+			//s = viSetAttribute(vi, 0x3FFF0018UL, LINEFEED_CHAR);
+			//设置TERM_CHAR(必须要设置):0x3FFF0038UL
+			s = viSetAttribute(vi, 0x3FFF0038UL, VI_TRUE);
+		}
+	}
+
 	double TransKhz(double val, char* cUnits) {
 		std::string sUnits(cUnits);
 		std::transform(sUnits.begin(), sUnits.end(), sUnits.begin(), ::tolower);
@@ -223,28 +287,8 @@ public:
 		std::string strTime;
 		Util::getNowTime(strTime);
 		strLog = "==>(" + strTime + ")" + strLog;
-		Util::logging(strLog.c_str());
-	}
-
-	void JcSetViAttribute(ViSession vi){
-		char cInfo[32] = { 0 };
-		int s = viGetAttribute(vi, 0xBFFF0001UL, &cInfo);
-		//超时时间:0x3FFF001AUL
-		s = viSetAttribute(vi, 0x3FFF001AUL, TIMEOUT_VALUE);
-		//write by san
-		if (0 == strcmp(cInfo, "INSTR")) {
-			//获取设备连接类型：0x3FFF0171UL
-			//memset(cInfo, 0, sizeof(cInfo));
-			//s = viGetAttribute(vi, 0x3FFF0171UL, &cInfo);
-			//1-gpib;2-vxi;3-gpib_vxi;4-asrl(串口);5-pxi;6-tcpip;7-usb
-			//..todo
-		}
-		else if (0 == strcmp(cInfo, "SOCKET")) {
-			//设置TERM_CHAR返回结束码:0x3FFF0018UL，(windows可以设置/r)
-			//s = viSetAttribute(vi, 0x3FFF0018UL, LINEFEED_CHAR);
-			//设置TERM_CHAR(必须要设置):0x3FFF0038UL
-			s = viSetAttribute(vi, 0x3FFF0038UL, VI_TRUE);
-		}
+		std::wstring log_path = wstrLogPath + L"log_637";
+		Util::logging(log_path.c_str(), strLog.c_str());
 	}
 
 	//Sigleton model

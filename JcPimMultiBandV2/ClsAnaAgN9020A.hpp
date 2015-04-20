@@ -121,8 +121,8 @@ public:
 	}
 
 	//…Ë÷√offset
-	void InstrSetOffset(const double& pow_dbm) {
-		std::string cmd = "DISP:WIND:TRAC:Y:RLEV:OFFS " + std::to_string(pow_dbm) + "\n";
+	void InstrSetOffset(const double& pow_db) {
+		std::string cmd = "DISP:WIND:TRAC:Y:RLEV:OFFS " + std::to_string(pow_db) + "\n";
 		AgWrite(cmd.c_str());
 	}
 
