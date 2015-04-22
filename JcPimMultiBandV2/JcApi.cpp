@@ -462,10 +462,14 @@ JcBool FnGet_Vco() {
 }
 
 void HwSetIsExtBand(JcBool isUse) {
-	if (isUse == 0)
+	if (isUse == FALSE) {
 		__pobj->isUseExtBand = false;
-	else
+		__pobj->wstrLogFlag = L"MBP";
+	}
+	else {
 		__pobj->isUseExtBand = true;
+		__pobj->wstrLogFlag = L"ATE";
+	}
 }
 
 //设置当前功放的耦合器

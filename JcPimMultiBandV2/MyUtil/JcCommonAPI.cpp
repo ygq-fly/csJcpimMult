@@ -4,6 +4,7 @@
 
 #include "JcCommonAPI.h"
 
+//64M
 #define MAX_LOG_FILE_SIZE 0x4000000
 
 int Util::getMyPath(wchar_t *w_path, uint16_t max, const wchar_t* module_name) {
@@ -184,5 +185,17 @@ bool Util::strFind(const std::string& str, const char* str_find) {
 		return true;
 	else
 		return false;
+}
+
+std::wstring Util::utf8_to_wstring(const std::string& str)
+{
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+	return myconv.from_bytes(str);
+}
+
+std::string Util::wstring_to_utf8(const std::wstring& str)
+{
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+	return myconv.to_bytes(str);
 }
 

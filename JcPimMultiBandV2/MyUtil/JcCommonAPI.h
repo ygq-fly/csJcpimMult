@@ -1,5 +1,8 @@
 //
+//工具类
 // Created by san on 15/3/30.
+//
+//各种转换，各种系统API（BY SAN）
 //
 
 #ifndef _SAN_JCCOMMONAPI_H
@@ -21,9 +24,11 @@ namespace Util {
 	double getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double DefaultVal, const wchar_t* FilePath);
 	void getNowTime(OUT std::string& strTime);
 	void logged(const wchar_t* fmt, ...);
-	void logging(const wchar_t* log_name, const char* fmt, ...);
+	void logging(const wchar_t* log_name, const char* fmt, ...);//不满足张博需求
 	void strTrim(std::string& str);
 	bool strFind(const std::string& str, const char* str_find);
+	std::wstring utf8_to_wstring(const std::string& str);
+	std::string wstring_to_utf8(const std::wstring& str);
 }
 
 #endif //_SAN_JCCOMMONAPI_H

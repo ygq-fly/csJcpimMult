@@ -79,6 +79,7 @@ public:
 	bool isUseExtBand;
 	std::string strErrorInfo;
 	std::wstring wstrLogPath;
+	std::wstring wstrLogFlag;
 
 public:
 	ViSession viDefaultRM;
@@ -120,8 +121,8 @@ private:
 		isUseExtBand(true),
 		strErrorInfo("Not"),
 		viDefaultRM(VI_NULL),
-		ext_sen_index(0)
-		
+		ext_sen_index(0),
+		wstrLogFlag(L"MBP")
 	{
 		for (int i = 0; i < 4; ++i) {
 			now_status[i] = false;
@@ -172,6 +173,7 @@ public:
 		else if (0 == strcmp(cInfo, "SOCKET")) {
 			//设置TERM_CHAR返回结束码:0x3FFF0018UL，(windows可以设置/r)
 			//s = viSetAttribute(vi, 0x3FFF0018UL, LINEFEED_CHAR);
+
 			//设置TERM_CHAR(必须要设置):0x3FFF0038UL
 			s = viSetAttribute(vi, 0x3FFF0038UL, VI_TRUE);
 		}
@@ -287,8 +289,9 @@ public:
 		std::string strTime;
 		Util::getNowTime(strTime);
 		strLog = "==>(" + strTime + ")" + strLog;
-		std::wstring log_path = wstrLogPath + L"log_637";
-		Util::logging(log_path.c_str(), strLog.c_str());
+		std::wstring log_path = wstrLogPath + L"log_" + wstrLogFlag;
+		//暂时关闭！
+		//Util::logging(log_path.c_str(), strLog.c_str());
 	}
 
 	//Sigleton model
