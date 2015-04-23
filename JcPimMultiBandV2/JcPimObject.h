@@ -19,6 +19,7 @@
 
 #define SMOOTH_TX_THREASOLD 2
 #define SMOOTH_VCO_THREASOLD 5
+#define SMOOTH_TX_ACCURACY 0.15
 
 static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
@@ -114,9 +115,9 @@ private:
 		isAllConn(false),
 		isSwhConn(false),
 		isExtSenConn(false),
-		now_vco_threasold(5),
-		now_tx_smooth_threasold(2),
-		now_tx_smooth_accuracy(0.15),
+		now_vco_threasold(SMOOTH_VCO_THREASOLD),
+		now_tx_smooth_threasold(SMOOTH_TX_THREASOLD),
+		now_tx_smooth_accuracy(SMOOTH_TX_ACCURACY),
 		debug_time(200),
 		isUseExtBand(true),
 		strErrorInfo("Not"),
@@ -140,18 +141,19 @@ private:
 			now_vco_enbale[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
 		}
 
-		debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
 		//PATH
 		wchar_t temp[1024] = { 0 };
 		GetPrivateProfileStringW(L"PATH", L"logging_file_path", L"", temp, 1024, wsPath_ini.c_str());
 		wstrLogPath = std::wstring(temp);
 		double vco_limit   = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
 		double tx_smooth   = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
-		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 2, wsPath_ini.c_str());
+		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 0.15, wsPath_ini.c_str());
 
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
-		now_tx_smooth_accuracy = tx_accuracy <= 0 ? 0.15 : tx_accuracy;
+		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
+
+		debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
 	}
 
 	~JcPimObject() {}

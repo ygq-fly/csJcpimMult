@@ -575,10 +575,10 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		else
 			return JC_STATUS_ERROR_SET_BOSH_USE_TX1TX2;
 
+		strLog += "   dd: " + std::to_string(dd) + "\r\n";
 		strLog += "   No.: " + std::to_string(i) + "\r\n";
 		strLog += "   tx_dsp: " + std::to_string(tx_dsp) + "\r\n";
 		strLog += "   tx_deviate: " + std::to_string(tx_deviate) + "\r\n";
-		strLog += "   dd: " + std::to_string(dd) + "\r\n";
 
 		//未检测功率时
 		if (tx_dsp <= 33){
@@ -600,25 +600,29 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		}
 		else {
 			if (tx_deviate >= (__pobj->now_tx_smooth_accuracy * -1) && tx_deviate <= __pobj->now_tx_smooth_accuracy)
-				return JC_STATUS_SUCCESS;	
+				return JC_STATUS_SUCCESS;
 
 			if (i == 0)
 				dd += tx_deviate * 0.9;
 			else
 				dd += (tx_deviate * 0.6);
 
+			double sig_val = 0;
 			if (byCarrier == JC_CARRIER_TX1) {
 				__pobj->dd1 = dd;
-				JcBool b = JcSetSig(JC_CARRIER_TX1, __pobj->now_txFreq1, __pobj->now_txPow1 + __pobj->offset_txPow1 + __pobj->offset_internal_txPow1 + dd);	
+				sig_val = __pobj->now_txPow1 + __pobj->offset_txPow1 + __pobj->offset_internal_txPow1 + dd;
+				JcBool b = JcSetSig(JC_CARRIER_TX1, __pobj->now_txFreq1, sig_val);	
 				if (FALSE == b)
 					return -10000;
 			}
 			else if (byCarrier == JC_CARRIER_TX2) {
 				__pobj->dd2 = dd;
-				JcBool b = JcSetSig(JC_CARRIER_TX2, __pobj->now_txFreq2, __pobj->now_txPow2 + __pobj->offset_txPow2 + __pobj->offset_internal_txPow2 + dd);
+				sig_val = __pobj->now_txPow2 + __pobj->offset_txPow2 + __pobj->offset_internal_txPow2 + dd;
+				JcBool b = JcSetSig(JC_CARRIER_TX2, __pobj->now_txFreq2, sig_val);
 				if (FALSE == b)
 					return -10000;
 			}
+			strLog += "   sig_val: " + std::to_string(sig_val) + "\r\n";
 			Util::setSleep(__pobj->debug_time);
 		}
 	}
@@ -1204,7 +1208,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 	resulte = 0;
 	std::string strLog = "start offset-tx\r\n";
 
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 8; i++) {
 		//设置
 		pow->InstrSetFreqPow(des_f_mhz * 1000, p_true);
 		Util::setSleep(100);
@@ -1212,7 +1216,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 		double v = -10000;
 		double r = 0;
 
-		for (size_t a = 0; a < 3; a++) {
+		for (int n = 0; n < 3; n++) {
 			if (__pobj->ext_sen_index == 1)
 				//外部传感器，读取数值
 				v = __pobj->ext_sen->InstrGetSesnor();
@@ -1273,7 +1277,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 		if (i >= 4)
 			r = r / 2;
 		else
-			p_true += (r * 3 / 4);
+			p_true += (r * 0.9);
 
 		if (p_true >= SIGNAL_SOURCE_MAX_POW) {
 			pow->InstrOpenPow(false);
@@ -1283,7 +1287,8 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 			return JC_STATUS_ERROR_SET_TX_OUT_RANGE;
 		}	
 	}
-	Util::setSleep(300);
+
+	Util::setSleep(500);
 	double sen = JcGetSen();
 	sen += JcGetSen();
 	sen += JcGetSen();
