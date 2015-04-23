@@ -314,9 +314,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged(L"错误： TX2未检测到功率！请检功率输出！");
+			Util::logged(L"错误： TX1未检测到功率！请检功率输出！");
 		else
-			Util::logged(L"错误： TX2功率偏差过大！");
+			Util::logged(L"错误： TX1功率偏差过大！");
 		return js;
 	}
 	//---------------------------------------------------------------------------------
