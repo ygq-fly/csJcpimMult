@@ -1,7 +1,7 @@
 #include "JcApi.h"
 #include "stdafx.h"
 #include "JcPimObject.h"
-#include "MyUtil\JcCommonAPI.h"
+#include "MyUtil/JcCommonAPI.h"
 
 #define __pobj JcPimObject::Instance()
 
@@ -53,8 +53,9 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 
 		//开始连接数据库
 #ifdef WIN32
-		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-		std::string sPath = conv.to_bytes(_startPath + L"\\JcOffset.db");
+		//std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+		//std::string sPath = conv.to_bytes(_startPath + L"\\JcOffset.db");
+		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
 		isSqlConn = __pobj->offset.Dbconnect(sPath.c_str());
 		if (!isSqlConn) {
 			Util::logged(L"fnSetInit: DB Connected Error!");
@@ -73,27 +74,28 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 
 		if ("0" != vaddr[0]){
 			if (false == JcConnSig(0, const_cast<char*>(vaddr[0].c_str())))
-				Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", conv.from_bytes(vaddr[0]).c_str());
+				Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", Util::utf8_to_wstring(vaddr[0]).c_str());
 		}
 
 		if ("0" != vaddr[1]){
 			if (false == JcConnSig(1, const_cast<char*>(vaddr[1].c_str())))
-				Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", conv.from_bytes(vaddr[1]).c_str());
+				Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", Util::utf8_to_wstring(vaddr[1]).c_str());
 		}
 
 		if ("0" != vaddr[3]) {
 			if (false == JcConnSen(const_cast<char*>(vaddr[3].c_str())))
-				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", conv.from_bytes(vaddr[3]).c_str());
+				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", Util::utf8_to_wstring(vaddr[3]).c_str());
 		}
 
 		if ("0" != vaddr[2]) {
 			if (false == JcConnAna(const_cast<char*>(vaddr[2].c_str())))
-				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", conv.from_bytes(vaddr[2]).c_str());
+				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", Util::utf8_to_wstring(vaddr[2]).c_str());
 		}
 
 		if ("0" != vaddr[4]) {
 			if (false == JcConnSwh())
-				strConnMsg = __pobj->swh->SwitchGetInfo();
+				//strConnMsg = __pobj->swh->SwitchGetInfo();
+				strConnMsg = "Switch Init: LoadMap Error!";
 		}
 
 		//判断连接
@@ -441,11 +443,11 @@ int fnGetSpectrumType(char* cSpectrumType) {
 //HW-API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//无需初始化可设置
+//废除
 void HwSetBandEnable(int iBand, JcBool isEnable) {
-	if (iBand < 0 || iBand > 6)
-		return;
-	_switch_enable[iBand] = isEnable;
+	//if (iBand < 0 || iBand > 6)
+	//	return;
+	//_switch_enable[iBand] = isEnable;
 }
 
 void HwSetExit(){
@@ -765,8 +767,6 @@ JcBool JcConnSwh() {
 		//开始连接
 		isConn = __pobj->swh->SwitchConnect();
 	}
-	else
-		Util::logged(L"fnSetInit: Switch LoadMap Error!");
 	
 	__pobj->isSwhConn = isConn;
 	return isConn;
@@ -1414,18 +1414,18 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;
-		else{
-			std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-			Util::logged(L"JcGetIDN: We Cannot Support (%s)!", conv.from_bytes(strIdn).c_str());
-		}
+		else
+			Util::logged(L"JcGetIDN: We Cannot Support (%s)!", Util::utf8_to_wstring(strIdn).c_str());
 	}
 	return iDeviceIDN;
 }
 
+//废除
 int JcGetSwtichEnable(int byInternalBandIndex){
-	if (byInternalBandIndex < 0 || byInternalBandIndex > 6)
-		return 0;
-	return _switch_enable[byInternalBandIndex];
+	//if (byInternalBandIndex < 0 || byInternalBandIndex > 6)
+	//	return 0;
+	//return _switch_enable[byInternalBandIndex];
+	return 1;
 }
 
 int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {

@@ -14,7 +14,14 @@
 			 3、开关正常操作过程中不加任何延时
 
 	存在问题：正常连接中，硬件因异常断线，而网络虚电路存在，偶尔无法复位模块。解决办法
-			 依次调用DisConnect、Connet函数。			
+			 依次调用DisConnect、Connet函数。		
+2015.3.20
+	修改内容：
+			1、连接时异步连接第一台按设置超时等待，然后每台分别超时等待500ms,最长8秒
+			（所有不在线）
+			2、增加两个主开关的控制使能
+2015.5.4
+	将Connect中的功能禁用
 *------------------------------------------------------------------------------*/
 #include "implementsetting.h"
 
@@ -35,7 +42,7 @@ namespace ns_com_io_ctl
 		//派生类析构开始，此时基类虚函数表指向基类虚函数表，
 		//这跟构造函数时未建立虚函数表有类似情况。
 		//DisConnect();
-	}
+	}	
 	//获取主机控制信息
 	void implementsetting::GetHostsCtrl(map<string,stHostControl>&host)
 	{
@@ -51,9 +58,12 @@ namespace ns_com_io_ctl
 		host = __hostCtrl;
 	}
 	//设置主机控制信息
-	void implementsetting::SetHostsCtrl(const map<string,stHostControl>&host)
+	//设置两个主开关箱的使能配置(信号源开关，检测开关箱)
+	void implementsetting::SetHostsCtrl(const map<string, stHostControl>&host, bool bSignal, bool bDetect)
 	{		
 		__hostCtrl = host;
+		__hostCtrl["Signalswich"].enable = bSignal;
+		__hostCtrl["Paspecumpwmt"].enable = bDetect;
 	}
 	//获取TX1名称列表
 	vector<string>&implementsetting::GetTx1NameList(void)
@@ -164,124 +174,77 @@ namespace ns_com_io_ctl
 	bool implementsetting::Connect(void)
 	{
 		if (!bLoadMap)
-		{
-			if (ACTION_MESSAGE_REPORT == 1)
-				Message("SWITCH::Connet failed::load map failed!");			
+		{			
+			Message("SWITCH::load map failed!");			
 			return false;
 		}
 
-		bool result = true,
-			hasHost = false,
-			cyc2 = false;
-		regex pattern("\\d{1,4}");
-		smatch mat;
+		return true;
 
-		for(map<string,string>::iterator hostIter = __ipmap.begin();
-			hostIter != __ipmap.end();
-			hostIter++)
-		{
-			regex_search(hostIter->first, mat, pattern);
+		//bool result = true,cyc2 = false;
+		//regex pattern("\\d{1,4}");
+		//smatch mat;
 
-			string strTemp(mat[0].str());
+		//for(map<string,string>::iterator hostIter = __ipmap.begin();
+		//	hostIter != __ipmap.end();
+		//	hostIter++)
+		//{
+		//	regex_search(hostIter->first, mat, pattern);
 
-			if ( strTemp != "" )
-			{				
-				__hostCtrl[strTemp].state = __hostCtrl[strTemp].enable;
-			}
-			else
-			{
-				strTemp = hostIter->first;				
-			}
+		//	string strTemp(mat[0].str());
 
-			if (!__hostCtrl[strTemp].enable)continue;
+		//	if ( strTemp != "" )
+		//	{				
+		//		__hostCtrl[strTemp].state = __hostCtrl[strTemp].enable;
+		//	}
+		//	else
+		//	{
+		//		strTemp = hostIter->first;				
+		//	}
 
-			hasHost = true;
+		//	if (!__hostCtrl[strTemp].enable)continue;			
 
-			IOConnectBegin(hostIter->second);
-		}			
+		//	IOConnectBegin(hostIter->second);
+		//}			
 
-		bool delayFirst = true;
-		bool funcResult = true;		
+		//bool delayFirst = true;
+		//bool funcResult = true;
+		//string infoPrintf("");
 
-		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
-			itr != __hostCtrl.end();
-			itr++)
-		{
-			if (!itr->second.enable)continue;
+		//for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
+		//	itr != __hostCtrl.end();
+		//	itr++)
+		//{
+		//	if (!itr->second.enable)continue;
 
-			result = IOConnectEnd(itr->second.ip, delayFirst?3000:100);
-			
-			if (result)
-				LoadModuleState(itr->second.ip);
-			else
-			{
-				string info("SWITCH<");
+		//	result = IOConnectEnd(itr->second.ip, delayFirst?3000:500);
+		//	
+		//	if (result)
+		//		LoadModuleState(itr->second.ip);
+		//	else
+		//		funcResult = false;
 
-				if (itr->second.name == "Signalswich")
-					info.append("main1");
-				else if (itr->second.name == "Paspecumpwmt")
-					info.append("main2");
-				else if (itr->second.name == "Testmdlte700")
-					info.append("model700");
-				else if (itr->second.name == "Testmddd800")
-					info.append("model800");
-				else if (itr->second.name == "Testmdgsm900")
-					info.append("model900");
-				else if (itr->second.name == "Testmddcs1800")
-					info.append("model1800");
-				else if (itr->second.name == "Testmdpcs1900")
-					info.append("model1900");
-				else if (itr->second.name == "Testmdwcdma2100")
-					info.append("model2100");
-				else if (itr->second.name == "Testmdlte2600")
-					info.append("model2600");
+		//	if (!funcResult)
+		//	{
+		//		infoPrintf.append("<Switch IP - "+itr->second.ip+">:Failed!\n");
 
-				info.append(">:IP(");
-				info.append(itr->second.ip);
-				info.append(")::Failed");
-				Message(info);
+		//		string info("SWITCH::Connet::IP(");
+		//		info.append(itr->second.ip);
+		//		info.append(")::Failed");
+		//		Message(info);				
+		//	}
 
-				funcResult = false;
-			}
+		//	itr->second.state = result;
 
-			if (!funcResult)
-			{
-				if (ACTION_MESSAGE_REPORT == 1)
-				{
-					string info("SWITCH<");
+		//	delayFirst = false;
+		//}
 
-					if (itr->second.name == "Signalswich")
-						info.append("main1");
-					else if (itr->second.name == "Paspecumpwmt")
-						info.append("main2");
-					else if (itr->second.name == "Testmdlte700")
-						info.append("model700");
-					else if (itr->second.name == "Testmddd800")
-						info.append("model800");
-					else if (itr->second.name == "Testmdgsm900")
-						info.append("model900");
-					else if (itr->second.name == "Testmddcs1800")
-						info.append("model1800");
-					else if (itr->second.name == "Testmdpcs1900")
-						info.append("model1900");
-					else if (itr->second.name == "Testmdwcdma2100")
-						info.append("model2100");
-					else if (itr->second.name == "Testmdlte2600")
-						info.append("model2600");
+		//if (!funcResult)
+		//{
+		//	Message(infoPrintf);
+		//}
 
-					info.append(">:IP(");
-					info.append(itr->second.ip);
-					info.append(")::Failed");
-					Message(info);
-				}
-			}
-
-			itr->second.state = result;
-
-			delayFirst = false;
-		}
-
-		return funcResult && hasHost;
+		//return funcResult;
 	}
 	//断开
 	void implementsetting::DisConnect(void)
@@ -359,6 +322,7 @@ namespace ns_com_io_ctl
 			itr != __ipmap.end();
 			itr++)
 		{
+			stHC.state = true;
 			stHC.enable = true;
 			stHC.name = itr->first;
 			stHC.ip = itr->second;
@@ -520,9 +484,8 @@ namespace ns_com_io_ctl
 	bool implementsetting::Excute(void)
 	{
 		if (!bLoadMap)
-		{
-			if (ACTION_MESSAGE_REPORT == 1)
-				Message("SWITCH::Excute failed::load map failed!");			
+		{			
+			Message("SWITCH::Excute failed::load map failed!");			
 			return false;
 		}
 
@@ -538,12 +501,19 @@ namespace ns_com_io_ctl
 		txBuf[0]='W';
 
 		//读入主机使能队列
-		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
+/*		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
 			itr != __hostCtrl.end();
 			itr++)
 		{
 			hostIPEnableList[itr->second.ip] = itr->second.enable;
-		}		
+		}*/		
+
+		for (map<string, string>::iterator itr = __ipmap.begin();
+			itr != __ipmap.end();
+			itr++)
+		{
+			hostIPEnableList[itr->second] = true;
+		}
 
 		for (map<string, unsigned short*>::iterator actionIter = __actionList.begin();
 			actionIter != __actionList.end();
@@ -596,11 +566,11 @@ namespace ns_com_io_ctl
 				{
 					funcResult = wrResult = IOWrite(ip, (char*)txBuf, sizeof(txBuf));
 
-					if (wrResult == false)break;
+					if (wrResult == false)continue;
 
 					funcResult = wrResult = IORead(ip, (char*)rxBuf, &len);
 
-					if (wrResult == false)break;
+					if (wrResult == false)continue;
 
 					for (int j = 0; j < sizeof(txBuf); j++)
 					{
@@ -617,6 +587,7 @@ namespace ns_com_io_ctl
 				if (!funcResult)break;
 			}
 
+			//break;
 			if (replyCnt > 1 || funcResult)break;
 
 			replyCnt++;
@@ -658,21 +629,18 @@ namespace ns_com_io_ctl
 
 			if (!funcResult)
 			{
-				if (ACTION_MESSAGE_REPORT == 1)
+				string info("MatrixSwitch::Excute::IP(");
+					
+				for (vector<string>::iterator itr = actionQueue.begin();
+					itr != actionQueue.end();
+					itr++)
 				{
-					string info("SWITCH::Excute::IP(");
-					
-					for (vector<string>::iterator itr = actionQueue.begin();
-						itr != actionQueue.end();
-						itr++)
-					{
-						info.append(itr->c_str());
-						info.append("/");
-					}
-					
-					info.append(")::Failed after reset");
-					Message(info);
+					info.append(itr->c_str());
+					info.append("/");
 				}
+					
+				info.append(")::Failed after reset");
+				Message(info);
 
 				break;
 			}

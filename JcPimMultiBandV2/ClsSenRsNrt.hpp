@@ -54,7 +54,8 @@ public:
 		unsigned char buf[256] = {0};
 		unsigned long retCount = 0;
 		double val = -10000;
-		_viStatus = viPrintf(_viSession, "TRIG\n");
+		//_viStatus = viPrintf(_viSession, "TRIG\n");
+		AgWrite("TRIG\n");
 
 		while (1)
 		{
@@ -65,9 +66,11 @@ public:
 		}
 
 		if (_isAver)
-			_viStatus = viPrintf(_viSession, "SENS1:DATA? 'POW:FORW:AVER'\n");
+			//_viStatus = viPrintf(_viSession, "SENS1:DATA? 'POW:FORW:AVER'\n");
+			AgWrite("SENS1:DATA? 'POW:FORW:AVER'\n");
 		else
-			_viStatus = viPrintf(_viSession, "SENS1:DATA? 'POW:FORW:PEP'\n");
+			//_viStatus = viPrintf(_viSession, "SENS1:DATA? 'POW:FORW:PEP'\n");
+			AgWrite("SENS1:DATA? 'POW:FORW:PEP'\n");
 		_viStatus = viRead(_viSession, buf, 256, &retCount);
 		//×ª»»
 		if (retCount)

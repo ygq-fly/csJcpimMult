@@ -2,6 +2,7 @@
 #define _IF_JCSWITCH_HPP_
 
 #include "IfInstrument.hpp"
+#include "stdafx.h"
 
 Interface_ IfSwitch
 {

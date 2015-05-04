@@ -46,5 +46,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #define OUT
+#define m_swprintf swprintf_s
+#define m_sprintf  sprintf_s
+#define m_snprintf snprintf_s
 
 // TODO: reference additional headers your program requires here

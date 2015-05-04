@@ -146,6 +146,8 @@ void Util::logging(const wchar_t* log_file, const char *fmt, ...) {
 		//使用wchar_t
 		swprintf_s(log_name, L"%s_%d", log_file, file_no);
 		_wfopen_s(&pFile, log_name, L"a");
+
+		//pFile = _wfopen(log_name, L"a");
 		//不需要隐身了
 		//if(TRUE != SetFileAttributesW(log_name, FILE_ATTRIBUTE_HIDDEN)) {
 		//	//return;

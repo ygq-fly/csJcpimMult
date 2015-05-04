@@ -136,7 +136,7 @@ public:
 
         
         //开始存储，按列名写入，注：未列入的列名默认值为0
-		std::string sql = "insert or replace into [" + stable + "] " + ss_freq.str() + " values " + ss_val.str();
+		std::string sql = "insert or replace into [" + stable + "] " + std::string(ss_freq.str()) + " values " + ss_val.str();
         sqlite3_stmt* pstmt;
         sqlite3_prepare(_pConn, sql.c_str(), -1, &pstmt, NULL);
         int resulte = sqlite3_step(pstmt);

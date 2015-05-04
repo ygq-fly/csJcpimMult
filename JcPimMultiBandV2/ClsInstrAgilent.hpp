@@ -2,7 +2,7 @@
 #define _CLS_AGILENT_HPP_
 
 #include "stdafx.h"
-#include "MyUtil\JcCommonAPI.h"
+#include "MyUtil/JcCommonAPI.h"
 
 class ClsInstrAgilent
 {

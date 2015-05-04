@@ -9,17 +9,15 @@
 * @date		:2015.3.1
 * @brief	:
 *------------------------------------------------------------------------------*/
-
 #pragma once
-
-#include "../StdAfx.h"
+#include "../stdafx.h"
 #include "switch_info.h"
 
 namespace ns_com_io_ctl
 {
 	using  namespace std;
 //#define __DEBUG_PRINT
-#define	ACTION_MESSAGE_REPORT    (0)   //1:enable    0:disable
+#define	ACTION_MESSAGE_REPORT    (1)   //1:enable    0:disable
 
 	class implementsetting
 	{
@@ -90,7 +88,7 @@ namespace ns_com_io_ctl
 		virtual~implementsetting(void);
 	public:
 		void GetHostsCtrl(map<string,stHostControl>&host);
-		void SetHostsCtrl(const map<string,stHostControl>&host);
+		void SetHostsCtrl(const map<string, stHostControl>&host, bool bSignal, bool bDetect);
 		vector<string>&GetModuleList(void);
 		vector<string>&GetTx1NameList(void);
 		vector<string>&GetTx2NameList(void);
@@ -104,7 +102,7 @@ namespace ns_com_io_ctl
 		void SelChanTx1(const string&chan);
 		void SelChanTx2(const string&chan);
 		void SelChanPim(const string&chan);
-		void SelChanDet(const string&chan);
+		void SelChanDet(const string&chan);		
 		static void StringReplace(string&strBase, string strSrc, string strDes);
 		static vector<string> split(string str,string pattern);
 	protected:
