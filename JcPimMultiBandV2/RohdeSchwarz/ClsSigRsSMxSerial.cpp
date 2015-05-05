@@ -104,8 +104,6 @@ bool ClsSigRsSMxSerial::InstrPowStatus() const {
 bool ClsSigRsSMxSerial::InstrGetReferenceStatus() {
 
     long ret = 0;
-    bool reslute = true;
-
 	//------------------------write by san-------------------
 	//主动检测及其不稳定，总共4秒的延时完全不稳定！
 	//抛弃，干脆照搬纳特实现方法！
@@ -121,29 +119,35 @@ bool ClsSigRsSMxSerial::InstrGetReferenceStatus() {
 	for (;;) {
 		//模仿纳特检测方法， 最多检测时钟同步线3秒
 		uint64_t tick_stop = Util::get_tick_count();
-		if (3000 < (tick_stop - tick_start))
+		if (3000 < (tick_stop - tick_start)) {
+			Util::logged("ROCS: Read Error Time Out!");
 			break;
+		}
 
 		//开始读取错误
 		char buf[1024] = { 0 };
-		if (AgWriteAndRead("SYST:ERR?\n", buf) >= 0)
-			return false;
+		if (AgWriteAndRead("SYST:ERR?\n", buf) <= 0) {
+			continue;
+		}
+		//char buf[128] = {0};
+		//unsigned long retCount = 0;
+		//viQueryf(_viSession, const_cast<char*>(c_cmd), "%#t", &retCount, buf);
 
 		//检测到关键字后返回
 		std::string temp(buf);
 		if (std::string::npos != temp.find("synchronization")){
 			//printf("%s\n", buf);
+			Util::logged(buf);
 			AgWrite("*RST\n");
 			AgWrite("*CLS\n");
-			reslute = false;
-			break;
+			return false;
 		}
 
 		//无错误直接返回
 		if (std::string::npos != temp.find("No error"))
 			break;
 	}
-    return reslute;
+    return true;
 }
 
 bool ClsSigRsSMxSerial::InstrInit()

@@ -57,7 +57,7 @@ public:
 		_viStatus = viPrintf(_viSession, const_cast<char*>(c_cmd));
 		if (_viStatus) return 0;
 		//¿ªÊ¼¶ÁÈ¡
-		unsigned char buf[128] = {0};
+		unsigned char buf[256] = {0};
 		unsigned long retCount = 0;
 		_viStatus = viRead(_viSession, buf, 128, &retCount);
 

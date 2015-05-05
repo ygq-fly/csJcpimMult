@@ -134,6 +134,15 @@ void Util::logged(const wchar_t* fmt, ...) {
 	MessageBoxW(GetForegroundWindow(), wInfo, L"Tips", MB_TOPMOST);
 }
 
+void Util::logged(const char* fmt, ...) {
+	char cInfo[256] = { 0 };
+	va_list ap;
+	va_start(ap, fmt);
+	vsprintf_s(cInfo, fmt, ap);
+	va_end(ap);
+	MessageBoxA(GetForegroundWindow(), cInfo, "Tips", MB_TOPMOST);
+}
+
 void Util::logging(const wchar_t* log_file, const char *fmt, ...) {
     static int file_no = 1;
     static FILE* pFile = NULL;

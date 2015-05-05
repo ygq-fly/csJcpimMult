@@ -24,6 +24,7 @@ namespace Util {
 	double getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double DefaultVal, const wchar_t* FilePath);
 	void getNowTime(OUT std::string& strTime);
 	void logged(const wchar_t* fmt, ...);
+	void logged(const char* fmt, ...);
 	void logging(const wchar_t* log_name, const char* fmt, ...);//不满足张博需求
 	void strTrim(std::string& str);
 	bool strFind(const std::string& str, const char* str_find);
