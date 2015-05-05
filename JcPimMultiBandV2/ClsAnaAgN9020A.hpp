@@ -167,12 +167,17 @@ public:
 		InstrSetVbw(10);
 		InstrSetSpan(500);
 	}
+	
 	void InstrVcoSetting() {
 		//OFFSET÷√¡„
 		InstrSetOffset(0);
-		InstrSetRbw(10 * 1000);
-		InstrSetVbw(10 * 1000);
-		InstrSetSpan(400 * 1000);
+		//2015-5-5/vco: 10khz-100hz-100hz
+		InstrSetRbw(100);
+		InstrSetVbw(100);
+		InstrSetSpan(10 * 1000);
+		//InstrSetRbw(10 * 1000);
+		//InstrSetVbw(10 * 1000);
+		//InstrSetSpan(400 * 1000);
 	}
 	void InstrTxOffsetSetting() {
 		//OFFSET÷√¡„

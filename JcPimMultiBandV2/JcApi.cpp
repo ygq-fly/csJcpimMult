@@ -553,9 +553,10 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 
 	//if (dd > SMOOTH_VCO_THREASOLD || dd < (SMOOTH_VCO_THREASOLD*-1))
 	if (dd > __pobj->now_vco_threasold || dd < (__pobj->now_vco_threasold * -1))
-		return 0;
+		return FALSE;
 	else
-		return 1;
+		return TRUE;
+	//return real_val >= -95 ? true : false;
 }
 
 //检测功放稳定度(必须功放开启后检测) return dd
@@ -781,10 +782,11 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 
 	double vco_freq_mhz = 1334 + 2 * bySwitchBand;
 	__pobj->ana->InstrVcoSetting();
+	__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
 	Util::setSleep(100);
 	vco = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
 	__pobj->ana->InstrPimSetting();
-	return vco >= -90 ? true : false;
+	return vco >= -95 ? true : false;
 }
 //获取错误
 void JcGetError(char* msg, size_t max) {
