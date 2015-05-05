@@ -15,7 +15,6 @@
 2015.5.4
 	在IOWrite中加入第一次连接
 *------------------------------------------------------------------------------*/
-#include "../stdafx.h"
 #include "com_io_ctl.h"
 
 namespace ns_com_io_ctl{
@@ -107,8 +106,6 @@ namespace ns_com_io_ctl{
 
 		__socketClient[host] = hSocket;
 		__socketState[host] = result;
-
-		if (!result)Message("MatrixSwitch::"+host+"::Connect::Failed!");
 
 		return result;
 	}
@@ -228,13 +225,7 @@ namespace ns_com_io_ctl{
 
 		if (__conType == E_TCP)
 		{
-			if (__socketState[host] == false)
-				result = IOConnect(host);
-			else
-				result = true;
-
-			if (!result)return false;
-
+			if (__socketState[host] == false)return false;
 			SOCKET hSocket = __socketClient[host];
 			result = recv(hSocket, buf, *len, 0) != SOCKET_ERROR;
 		}
@@ -691,7 +682,7 @@ namespace ns_com_io_ctl{
 	void com_io_ctl::Message(const string&info)
 	{			
 		if (ACTION_MESSAGE_REPORT == 1)
-			MessageBox(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK);
+			MessageBox(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK|MB_TOPMOST);
 	}
 
 	string com_io_ctl::logGetLastError()

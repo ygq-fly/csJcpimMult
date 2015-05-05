@@ -131,8 +131,10 @@ bool ClsSigRsSMxSerial::InstrGetReferenceStatus() {
 
 		//检测到关键字后返回
 		std::string temp(buf);
-		if (std::string::npos != temp.find("reference")){
+		if (std::string::npos != temp.find("synchronization")){
 			//printf("%s\n", buf);
+			AgWrite("*RST\n");
+			AgWrite("*CLS\n");
 			reslute = false;
 			break;
 		}

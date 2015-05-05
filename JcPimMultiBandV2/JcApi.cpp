@@ -42,14 +42,14 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 
 		//分配地址
 		std::istringstream iss(cDeviceAddr);
-		std::vector<std::string> vaddr;
+		//std::vector<std::string> vaddr;
 		std::string stemp = "";
 		while (std::getline(iss, stemp, ',')) {
-			vaddr.push_back(stemp);
+			__pobj->vaddr.push_back(stemp);
 		}
 		//补位,默认开启开关
-		if (vaddr.size() == 4)
-			vaddr.push_back("1");
+		if (__pobj->vaddr.size() == 4)
+			__pobj->vaddr.push_back("1");
 
 		//开始连接数据库
 #ifdef WIN32
@@ -70,29 +70,29 @@ int fnSetInit(JC_ADDRESS cDeviceAddr) {
 		ViStatus s = viOpenDefaultRM(&__pobj->viDefaultRM);
 		if (s) return false;
 
-		if (vaddr.size() < 5) return JC_STATUS_ERROR;
+		if (__pobj->vaddr.size() < 5) return JC_STATUS_ERROR;
 
-		if ("0" != vaddr[0]){
-			if (false == JcConnSig(0, const_cast<char*>(vaddr[0].c_str())))
-				Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", Util::utf8_to_wstring(vaddr[0]).c_str());
+		if ("0" != __pobj->vaddr[0]){
+			if (false == JcConnSig(0, const_cast<char*>(__pobj->vaddr[0].c_str())))
+				Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[0]).c_str());
 		}
 
-		if ("0" != vaddr[1]){
-			if (false == JcConnSig(1, const_cast<char*>(vaddr[1].c_str())))
-				Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", Util::utf8_to_wstring(vaddr[1]).c_str());
+		if ("0" != __pobj->vaddr[1]){
+			if (false == JcConnSig(1, const_cast<char*>(__pobj->vaddr[1].c_str())))
+				Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[1]).c_str());
 		}
 
-		if ("0" != vaddr[3]) {
-			if (false == JcConnSen(const_cast<char*>(vaddr[3].c_str())))
-				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", Util::utf8_to_wstring(vaddr[3]).c_str());
+		if ("0" != __pobj->vaddr[3]) {
+			if (false == JcConnSen(const_cast<char*>(__pobj->vaddr[3].c_str())))
+				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[3]).c_str());
 		}
 
-		if ("0" != vaddr[2]) {
-			if (false == JcConnAna(const_cast<char*>(vaddr[2].c_str())))
-				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", Util::utf8_to_wstring(vaddr[2]).c_str());
+		if ("0" != __pobj->vaddr[2]) {
+			if (false == JcConnAna(const_cast<char*>(__pobj->vaddr[2].c_str())))
+				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[2]).c_str());
 		}
 
-		if ("0" != vaddr[4]) {
+		if ("0" != __pobj->vaddr[4]) {
 			if (false == JcConnSwh())
 				//strConnMsg = __pobj->swh->SwitchGetInfo();
 				strConnMsg = "Switch Init: LoadMap Error!";
@@ -235,11 +235,15 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 }
 
 int fnCheckTwoSignalROSC() {
-	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX1) == FALSE)
+	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX1) == FALSE) {
+		Util::logged(L"fnCheckTwoSignalROSC: (SG1) Check Fail！");
 		return JC_STATUS_ERROR_CHECK_SIG1_ROSC_FAIL;
+	}
 
-	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX2) == FALSE)
+	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX2) == FALSE) {
+		Util::logged(L"fnCheckTwoSignalROSC: (SG2) Check Fail！");
 		return JC_STATUS_ERROR_CHECK_SIG2_ROSC_FAIL;
+	}
 	return 0;
 }
 
@@ -445,9 +449,9 @@ int fnGetSpectrumType(char* cSpectrumType) {
 
 //废除
 void HwSetBandEnable(int iBand, JcBool isEnable) {
-	//if (iBand < 0 || iBand > 6)
-	//	return;
-	//_switch_enable[iBand] = isEnable;
+	if (iBand < 0 || iBand > 6)
+		return;
+	_switch_enable[iBand] = isEnable;
 }
 
 void HwSetExit(){
@@ -933,25 +937,13 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
 		return false;
 	}
 
-	//计算判断当前模块
-	int a, b, c;
-	a = iSwitchTx1 / 2;
-	b = iSwitchTx2 / 2;
-	c = iSwitchPim / 2;
-
-	bool isSucc = false;
-	if (_switch_enable[a] && _switch_enable[b] && _switch_enable[c]) {
-		//转换耦合器JC_COUP标号
-		int coup = 0;
-		if (iSwitchTx1 % 2 == 0)
-			coup = iSwitchTx1 + iSwitchCoup;
-		else
-			coup = (iSwitchTx1 - 1) + iSwitchCoup;
-		isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
-		if (!isSucc) __pobj->strErrorInfo = "Switch: Excut Error!\r\n";
-	}
-	else 
-		__pobj->strErrorInfo = "Switch: This Module is not connected\r\n";
+	int coup = 0;
+	if (iSwitchTx1 % 2 == 0)
+		coup = iSwitchTx1 + iSwitchCoup;
+	else
+		coup = (iSwitchTx1 - 1) + iSwitchCoup;
+	bool isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
+	if (!isSucc) __pobj->strErrorInfo = "Switch: Excut Error!\r\n";
 
 	return isSucc;
 }
@@ -1422,10 +1414,9 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 
 //废除
 int JcGetSwtichEnable(int byInternalBandIndex){
-	//if (byInternalBandIndex < 0 || byInternalBandIndex > 6)
-	//	return 0;
-	//return _switch_enable[byInternalBandIndex];
-	return 1;
+	if (byInternalBandIndex < 0 || byInternalBandIndex > 6)
+		return 0;
+	return _switch_enable[byInternalBandIndex];
 }
 
 int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {

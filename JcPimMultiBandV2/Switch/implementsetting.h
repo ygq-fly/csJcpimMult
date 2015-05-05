@@ -13,6 +13,7 @@
 #include "../stdafx.h"
 #include "switch_info.h"
 
+
 namespace ns_com_io_ctl
 {
 	using  namespace std;

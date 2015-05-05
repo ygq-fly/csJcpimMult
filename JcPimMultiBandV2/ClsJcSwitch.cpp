@@ -12,7 +12,7 @@ bool ClsJcSwitch::SwitchInit() {
 	bool isConfig = _cic.LoadMap();
 	
 	if (!isConfig){
-		_info = "LOAD MAP ERROR";
+		_info = "switch: loadMap error\r\n";
 		return false;
 	}
 	//获取头信息

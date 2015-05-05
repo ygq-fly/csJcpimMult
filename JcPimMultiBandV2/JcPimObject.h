@@ -28,12 +28,6 @@ static std::wstring _startPath = [](){
 	wchar_t wcBuff[512] = { 0 };
 	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
 	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
-
-	for (int i = 0; i < 7; i++){
-		wchar_t param[10] = { 0 };
-		swprintf_s(param, L"band%d", i);
-		_switch_enable[i] = GetPrivateProfileIntW(L"Connect_Enable", param, 1, wsPath_ini.c_str());
-	}
 	_debug_enable = GetPrivateProfileIntW(L"Settings", L"debug", 0, wsPath_ini.c_str());
 
 	return std::wstring(wcBuff);
@@ -90,6 +84,7 @@ public:
 	std::shared_ptr<IfSignalSource> sig2;
 	std::shared_ptr<IfVna> vna;
 	std::shared_ptr<ClsJcSwitch> swh;
+	std::vector<std::string> vaddr;
 
 	JcOffsetDB offset;
 	//外部传感器
