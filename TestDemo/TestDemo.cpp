@@ -6,13 +6,11 @@
 
 void Test_pim();
 void Test_dll();
-void Test_mingw_dll();
 
 //int _tmain(int argc, _TCHAR* argv[])
 int main(int argc, char* argv[])
 {
 	std::cout << "Welcome!" << std::endl;
-	//std::thread t4([]() { std::cout << "Hello, C++11 thread\n"; });
 
 	//Test_pim();
 	for (int i = 0; i < 1; i++) {
@@ -20,13 +18,15 @@ int main(int argc, char* argv[])
 		Test_dll();
 	}
 
+	#ifdef _MSC_VER
 	getchar();
+	#endif
 	return 0;
 }
 
 void Test_dll(){
 	HINSTANCE hinst;
-	hinst = LoadLibrary(_T("JcPimMultiBandV2.dll"));
+	hinst = LoadLibraryW(L"libJcPimMultiBandV2.dll");
 
 	if (NULL == hinst){
 		std::cout << "LoadLibrary Error!" << std::endl;
@@ -102,21 +102,6 @@ void Test_dll(){
 		std::cout << msg << std::endl;
 	}
 
-	//BOOL B = jcSetSig(1, 930, -60);
-	//printf("set sig1: %d\n", B);
-	//B = jcSetSig(2, 960, -60);
-	//printf("set sig2: %d\n", B);
-	//
-	//for (int i = 0; i < 5; i++) {
-
-	//	jcGetSig_ExtRefStatus(1);
-	//	//jcGetSig_ExtRefStatus(2);
-	//	//double ana = jcGetAna(930, false);
-	//	//printf("ana: %lf\n", ana);
-	//	//double sen = jcGetSen();
-	//	//printf("sen: %lf\n", sen);
-	//}
-
 	//���
 	std::cout << std::endl;
 	for (int i = 0; i < 7; i++) {
@@ -139,7 +124,4 @@ void Test_dll(){
 	FreeLibrary(hinst);
 }
 
-void Test_mingw_dll() {
-
-}
 
