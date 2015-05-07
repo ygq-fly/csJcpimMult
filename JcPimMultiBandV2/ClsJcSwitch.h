@@ -32,7 +32,7 @@ private:
 private:
 	bool _isConn;
 	ns_com_io_ctl::com_io_ctl _cic;
-	std::map<std::string, ns_com_io_ctl::com_io_ctl::stHostControl> _hosts;
+	std::map<std::string, ns_com_io_ctl::implementsetting::stHostControl> _hosts;
 
 	std::vector<std::string> _moduleList;
 	std::vector<std::string> _nltx1;

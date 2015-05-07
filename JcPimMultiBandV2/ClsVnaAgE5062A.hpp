@@ -51,7 +51,7 @@ public:
 public:
 	void SetMeasType(const char* inputSparam) {
 		std::string stemp;
-		stemp = "CALC1:PAR1:DEF " + std::string(inputSparam) + '\n';
+		stemp = "CALC1:PAR1:DEF " + std::string(inputSparam) + "\n";
 		_isCmdSucc = AgWrite(stemp.c_str());
 	}
 
@@ -61,11 +61,11 @@ public:
 
 		std::string stemp;
 		//need c++11 support!
-		stemp = "SENS1:FREQ:STAR " + std::to_string(f_start_mhz) + '\n';
+		stemp = "SENS1:FREQ:STAR " + std::to_string(f_start_mhz) + "\n";
 		_isCmdSucc = AgWrite(stemp.c_str());
 
 		//need c++11 support!
-		stemp = "SENS1:FREQ:STOP " + std::to_string(f_stop_mhz) + '\n';
+		stemp = "SENS1:FREQ:STOP " + std::to_string(f_stop_mhz) + "\n";
 		_isCmdSucc = AgWrite(stemp.c_str());
 
 		return _isCmdSucc;
@@ -74,11 +74,11 @@ public:
 	bool SetIFBand(int iBw, int iPoints) {
 		std::string stemp;
 		//need c++11 support!
-		stemp = "SENS1:BWID " + std::to_string(iBw) + '\n';
+		stemp = "SENS1:BWID " + std::to_string(iBw) + "\n";
 		_isCmdSucc = AgWrite(stemp.c_str());
 
 		//need c++11 support!
-		stemp = "SENS1:SWE:POIN " + std::to_string(iPoints) + '\n';
+		stemp = "SENS1:SWE:POIN " + std::to_string(iPoints) + "\n";
 		_isCmdSucc = AgWrite(stemp.c_str());
 
 		return _isCmdSucc;

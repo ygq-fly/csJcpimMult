@@ -89,7 +89,7 @@ public:
 
 	//等待
 	bool AgWait() {
-		viPrintf(_viSession, "*OPC\n");
+		viPrintf(_viSession, const_cast<char*>("*OPC\n"));
 		_esr = 0;
 		//根据visa超时时间,设置500次
 		for (int i = 0; i <= 500; i++)
@@ -97,7 +97,7 @@ public:
 			if (i == 500)
 				return false;
 
-			viQueryf(_viSession, "*ESR?\n", "%ld", &_esr);
+			viQueryf(_viSession, const_cast<char*>("*ESR?\n"), const_cast<char*>("%ld"), &_esr);
 			if (_esr & 1)
 				break;
 
@@ -111,9 +111,9 @@ public:
 		if (err < VI_SUCCESS)
 		{
 			unsigned long retCount = 0;
-			unsigned char  error_message[256] = { 0 };
+			unsigned char error_message[256] = { 0 };
 
-			_viStatus = viPrintf(_viSession, "SYST:ERR?\n");
+			_viStatus = viPrintf(_viSession, const_cast<char*>("SYST:ERR?\n"));
 			_viStatus = viRead(_viSession, error_message, 256, &retCount);
 			//viQueryf(_viSession, "")
 			printf("Error: %s\n", error_message);

@@ -281,7 +281,7 @@ namespace ns_com_io_ctl{
 
 		ip = split(host, ":")[0];
 
-		SOCKET sckt = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, NULL);
+		SOCKET sckt = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, 0);
 		SOCKADDR_IN addr;
 		addr.sin_family = AF_INET;
 		addr.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -682,7 +682,7 @@ namespace ns_com_io_ctl{
 	void com_io_ctl::Message(const string&info)
 	{			
 		if (ACTION_MESSAGE_REPORT == 1)
-			MessageBox(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK|MB_TOPMOST);
+			MessageBoxW(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK|MB_TOPMOST);
 	}
 
 	string com_io_ctl::logGetLastError()

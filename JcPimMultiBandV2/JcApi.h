@@ -115,7 +115,7 @@ enum JC_DEVICE {
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //设置初始化地址：格式为逗号隔开SG1addr,SG2Addr,SAAddr,PMAddr
-JIONTCOM_API int fnSetInit(JC_ADDRESS cDeviceAddr);
+JIONTCOM_API int fnSetInit(const JC_ADDRESS cDeviceAddr);
 //关闭连接
 JIONTCOM_API int fnSetExit();
 //设置频段
@@ -168,7 +168,7 @@ JC_API JcBool JcConnAna(JC_ADDRESS cAddr);
 JC_API JcBool JcConnSen(JC_ADDRESS cAddr);
 JC_API JcBool JcConnSwh();
 JC_API JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand);
-JC_API void  JcGetError(char* msg, size_t max);
+JC_API void  JcGetError(char* msg, unsigned int max);
 JC_API JcBool JcGetDeviceStatus(JcInt8 byDevic);
 
 JC_API JcBool JcGetSig_ExtRefStatus(JcInt8 byCarrier);

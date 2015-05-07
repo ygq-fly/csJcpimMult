@@ -60,7 +60,7 @@ public:
 		while (1)
 		{
 			_esr = 0;
-			viQueryf(_viSession, "*OPC?\n", "%ld", &_esr);
+			viQueryf(_viSession, (char*)"*OPC?\n", (char*)"%ld", &_esr);
 			if (_esr & 1) break;
 			Util::setSleep(300);
 		}

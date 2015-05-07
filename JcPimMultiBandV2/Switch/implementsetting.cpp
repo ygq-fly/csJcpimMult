@@ -262,7 +262,7 @@ namespace ns_com_io_ctl
 		}
 	}
 	//获取名称列表
-	vector<string>&implementsetting::GetNameList(string&strBase)
+	vector<string>&implementsetting::GetNameList(string&& strBase)
 	{	
 		__nameList.clear();
 		StringReplace(strBase," ","");
@@ -302,7 +302,8 @@ namespace ns_com_io_ctl
 			vector<string>&temp =  GetNameList( GetRowFromIMFile("switch",__switchNameList[i],""));
 			for(int j=0;j<(int)temp.size();j++)
 			{
-				string&index = GetRowFromIMFile("switch",temp[j],"0");
+				//mingw编译不通过，改为拷贝赋值
+				string index = GetRowFromIMFile("switch",temp[j],"0");
 				is.io[temp[j]] = atol(index.c_str());
 			}
 			__switchMap[__switchNameList[i]] = is;
@@ -351,7 +352,8 @@ namespace ns_com_io_ctl
 
 		for(int i=0;i<(int)ac.namelist.size();i++)
 		{
-			string&funcStr = GetRowFromIMFile(section,ac.namelist[i],"");
+			//mingw编译不通过，改为拷贝赋值
+			string funcStr = GetRowFromIMFile(section,ac.namelist[i],"");
 			rowRun rr;
 			GetRowRunFunc(funcStr,rr);
 			ac.actionMap[ac.namelist[i]] = rr;		
@@ -361,7 +363,8 @@ namespace ns_com_io_ctl
 	void implementsetting::GetRowRunFunc(string str,rowRun&rr)
 	{
 		StringReplace(str," ","");
-		vector<string>&temp = split(str,"),");
+		//mingw编译不通过，改为拷贝赋值
+		vector<string>temp = split(str,"),");
 					
 		iniFunc ifc;
 		string buff;
@@ -370,7 +373,8 @@ namespace ns_com_io_ctl
 		{						
 			buff = split(temp[j],"(")[1];
 			StringReplace(buff,")","");
-			vector<string>&parav = split(buff,",");
+			//mingw编译不通过，改为拷贝赋值
+			vector<string>parav = split(buff,",");
 
 			ifc.swName = split(temp[j],"(")[0];
 			ifc.ip = __ipmap[parav[0]];
@@ -390,7 +394,11 @@ namespace ns_com_io_ctl
 		{
 			for(int i = 0,j=0;i<100;i++)
 			{
+				#ifdef _MSC_VER
 				_itoa_s(i,pBuf,10);
+				#else
+				itoa(i, pBuf, 10);
+				#endif
 				strBuff = GetRowFromIOFile(*swName,pBuf,"");
 				if(strBuff != "")
 				{				
@@ -694,7 +702,8 @@ namespace ns_com_io_ctl
 	bool implementsetting::ExcuteCmd(const string&ip,const string&sw,int chan)
 	{
 		string str = __ioInfoMap[sw][chan-1];
-		vector<string>&gpioValueStr = split(str,",");
+		//mingw编译不通过，改为拷贝赋值
+		vector<string> gpioValueStr = split(str,",");
 		unsigned short *gpioBak = __ipGpioBak[ip];
 
 		for(int i =0;i<5;i++)
@@ -815,7 +824,11 @@ namespace ns_com_io_ctl
 			itr++
 			)
 		{
+			#ifdef _MSC_VER
 			_itoa_s(*itr, str, 10);
+			#else
+			itoa(*itr, str, 10);
+			#endif
 			__moduleList.push_back(str);
 		}
 

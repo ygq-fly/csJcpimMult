@@ -3,7 +3,8 @@
 // are changed infrequently
 //
 
-#pragma once
+#ifndef _SAN_STDAFX_H_
+#define _SAN_STDAFX_H_
 
 #include "targetver.h"
 
@@ -19,30 +20,34 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-
 #include <thread>
 #include <memory>
 #include <locale>
-#include <codecvt>
-
 #include <exception>
-
-#include "3rdParty/visa.h"
-#include "3rdParty/rsnrpz.h"
-#include "3rdParty/sqlite3.h"
-
-#include <Winsock2.h>
-#include <mswsock.h>
 #include <bitset>
 #include <fstream>
 #include <list>
 #include <map>
 #include <regex>
 
+#include <Winsock2.h>
+#include <mswsock.h>
+
+#include "3rdParty/visa.h"
+#include "3rdParty/rsnrpz.h"
+#include "3rdParty/sqlite3.h"
+
+#ifdef _MSC_VER
+#include <codecvt>
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")
-
 #pragma comment(lib, "Version.lib")
+#endif
+
+#ifdef __GNUC__
+#include <pthread.h>
+#endif
+
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #define OUT
@@ -51,3 +56,4 @@
 #define m_snprintf snprintf_s
 
 // TODO: reference additional headers your program requires here
+#endif

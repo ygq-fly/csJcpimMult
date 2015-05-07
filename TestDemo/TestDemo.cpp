@@ -72,7 +72,7 @@ enum JC_DEVICE {
 
 typedef int(*pTest)(int, int);
 //JIONTCOM_API int fnSetInit(ADDRESS_ cDeviceAddr);
-typedef int(*pSetInit)(char*);
+typedef int(*pSetInit)(const char*);
 //JIONTCOM_API int fnSetExit();
 typedef int(*pSetExit)();
 //JIONTCOM_API int fnSetMeasBand(BYTE_ byBandIndex);

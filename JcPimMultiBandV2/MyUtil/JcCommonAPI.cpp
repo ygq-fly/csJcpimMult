@@ -10,7 +10,7 @@
 int Util::getMyPath(wchar_t *w_path, uint16_t max, const wchar_t* module_name) {
     if(NULL != w_path) {
 		HMODULE hm = NULL;
-		hm = GetModuleHandle(module_name);
+		hm = GetModuleHandleW(module_name);
 		//GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)&SAN::getMyPath, &hm);
         wchar_t wPath[1024] = { 0 };
         ::GetModuleFileNameW(hm, wPath, 1024);
@@ -154,7 +154,11 @@ void Util::logging(const wchar_t* log_file, const char *fmt, ...) {
 		//fopen_s(&pFile, log_name, "a");
 		//使用wchar_t
 		swprintf_s(log_name, L"%s_%d", log_file, file_no);
+        #ifdef _MSC_VER
 		_wfopen_s(&pFile, log_name, L"a");
+		#else
+        pFile = _wfopen(log_name, L"a");
+        #endif
 
 		//pFile = _wfopen(log_name, L"a");
 		//不需要隐身了
@@ -200,13 +204,15 @@ bool Util::strFind(const std::string& str, const char* str_find) {
 
 std::wstring Util::utf8_to_wstring(const std::string& str)
 {
-	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-	return myconv.from_bytes(str);
+//	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+//	return myconv.from_bytes(str);
+    return L"";
 }
 
 std::string Util::wstring_to_utf8(const std::wstring& str)
 {
-	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-	return myconv.to_bytes(str);
+//	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+//	return myconv.to_bytes(str);
+    return "";
 }
 

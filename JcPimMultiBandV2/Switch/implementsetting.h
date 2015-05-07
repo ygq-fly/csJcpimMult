@@ -30,7 +30,7 @@ namespace ns_com_io_ctl
 			bool enable;
 			bool state;
 			bool isOnline;		//是否在线
-		};
+		}stHostControl;
 	private:
 		typedef vector<string> _tp_vs;
 
@@ -39,7 +39,7 @@ namespace ns_com_io_ctl
 			string swName;
 			string ip;
 			int swIdx;		
-		};
+		}iniFunc;
 
 		typedef vector<iniFunc> rowRun;
 
@@ -47,7 +47,7 @@ namespace ns_com_io_ctl
 		{
 			string name;
 			map<string,int>io;
-		};
+		}iniSwitch;
 
 		typedef map<string,rowRun> actionMapDef;	
 
@@ -55,7 +55,7 @@ namespace ns_com_io_ctl
 		{
 			_tp_vs namelist;
 			actionMapDef actionMap;	
-		};	
+		}actionCellc;
 		//IP地址映射
 		_tp_vs __ipNameList;
 		map<string,string> __ipmap;		
@@ -123,7 +123,8 @@ namespace ns_com_io_ctl
 		virtual bool IOSocketIsActive(const string&host) = 0;
 		virtual bool IOResetWithList(vector<string>&ipList) = 0;
 	private:
-		vector<string>&GetNameList(string&strBase);
+		//change right value
+		vector<string>&GetNameList(string&& strBase);
 		void SelChan(rowRun&rr);
 		void AddActionList(const string&ip,const string&sw,const int chan);
 		bool ExcuteCmd(const string&ip,const string&sw,int chan);

@@ -32,7 +32,7 @@
 //初始化与释放
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int fnSetInit(JC_ADDRESS cDeviceAddr) {
+int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	bool isSqlConn = false;
 	//加载pim对象
 	if (NULL != __pobj) {
@@ -216,7 +216,7 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 	fnSetMeasBand(byBandIndex);
 	int s = fnSetDutPort(byPort);
 	if (s <= -10000){
-		Util::logged(L"fnVco: Set Switch Error！");
+		Util::logged(L"fnVco: Set Switch Error!");
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	}
 
@@ -236,12 +236,12 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 
 int fnCheckTwoSignalROSC() {
 	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX1) == FALSE) {
-		Util::logged(L"fnCheckTwoSignalROSC: (SG1) Check Fail！");
+		Util::logged(L"fnCheckTwoSignalROSC: (SG1) Check Fail!");
 		return JC_STATUS_ERROR_CHECK_SIG1_ROSC_FAIL;
 	}
 
 	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX2) == FALSE) {
-		Util::logged(L"fnCheckTwoSignalROSC: (SG2) Check Fail！");
+		Util::logged(L"fnCheckTwoSignalROSC: (SG2) Check Fail!");
 		return JC_STATUS_ERROR_CHECK_SIG2_ROSC_FAIL;
 	}
 	return 0;
@@ -300,9 +300,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged(L"错误： TX2未检测到功率！请检功率输出！");
+			Util::logged("错误： TX2未检测到功率！请检功率输出！");
 		else
-			Util::logged(L"错误： TX2功率偏差过大！");
+			Util::logged("错误： TX2功率偏差过大！");
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -320,9 +320,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged(L"错误： TX1未检测到功率！请检功率输出！");
+			Util::logged("错误： TX1未检测到功率！请检功率输出！");
 		else
-			Util::logged(L"错误： TX1功率偏差过大！");
+			Util::logged("错误： TX1功率偏差过大！");
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -789,7 +789,7 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	return vco >= -95 ? true : false;
 }
 //获取错误
-void JcGetError(char* msg, size_t max) {
+void JcGetError(char* msg, unsigned int max) {
 	if (NULL == __pobj) return;
 
 	size_t n = __pobj->strErrorInfo.size();
@@ -1380,7 +1380,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 	unsigned char buf[1024] = { 0 };
 	unsigned long retCount = 0;
 	//int s = viQueryf(viSession, "*IDN?\n", "%#t", &retCount, buf);
-	int s = viPrintf(vi, "*IDN?\n");
+	int s = viPrintf(vi, const_cast<char*>("*IDN?\n"));
 	s = viRead(vi, buf, 1024, &retCount);
 	
 	if (retCount) {
@@ -1427,9 +1427,9 @@ int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {
 	char    verBuffer[2048];
 
 	std::wstring wPath = _startPath + L"\\JcPimMultiBandV2.dll";
-	verBufferSize = GetFileVersionInfoSize(wPath.c_str(), NULL);
+	verBufferSize = GetFileVersionInfoSizeW(wPath.c_str(), NULL);
 	if (verBufferSize > 0 && verBufferSize <= sizeof(verBuffer)) {
-		if (TRUE == GetFileVersionInfo(wPath.c_str(), NULL, verBufferSize, verBuffer)) {
+		if (TRUE == GetFileVersionInfoW(wPath.c_str(), 0, verBufferSize, verBuffer)) {
 			UINT length;
 			VS_FIXEDFILEINFO *verInfo = NULL;
 
@@ -1458,7 +1458,7 @@ void JcFindRsrc() {
 	ViStatus _status;
 	
 	_status = viOpenDefaultRM(&_defaultRm);
-	_status = viFindRsrc(_defaultRm, "?*INSTR", &findlist, &num, instrAddr);
+	_status = viFindRsrc(_defaultRm, const_cast<char*>("?*INSTR"), &findlist, &num, instrAddr);
 	
 	std::cout << "Num:  " << num << std::endl;
 	std::cout << "Addr: " << instrAddr << std::endl;

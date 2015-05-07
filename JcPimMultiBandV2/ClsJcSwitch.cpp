@@ -58,7 +58,8 @@ bool ClsJcSwitch::SwitchConnect() {
 }
 
 //开关执行切换
-bool ClsJcSwitch::SwitchExcut(const int& iSwitchTx1, const int& iSwitchTx2, const int& iSwitchPim, const int& iSwitchDet) {
+bool ClsJcSwitch::SwitchExcut(const int& iSwitchTx1, const int& iSwitchTx2,
+							  const int& iSwitchPim, const int& iSwitchDet) {
 	//操作开关矩阵
 	_cic.Clear();
 	_cic.SelChanTx1(_nltx1[iSwitchTx1]);
