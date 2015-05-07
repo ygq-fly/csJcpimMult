@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _TESTDEMO_TARGETVER_H_
+#define _TESTDEMO_TARGETVER_H_
+
 
 // Including SDKDDKVer.h defines the highest available Windows platform.
 
@@ -6,3 +8,5 @@
 // set the _WIN32_WINNT macro to the platform you wish to support before including SDKDDKVer.h.
 
 #include <SDKDDKVer.h>
+
+#endif

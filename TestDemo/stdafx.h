@@ -3,7 +3,8 @@
 // are changed infrequently
 //
 
-#pragma once
+#ifndef _TESTDEMO_STDAFX_H_
+#define _TESTDEMO_STDAFX_H_
 
 #include "targetver.h"
 
@@ -19,10 +20,11 @@
 #include <mutex>
 #include <vector>
 #include <map>
-#include <hash_map>
+//#include <hash_map>
 #include <Windows.h>
 
 //#include <WinSock2.h>
 //#pragma comment(lib, "ws2_32.lib")
 
 // TODO: reference additional headers your program requires here
+#endif
