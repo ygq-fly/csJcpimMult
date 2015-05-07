@@ -24,10 +24,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EventDispatch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JcBaseSocket.h">
+    <ClInclude Include="TestDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -36,12 +33,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TestDemo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EventDispatch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JcBaseSocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

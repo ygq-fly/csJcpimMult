@@ -2,145 +2,11 @@
 //
 
 #include "stdafx.h"
-
-enum JC_EXTERNAL_BAND{
-	_DD800 = 0,
-	_GSM900 = 1,
-	_DCS1800 = 2,
-	_PCS1900 = 3,
-	_WCDMA2100 = 4,
-	_LTE2600 = 5,
-	_LTE700 = 6
-};
-
-//ÄÚ²¿Æµ¶ÎÊ¹ÓÃ
-enum JC_INTERNAL_BAND {
-	LTE700 = 0,
-	DD800 = 1,
-	GSM900 = 2,
-	DCS1800 = 3,
-	PCS1900 = 4,
-	WCDMA2100 = 5,
-	LTE2600 = 6
-};
-
-//ÄÚ²¿¿ª¹ØÆµ¶Î
-enum JC_SWITCH_BAND {
-	LTE700_A = 0,
-	LTE700_B = 1,
-	DD800_A = 2,
-	DD800_B = 3,
-	GSM900_A = 4,
-	GSM900_B = 5,
-	DCS1800_A = 6,
-	DCS1800_B = 7,
-	PCS1900_A = 8,
-	PCS1900_B = 9,
-	WCDMA2100_A = 10,
-	WCDMA2100_B = 11,
-	LTE2600_A = 12,
-	LTE2600_B = 13
-};
-
-
-#define JC_CARRIER_TX1TX2 0
-#define JC_CARRIER_TX1 1
-#define JC_CARRIER_TX2 2
-
-#define JC_DUTPORT_A 0
-#define JC_DUTPORT_B 1
-#define JC_COUP_TX1 0
-#define JC_COUP_TX2 1
-
-enum JC_DEVICE {
-	SIGNAL1 = 0,
-	SIGNAL2 = 1,
-	ANALYZER = 2,
-	SENSOR = 3,
-	SWITCH = 4
-};
-
-#define INSTR_AG_U2000 0
-#define INSTR_RS_NRT 1
-#define INSTR_AG_N9000 2
-#define INSTR_AG_N5180 3
-
-#define INSTR_RS_NRPZ 10
-
-#define JC_OFFSET_REAL 0
-#define JC_OFFSET_DSP 1
-
-typedef int(*pTest)(int, int);
-//JIONTCOM_API int fnSetInit(ADDRESS_ cDeviceAddr);
-typedef int(*pSetInit)(const char*);
-//JIONTCOM_API int fnSetExit();
-typedef int(*pSetExit)();
-//JIONTCOM_API int fnSetMeasBand(BYTE_ byBandIndex);
-typedef int(*pSetMeasBand)(uint8_t);
-//JIONTCOM_API int fnSetImAvg(BYTE_ byAvgTime);
-typedef int(*pSetImAvg)(uint8_t);
-//JIONTCOM_API int fnSetDutPort(BYTE_ byPort);
-typedef int(*pSetDutPort)(uint8_t);
-//JIONTCOM_API int fnSetImOrder(BYTE_ byImOrder);
-typedef int(*pSetImOrder)(uint8_t);
-//JIONTCOM_API int fnCheckReceiveChannel(BYTE_ byBandIndex, BYTE_ byPort);
-typedef int(*pCheckReceiveChannel)(uint8_t, uint8_t);
-//JIONTCOM_API int fnCheckTwoSignalROSC();
-typedef int(*pCheckTwoSignalROSC)();
-//JIONTCOM_API int fnSetTxPower(double dTxPower1, double dTxPower2,
-//	double dPowerOffset1, double dPowerOffset2);
-typedef int(*pSetTxPower)(double, double, double, double);
-//JIONTCOM_API int fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const UNIT_ cUnits);
-typedef int(*pSetTxFreqs)(double, double, const char*);
-//JIONTCOM_API int fnSetTxOn(BOOL_ bOn, BYTE_ byCarrier = 0);
-typedef int(*pSetTxOn)(BOOL, uint8_t);
-//JIONTCOM_API int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const UNIT_ cUnits);
-typedef int(*pGetImResult)(double&, double&, const char*);
-//JIONTCOM_API int fnSetSpan(int iSpan, const UNIT_ cUnits);
-//JIONTCOM_API int fnSetRBW(int iRBW, const UNIT_ cUnits);
-//JIONTCOM_API int fnSetVBW(int iVBW, const UNIT_ cUnits);
-//JIONTCOM_API int fnSendCmd(BYTE_ byDevice, const CMD_ cmd, char* cResult, long& lCount);
-//JIONTCOM_API int fnGetSpectrumType(char* cSpectrumType);
-typedef int(*pGetSpectrumType)(char*);
-
-//JC_API void  JcGetError(char* msg, size_t max);
-typedef int(*pGetError)(char*, size_t);
-//JC_API double JcGetAna(double freq_khz, bool isMax);
-typedef double(*pJcGetAna)(double, bool);
-//JC_API JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm);
-typedef BOOL(*pJcSetSig)(uint8_t, double, double);
-//JC_API double JcGetSen();
-typedef double(*pJcGetSen)();
-//JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
-typedef BOOL(*pHwSetCoup)(uint8_t);
-
-//JC_API void   JcSetAna_RefLevelOffset(double offset);
-typedef void(*pJcSetAna_RefLevelOffset)(double);
-//JC_API JcBool JcGetSig_ExtRefStatus(JcInt8 byCarrier);
-typedef BOOL(*pJcGetSig_ExtRefStatus)(uint8_t);
-
-//JC_API long JcGetOffsetRxNum(BYTE_ byInternalBand);
-typedef long(*pGetOffsetRxNum)(uint8_t);
-//JC_API long JcGetOffsetTxNum(BYTE_ byInternalBand);
-typedef long(*pGetOffsetTxNum)(uint8_t);
-//JC_API JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
-//								 BYTE_ byInternalBand, BYTE_ byDutPort,
-//								 double freq_mhz);
-typedef int(*pGetOffsetRx)(double&, char, char, double);
-//JC_API JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
-//								 BYTE_ byInternalBand, BYTE_ byDutPort,
-//								 BYTE_ coup, BYTE_ real_or_dsp,
-//								 double freq_mhz, double tx_dbm);
-typedef int(*pGetOffsetTx)(double&, uint8_t, uint8_t, uint8_t, uint8_t, double, double);
-//JC_API JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, BYTE_ byInternalBand, BYTE_ byDutport);
-typedef int(*pGetOffsetVco)(double&, uint8_t, uint8_t);
-//JC_API JC_STATUS JcSetOffsetVco(BYTE_ byInternalBand, BYTE_ byDutport, double val);
-typedef int(*pSetOffsetVco)(uint8_t, uint8_t, double);
-
-typedef int(*pGetDllVersion)(int&, int&, int&, int&);
+#include "TestDemo.h"
 
 void Test_pim();
 void Test_dll();
+void Test_mingw_dll();
 
 //int _tmain(int argc, _TCHAR* argv[])
 int main(int argc, char* argv[])
@@ -168,6 +34,8 @@ void Test_dll(){
 	}
 
 	pTest test = (pTest)GetProcAddress(hinst, "gettestval");
+    ptestcb testcb = (ptestcb)GetProcAddress(hinst, "testcb");
+
 	pSetInit setInit = (pSetInit)GetProcAddress(hinst, "fnSetInit");
 	pSetMeasBand setMeasBand = (pSetMeasBand)GetProcAddress(hinst, "fnSetMeasBand");
 	pSetExit setExit = (pSetExit)GetProcAddress(hinst, "fnSetExit");
@@ -198,9 +66,15 @@ void Test_dll(){
 
 	pGetDllVersion getDllVersion = (pGetDllVersion)GetProcAddress(hinst, "JcGetDllVersion");
 
+	int a = test(3, 5);
+    printf("a = %d\n", a);
+    testcb([](double offset_freq, double Offset_val){
+        printf("freq = %lf ; val = %lf\n", offset_freq, Offset_val);
+    });
+
 	int v1, v2, v3, v4;
 	getDllVersion(v1, v2, v3, v4);
-	std::cout << "Version: "<<v1 << ',' << v2 << ',' << v3 << ',' << v4 << std::endl;
+    printf("%d, %d, %d, %d\n", v1,v2,v3,v4);
 	
 	//TCPIP0::192.168.1.3::5025::SOCKET
 	std::string addr_sig1 = "TCPIP0::192.168.1.3::5025::SOCKET";
@@ -243,7 +117,7 @@ void Test_dll(){
 	//	//printf("sen: %lf\n", sen);
 	//}
 
-	//¼ì²â
+	//ï¿½ï¿½ï¿½
 	std::cout << std::endl;
 	for (int i = 0; i < 7; i++) {
 		long n = getOffsetRxNum(i);
@@ -263,5 +137,9 @@ void Test_dll(){
 	std::cout << "Exit!" << std::endl;
 
 	FreeLibrary(hinst);
+}
+
+void Test_mingw_dll() {
+
 }
 

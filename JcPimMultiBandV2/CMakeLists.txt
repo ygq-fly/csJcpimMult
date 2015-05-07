@@ -41,7 +41,7 @@ set(SHARE_LIB_SOURCE_FILES
     JcApi.h
     JcOffsetDB.hpp
     JcPimObject.h
-    #resource.h
+    dllmain.cpp
     stdafx.cpp
     stdafx.h
     targetver.h)

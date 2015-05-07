@@ -38,7 +38,7 @@
 #include "3rdParty/sqlite3.h"
 
 #ifdef _MSC_VER
-#include <codecvt>
+//#include <codecvt>
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")
 #pragma comment(lib, "Version.lib")

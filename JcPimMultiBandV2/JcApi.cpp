@@ -300,9 +300,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged("错误： TX2未检测到功率！请检功率输出！");
+			Util::logged(_T("错误： TX2未检测到功率！请检功率输出！"));
 		else
-			Util::logged("错误： TX2功率偏差过大！");
+			Util::logged(_T("错误： TX2功率偏差过大！"));
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -320,9 +320,11 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged("错误： TX1未检测到功率！请检功率输出！");
+			Util::logged(_T("错误： TX1未检测到功率！请检功率输出！"));
+            //Util::logged("Tx1_Error: Can not find Power!");
 		else
-			Util::logged("错误： TX1功率偏差过大！");
+			Util::logged(_T("错误： TX1功率偏差过大！"));
+            //Util::logged("Tx1_Error: Power out range!");
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -1484,7 +1486,7 @@ void testcb(Callback_Get_RX_Offset_Point pHandler) {
 	for (int i = 0; i < 5; ++i) {
 		d += i;
 		f++;
-		Util::setSleep(1000);
+		Util::setSleep(100);
 		if (pHandler != 0)
 			pHandler(f, d);
 	}

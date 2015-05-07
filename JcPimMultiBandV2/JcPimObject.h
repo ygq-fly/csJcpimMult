@@ -38,10 +38,10 @@ struct JcPimObject
 #define LINEFEED_CHAR 0x0D
 #define TIMEOUT_VALUE 10000
 public:
-	char now_band;
-	char now_dut_port;
-	char now_order;
-	char now_imAvg;
+	uint8_t now_band;
+	uint8_t now_dut_port;
+	uint8_t now_order;
+	uint8_t now_imAvg;
 
 	double now_txPow1;
 	double now_txPow2;
