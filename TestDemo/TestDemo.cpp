@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "TestDemo.h"
 
-void Test_pim();
 void Test_dll();
 
 //int _tmain(int argc, _TCHAR* argv[])
@@ -12,7 +11,6 @@ int main(int argc, char* argv[])
 {
 	std::cout << "Welcome!" << std::endl;
 
-	//Test_pim();
 	for (int i = 0; i < 1; i++) {
 		printf("==================No.%d=================\n", i);
 		Test_dll();
