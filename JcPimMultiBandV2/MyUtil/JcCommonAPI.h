@@ -14,10 +14,8 @@
 
 namespace Util {
     int getMyPath(OUT wchar_t* w_path, uint16_t max, const wchar_t* module_name);
-    int getMyParentPath(OUT wchar_t* w_path, uint16_t max);
     int isFileExist(const wchar_t* w_path);
     int getFileSize(const wchar_t* w_path);
-    int saveBitmapToFile(HBITMAP hbitmap, const wchar_t* wFileName);
     int setSleep(uint32_t millisecond);
 	std::string ToString(double val);
     uint64_t get_tick_count();

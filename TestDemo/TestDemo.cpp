@@ -16,15 +16,19 @@ int main(int argc, char* argv[])
 		Test_dll();
 	}
 
-	#ifdef _MSC_VER
+#ifdef _MSC_VER
 	getchar();
-	#endif
+#endif
 	return 0;
 }
 
 void Test_dll(){
 	HINSTANCE hinst;
+#ifdef _MSC_VER
+	hinst = LoadLibraryW(L"JcPimMultiBandV2.dll");
+#else
 	hinst = LoadLibraryW(L"libJcPimMultiBandV2.dll");
+#endif
 
 	if (NULL == hinst){
 		std::cout << "LoadLibrary Error!" << std::endl;

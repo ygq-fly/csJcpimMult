@@ -38,7 +38,7 @@
 #include "3rdParty/sqlite3.h"
 
 #ifdef _MSC_VER
-//#include <codecvt>
+#include <codecvt>
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")
 #pragma comment(lib, "Version.lib")
@@ -49,11 +49,10 @@
 #endif
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
 #define OUT
-#define m_swprintf swprintf_s
-#define m_sprintf  sprintf_s
-#define m_snprintf snprintf_s
+#define g_swprintf swprintf_s
+#define g_sprintf  sprintf_s
+#define g_snprintf snprintf_s
 
 // TODO: reference additional headers your program requires here
 #endif
