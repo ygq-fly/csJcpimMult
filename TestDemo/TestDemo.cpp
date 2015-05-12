@@ -27,7 +27,7 @@ void Test_dll(){
 #ifdef _MSC_VER
 	hinst = LoadLibraryW(L"JcPimMultiBandV2.dll");
 #else
-	hinst = LoadLibraryW(L"libJcPimMultiBandV2.dll");
+	hinst = LoadLibraryW(L"libJcPimMultiBandV2-d.dll");
 #endif
 
 	if (NULL == hinst){

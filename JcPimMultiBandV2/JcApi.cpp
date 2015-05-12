@@ -859,9 +859,12 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, JcInt8 byBand, JcInt8 byPort,
 	double internal_offset = 0;
 	if (isOffset) {
 		//开始获取内部校准
-		JcInt8 coup = byCarrier - 1;
+		JcInt8 coup = byCarrier - (JcInt8)1;
+		JcInt8 byTempPort = byPort;
+        if((byPort == JC_DUTPORT_B) && (__pobj->isUseTransType == true))
+            byTempPort = JC_DUTPORT_A;
 		//所有校准数据以mhz为单位，注意转换
-		int s = JcGetOffsetTx(internal_offset, byBand, byPort, coup, JC_OFFSET_REAL, freq_khz / 1000, pow_dbm);
+		int s = JcGetOffsetTx(internal_offset, byTempPort, byPort, coup, JC_OFFSET_REAL, freq_khz / 1000, pow_dbm);
 		if (s) {
 			__pobj->strErrorInfo = "SetTx" + std::to_string(byCarrier) + ": Read Offset's Data Error!\r\n";
 			//返回错误
