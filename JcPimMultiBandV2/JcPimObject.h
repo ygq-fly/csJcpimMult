@@ -146,12 +146,12 @@ private:
 		double vco_limit   = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
 		double tx_smooth   = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 0.15, wsPath_ini.c_str());
-        isUseTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
+        int iUseTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
 
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
-
+		isUseTransType = iUseTransType & 1;
 		debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
 	}
 

@@ -860,11 +860,8 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, JcInt8 byBand, JcInt8 byPort,
 	if (isOffset) {
 		//开始获取内部校准
 		JcInt8 coup = byCarrier - (JcInt8)1;
-		JcInt8 byTempPort = byPort;
-        if((byPort == JC_DUTPORT_B) && (__pobj->isUseTransType == true))
-            byTempPort = JC_DUTPORT_A;
 		//所有校准数据以mhz为单位，注意转换
-		int s = JcGetOffsetTx(internal_offset, byTempPort, byPort, coup, JC_OFFSET_REAL, freq_khz / 1000, pow_dbm);
+		int s = JcGetOffsetTx(internal_offset, byBand, byPort, coup, JC_OFFSET_REAL, freq_khz / 1000, pow_dbm);
 		if (s) {
 			__pobj->strErrorInfo = "SetTx" + std::to_string(byCarrier) + ": Read Offset's Data Error!\r\n";
 			//返回错误
@@ -1069,11 +1066,15 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 						JcInt8 byInternalBand, JcInt8 byDutPort,
 						JcInt8 coup, JcInt8 real_or_dsp,
 						double freq_mhz, double tx_dbm) {
+	//传输模式
+	JcInt8 byTempDutPort = byDutPort;
+	if ((__pobj->isUseTransType == true) && (byDutPort == JC_DUTPORT_B))
+		byTempDutPort = JC_DUTPORT_A;
 
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//计算校准数据点
-	offset_val = __pobj->offset.OffsetTx(sband.c_str(), byDutPort, coup, real_or_dsp, freq_mhz, tx_dbm);
+	offset_val = __pobj->offset.OffsetTx(sband.c_str(), byTempDutPort, coup, real_or_dsp, freq_mhz, tx_dbm);
 	if (offset_val == JC_STATUS_ERROR){
 		offset_val = 0;
 		__pobj->strErrorInfo = "TxOffset: Read data error!\r\n";
