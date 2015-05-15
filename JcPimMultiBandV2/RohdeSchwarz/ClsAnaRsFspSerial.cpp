@@ -177,7 +177,7 @@ void ClsAnaRsFspSerial::InstrSetSweepTime(int count_ms) {
 
 void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 {
-	//2015-5-5/vco: 10khz-100hz-100hz
+	//2015-5-5/vco: 20khz-100hz-100hz
 	//
 	//------------------------write by san-------------------
 	//SPAN:       0 HZ		,	400*1000 HZ		,	1000
@@ -190,7 +190,7 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	//OFFSET:     0			,	0				,	0
 	//ATT:        0			,	0				,	30
 	//------------------------write by san-------------------
-	static const double freq_span       [PRESET_PARAMETER_TOTAL] = {  0,    10000,  1000 };
+	static const double freq_span       [PRESET_PARAMETER_TOTAL] = {  0,    20000,  1000 };
 	static const double freq_rbw        [PRESET_PARAMETER_TOTAL] = {  30,   100,   100  };
 	static const double freq_vbw        [PRESET_PARAMETER_TOTAL] = {  100,  100,   100  };
 	static const int    sweep_time      [PRESET_PARAMETER_TOTAL] = {  1,    1,       1    };
