@@ -18,7 +18,7 @@
 #include "stdafx.h"
 
 #define SMOOTH_TX_THREASOLD 2
-#define SMOOTH_VCO_THREASOLD 5
+#define SMOOTH_VCO_THREASOLD 1
 #define SMOOTH_TX_ACCURACY 0.15
 
 static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
@@ -143,9 +143,9 @@ private:
 		wchar_t temp[1024] = { 0 };
 		GetPrivateProfileStringW(L"PATH", L"logging_file_path", L"", temp, 1024, wsPath_ini.c_str());
 		wstrLogPath = std::wstring(temp);
-		double vco_limit   = Util::getIniDouble(L"Settings", L"vco_limit", 5, wsPath_ini.c_str());
-		double tx_smooth   = Util::getIniDouble(L"Settings", L"tx_smooth", 2, wsPath_ini.c_str());
-		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", 0.15, wsPath_ini.c_str());
+		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", SMOOTH_VCO_THREASOLD, wsPath_ini.c_str());
+		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", SMOOTH_TX_THREASOLD, wsPath_ini.c_str());
+		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", SMOOTH_TX_ACCURACY, wsPath_ini.c_str());
         int iUseTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
 
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
