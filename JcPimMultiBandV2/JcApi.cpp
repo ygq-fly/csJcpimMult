@@ -1404,8 +1404,8 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 				 Util::strFind(strIdn, "N5181A")  || Util::strFind(strIdn, "N5182A")  || 
 				 Util::strFind(strIdn, "N5183A"))
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
-		else if (Util::strFind(strIdn, "SMA100A") || Util::strFind(strIdn, "SMB100A") || 
-				 Util::strFind(strIdn, "SMC100A") || Util::strFind(strIdn, "SMU200A"))
+		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") || 
+				 Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))
 			iDeviceIDN = INSTR_RS_SM_SERIES;
 		//ÆµÆ×ÒÇ
 		else if (Util::strFind(strIdn, "N9000A")  || Util::strFind(strIdn, "N9010A")  || 
