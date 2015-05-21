@@ -171,10 +171,10 @@ public:
 	void InstrVcoSetting() {
 		//OFFSET÷√¡„
 		InstrSetOffset(0);
-		//2015-5-5/vco: 10khz-100hz-100hz
+		//2015-5-5/vco: 15khz-100hz-100hz
 		InstrSetRbw(100);
 		InstrSetVbw(100);
-		InstrSetSpan(20 * 1000);
+		InstrSetSpan(15 * 1000);
 		//InstrSetRbw(10 * 1000);
 		//InstrSetVbw(10 * 1000);
 		//InstrSetSpan(400 * 1000);

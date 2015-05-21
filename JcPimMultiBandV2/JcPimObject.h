@@ -17,8 +17,8 @@
 
 #include "stdafx.h"
 
+#define SMOOTH_VCO_THREASOLD 2
 #define SMOOTH_TX_THREASOLD 2
-#define SMOOTH_VCO_THREASOLD 1
 #define SMOOTH_TX_ACCURACY 0.15
 
 static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
