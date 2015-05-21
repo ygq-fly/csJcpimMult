@@ -541,24 +541,21 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 }
 
 JcBool HwGet_Vco(double& real_val, double& vco_val) {
-	double vco_freq_mhz = 1334 + 2 * (2 * __pobj->now_band + __pobj->now_dut_port);
-	//OFFSET置零
-	__pobj->ana->InstrVcoSetting();
-	__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
-	Util::setSleep(100);
-	//开始测量
-	real_val = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
-	__pobj->ana->InstrPimSetting();
+	//double vco_freq_mhz = 1334 + 2 * (2 * __pobj->now_band + __pobj->now_dut_port);
+	//__pobj->ana->InstrVcoSetting();
+	//__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
+	//Util::setSleep(100);
+	//real_val = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
+	//__pobj->ana->InstrPimSetting();
 
+	JcBool b = JcGetVcoDsp(real_val, 2 * __pobj->now_band + __pobj->now_dut_port);
 	JcGetOffsetVco(vco_val, __pobj->now_band, __pobj->now_dut_port);
 	double dd = real_val - vco_val;
 
-	//if (dd > SMOOTH_VCO_THREASOLD || dd < (SMOOTH_VCO_THREASOLD*-1))
-	if (dd > __pobj->now_vco_threasold || dd < (__pobj->now_vco_threasold * -1))
-		return FALSE;
-	else
-		return TRUE;
-	//return real_val >= -95 ? true : false;
+	b = (dd > (__pobj->now_vco_threasold * -1) || dd < __pobj->now_vco_threasold);
+	//if (!b) 
+	//	Util::logged(L"HwVco: VCO Error (%lf)", dd);
+	return b;
 }
 
 //检测功放稳定度(必须功放开启后检测) return dd
