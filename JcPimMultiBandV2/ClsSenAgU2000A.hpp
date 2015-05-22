@@ -72,6 +72,10 @@ public:
 		return val;
 	}
 
+	std::string InstrGetIdn(){
+		return "";
+	}
+
 private:
 	double _freq_now;
 };

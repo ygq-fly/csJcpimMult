@@ -90,6 +90,10 @@ public:
 		_isAver = false;
 	}
 
+	std::string InstrGetIdn(){
+		return "nrt";
+	}
+
 private:
 	void ReadyToSet() {
 		bool isconn = false;

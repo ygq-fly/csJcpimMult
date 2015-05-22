@@ -74,6 +74,10 @@ public:
 		return StartMeasurement(_viSession);
 	}
 
+	std::string InstrGetIdn(){
+		return "nrpz";
+	}
+
 private:
 	void PrintError(long err, long session)
 	{

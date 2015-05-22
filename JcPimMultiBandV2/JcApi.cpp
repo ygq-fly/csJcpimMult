@@ -517,11 +517,14 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 	}
 	//读取功率计
 	double sen = JcGetSen();
-	sen += JcGetSen();
-	sen += JcGetSen();
-	//计算补偿
-	sen = sen / 3 + val;
-	//sen += val;
+	if (__pobj->sen->InstrGetIdn().find("nrpz") == std::string::npos){
+		sen += JcGetSen();
+		sen += JcGetSen();
+		//计算补偿
+		sen = sen / 3 + val;
+	} 
+	else 
+		sen += val;
 
 	std::string strLog = "start Dsp-Coup-" + std::to_string(byCoup) + "\r\n";
 	strLog += "   Avg3rd_1: " + std::to_string(sen) + " \r\n";
