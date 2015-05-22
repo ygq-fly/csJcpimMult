@@ -88,8 +88,8 @@ double ClsAnaRsFspSerial::InstrGetAnalyzer(double freq_khz, bool isMax)
 
 	if (isMax == true)
 		CommonSet(mark_max);
-	else
-		CommonSet(mark_x, freq_khz, "KHz");
+	//else
+	//	CommonSet(mark_x, freq_khz, "KHz");
 
 	char buf[1024] = { 0 };
 	long retCount = AgWriteAndRead(mark_y, buf);
@@ -169,22 +169,29 @@ void ClsAnaRsFspSerial::InstrSetCenterFreq(const double& freq_khz)
     //[SENSe<1|2>:]FREQuency:CENTer 0 to fmax
     char const *set_freq_center = "FREQ:CENT %lf%s\n";
     CommonSet (set_freq_center, freq_khz, "KHz");
+	char const *mark_x = "CALC:MARK1:X %lf%s\n";
+	CommonSet(mark_x, freq_khz, "KHz");
 }
 
 void ClsAnaRsFspSerial::InstrSetSweepTime(int count_ms) {
-	CommonSet("SWE:TIME:AUTO OFF\n");
-	CommonSet("SWE:TIME %d ms\n", count_ms);
+	if (count_ms > 0) {
+		CommonSet("SWE:TIME:AUTO OFF\n");
+		CommonSet("SWE:TIME %d ms\n", count_ms);
+	}
+	else
+		CommonSet("SWE:TIME:AUTO ON\n");
+
 }
 
 void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 {
-	//2015-5-5/vco: 15khz-200hz-200hz
+	//2015-5-5/vco: 15khz-300hz-1000hz
 	//
 	//------------------------write by san-------------------
 	//SPAN:       0 HZ		,	400*1000 HZ		,	1000
 	//BW:         30 HZ		,	10*1000			,	100
 	//VBW:        100 HZ	,	10*1000			,	100
-	//SWEEP TIME: 1 ms		,	1 ms			,	1ms
+	//SWEEP TIME: 1 ms		,	auto			,	auto
 
 	//AVERGE:     0			,	0				,	0
 	//REFLEVEL:   -60		,	-60				,	20
@@ -192,9 +199,9 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	//ATT:        0			,	0				,	30
 	//------------------------write by san-------------------
 	static const double freq_span       [PRESET_PARAMETER_TOTAL] = {  0,    15000,  1000 };
-	static const double freq_rbw        [PRESET_PARAMETER_TOTAL] = {  30,   200,   100  };
-	static const double freq_vbw        [PRESET_PARAMETER_TOTAL] = {  100,  200,   100  };
-	static const int    sweep_time      [PRESET_PARAMETER_TOTAL] = {  1,    1,       1    };
+	static const double freq_rbw        [PRESET_PARAMETER_TOTAL] = {  30,   300,   100  };
+	static const double freq_vbw        [PRESET_PARAMETER_TOTAL] = {  100,  1000,   100  };
+	static const int    sweep_time      [PRESET_PARAMETER_TOTAL] = {  1,    0,       0    };
 
 	static const int    freq_aver       [PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
 	static const int    disp_rlev       [PRESET_PARAMETER_TOTAL] = { -60,  -60,      20   };
@@ -210,7 +217,13 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	InstrSetSpan(freq_span[pp]);
 	InstrSetVbw(freq_vbw[pp]);
 	InstrSetRbw(freq_rbw[pp]);
-	InstrSetSweepTime(sweep_time[pp]);
+	//------------------------write by san-------------------
+	//fsp仪表不支持模拟FFT模式，sweeptime必须设置为auto
+	//------------------------write by san-------------------
+	if (Util::strFind(_strIDN, "FSP"))
+		InstrSetSweepTime(0);
+	else
+		InstrSetSweepTime(sweep_time[pp]);
 	InstrSetAtt(input_att[pp]);
 	InstrSetAvg(freq_aver[pp]);
 	//------------------------write by san-------------------

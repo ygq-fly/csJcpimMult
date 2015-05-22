@@ -148,8 +148,7 @@ void Util::strTrim(std::string& str) {
 }
 
 bool Util::strFind(const std::string& str, const char* str_find) {
-	int n = str.find(str_find);
-    return n >= 0;
+	return (str.find(str_find) != std::string::npos);
 }
 
 std::wstring Util::utf8_to_wstring(const std::string& str)

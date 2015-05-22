@@ -517,14 +517,15 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 	}
 	//读取功率计
 	double sen = JcGetSen();
-	if (__pobj->sen->InstrGetIdn().find("nrpz") == std::string::npos){
+	if (Util::strFind(__pobj->sen->InstrGetIdn(), "nrpz")) {
+		sen += val;
+	}
+	else {
 		sen += JcGetSen();
 		sen += JcGetSen();
 		//计算补偿
 		sen = sen / 3 + val;
-	} 
-	else 
-		sen += val;
+	}
 
 	std::string strLog = "start Dsp-Coup-" + std::to_string(byCoup) + "\r\n";
 	strLog += "   Avg3rd_1: " + std::to_string(sen) + " \r\n";
@@ -783,8 +784,8 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	if (NULL == __pobj) return false;
 
 	double vco_freq_mhz = 1334 + 2 * bySwitchBand;
+	//__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
 	__pobj->ana->InstrVcoSetting();
-	__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
 	Util::setSleep(100);
 	vco = __pobj->ana->InstrGetAnalyzer(vco_freq_mhz * 1000, true);
 	__pobj->ana->InstrPimSetting();
@@ -1002,7 +1003,6 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, OFFSET_PROTECT_RX);
 	//开启功放
 	fnSetTxOn(true, JC_CARRIER_TX1);
-	Util::setSleep(300);
 	//VCO
 	double vco = 0;
 	if (JcGetVcoDsp(vco, byInternalBand * 2 + byDutPort) == false) {
@@ -1013,7 +1013,9 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	if (pHandler)
 		pHandler(0, vco);
 	JcSetOffsetVco(byInternalBand, byDutPort, vco);
+	__pobj->ana->InstrSetCenterFreq(Rxfreq[0] * 1000);
 
+	Util::setSleep(1000);
 	for (int i = 0; i < freq_num; ++i) {		
 		//设置
 		JcSetSig(JC_CARRIER_TX1, Rxfreq[i] * 1000, OFFSET_PROTECT_RX);
