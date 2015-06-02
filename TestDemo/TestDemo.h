@@ -7,46 +7,6 @@
 
 #include "stdafx.h"
 
-enum JC_EXTERNAL_BAND{
-    _DD800 = 0,
-    _GSM900 = 1,
-    _DCS1800 = 2,
-    _PCS1900 = 3,
-    _WCDMA2100 = 4,
-    _LTE2600 = 5,
-    _LTE700 = 6
-};
-
-//?????????
-enum JC_INTERNAL_BAND {
-    LTE700 = 0,
-    DD800 = 1,
-    GSM900 = 2,
-    DCS1800 = 3,
-    PCS1900 = 4,
-    WCDMA2100 = 5,
-    LTE2600 = 6
-};
-
-//??????????
-enum JC_SWITCH_BAND {
-    LTE700_A = 0,
-    LTE700_B = 1,
-    DD800_A = 2,
-    DD800_B = 3,
-    GSM900_A = 4,
-    GSM900_B = 5,
-    DCS1800_A = 6,
-    DCS1800_B = 7,
-    PCS1900_A = 8,
-    PCS1900_B = 9,
-    WCDMA2100_A = 10,
-    WCDMA2100_B = 11,
-    LTE2600_A = 12,
-    LTE2600_B = 13
-};
-
-
 #define JC_CARRIER_TX1TX2 0
 #define JC_CARRIER_TX1 1
 #define JC_CARRIER_TX2 2
@@ -55,14 +15,6 @@ enum JC_SWITCH_BAND {
 #define JC_DUTPORT_B 1
 #define JC_COUP_TX1 0
 #define JC_COUP_TX2 1
-
-enum JC_DEVICE {
-    SIGNAL1 = 0,
-    SIGNAL2 = 1,
-    ANALYZER = 2,
-    SENSOR = 3,
-    SWITCH = 4
-};
 
 #define INSTR_AG_U2000 0
 #define INSTR_RS_NRT 1

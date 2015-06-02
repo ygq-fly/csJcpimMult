@@ -556,7 +556,7 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 	JcGetOffsetVco(vco_val, __pobj->now_band, __pobj->now_dut_port);
 	double dd = real_val - vco_val;
 
-	b = (dd > (__pobj->now_vco_threasold * -1) || dd < __pobj->now_vco_threasold);
+	b = (dd > (__pobj->now_vco_threasold * -1) && dd < __pobj->now_vco_threasold);
 	//if (!b) 
 	//	Util::logged(L"HwVco: VCO Error (%lf)", dd);
 	return b;
@@ -845,7 +845,7 @@ JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm) {
 	}
 
 	if (false == b)
-		Util::logged(L"JcSetSig: (%d)Error!", (int)byCarrier);
+		Util::logged(L"JcSetSig: sig(%d) Error!", (int)byCarrier);
 
 	return b;
 }
