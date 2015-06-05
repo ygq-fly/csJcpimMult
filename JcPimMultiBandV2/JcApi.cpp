@@ -1,3 +1,45 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//华为API
+//-------------------------------------------------------------------------
+//int SetInit(char *csDeviceAddr)	初始化仪器	传入信号源、频谱仪、功率计地址，用逗号隔开,如格式：SG1Addr, SG2Addr, SAAddr, PMAddr
+//int SetExit()	关闭仪器释放资源
+//int SetMeasBand(BYTE byBandIndex)	选择频段	7个频段，参数例如： 0：DD800 1:900。。。。6 : LTE2600，7：LTE700
+//int SetImAvg(BYTE byAvgTime)	设置平均次数	byAvgTime : 0 - None, 1 - Minimal, 2 - Normal, 3 - High, 4 - Maximum
+//int SetDutPort(BYTE byPort)	设置测试端口	0：port1； 1：port2
+//int SetImOrder(BYTE byImOrder)	设置IM测试阶数	3、5、7阶
+//int SetTxPower(double dTxPower1,
+//int double dTxPower2, double dPowerOffset1, double dPowerOffset2)	设置功率及差损补偿	如：SetTxPower(43, 43, 0.5，0.5)
+//int SetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, CString csUnits)	设置F1、F2频点，单位MHz	建议在这个接口里面
+//                                                                          对两路功率分别进行功率监控，
+//                                                                          如果功率不是43，则进行修正
+//int SetTxOn(BOOL bOn, BYTE byCarrier = 0)	打开或关闭功率	第一个参数表示打开还是关闭；第二个参数：0表示F1F2都执行；1表示F1    2表示F2
+//int GetImResult(double & dFreq, double& dPimResult, CString csUnits)	获取PIM测试结果	最后一个参数dBm
+//int SetSpan(int iSpan, CString csUnit)	　	设置值和单位
+//int SetRBW(int iRBW, CString csUnit)
+//int SetVBW(int iVBW, CString csUnits)
+//int SendCmd(BYTE byDevice, CString
+//int csCmd, CString & csResult)	通用透传接口	byDevice : 仪器序号(00:sg1, 01 : sg2, 02 : sa,03 : Pm), csCmd : 仪器指令, csResult : 指令返回结果
+//int GetSpectrumType(CString & csSpectrumType)	获取频谱仪类型
+//-------------------------------------------------------------------------
+//版本
+//-------------------------------------------------------------------------
+//V1.7
+//	1, 添加R&S设备的支持
+//	2, 性能改进
+// 
+//V1.8
+//	1, 支持mingw编译
+//	2, 支持传输模式
+//  3，改进vco检测
+//	4，改进R&S时钟同步检测
+//
+//v1.9 
+//	1, 新增rf1,rf2,pim参数模块
+//	2, 支持POI模式
+//  3，升级最新switch
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "JcApi.h"
 #include "stdafx.h"
 #include "JcPimObject.h"
@@ -29,9 +71,10 @@
 #define INSTR_RS_FS_SERIES 21
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//初始化与释放
+//mian
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//初始化
 int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	bool isSqlConn = false;
 	//加载pim对象
@@ -129,29 +172,7 @@ int fnSetExit(){
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//华为API
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//int SetInit(char *csDeviceAddr)	初始化仪器	传入信号源、频谱仪、功率计地址，用逗号隔开,如格式：SG1Addr, SG2Addr, SAAddr, PMAddr
-//int SetExit()	关闭仪器释放资源
-//int SetMeasBand(BYTE byBandIndex)	选择频段	7个频段，参数例如： 0：DD800 1:900。。。。6 : LTE2600，7：LTE700
-//int SetImAvg(BYTE byAvgTime)	设置平均次数	byAvgTime : 0 - None, 1 - Minimal, 2 - Normal, 3 - High, 4 - Maximum
-//int SetDutPort(BYTE byPort)	设置测试端口	0：port1； 1：port2
-//int SetImOrder(BYTE byImOrder)	设置IM测试阶数	3、5、7阶
-//int SetTxPower(double dTxPower1,
-//int double dTxPower2, double dPowerOffset1, double dPowerOffset2)	设置功率及差损补偿	如：SetTxPower(43, 43, 0.5，0.5)
-//int SetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, CString csUnits)	设置F1、F2频点，单位MHz	建议在这个接口里面
-//                                                                          对两路功率分别进行功率监控，
-//                                                                          如果功率不是43，则进行修正
-//int SetTxOn(BOOL bOn, BYTE byCarrier = 0)	打开或关闭功率	第一个参数表示打开还是关闭；第二个参数：0表示F1F2都执行；1表示F1    2表示F2
-//int GetImResult(double & dFreq, double& dPimResult, CString csUnits)	获取PIM测试结果	最后一个参数dBm
-//int SetSpan(int iSpan, CString csUnit)	　	设置值和单位
-//int SetRBW(int iRBW, CString csUnit)
-//int SetVBW(int iVBW, CString csUnits)
-//int SendCmd(BYTE byDevice, CString
-//int csCmd, CString & csResult)	通用透传接口	byDevice : 仪器序号(00:sg1, 01 : sg2, 02 : sa,03 : Pm), csCmd : 仪器指令, csResult : 指令返回结果
-//int GetSpectrumType(CString & csSpectrumType)	获取频谱仪类型
-
+//设置频段
 int fnSetMeasBand(JcInt8 byBandIndex){
 	if (__pobj->isUseExtBand) {
 		//__pobj->now_band = __pobj->GetExtBandToIntBand(byBandIndex);
@@ -194,6 +215,7 @@ int fnSetDutPort(JcInt8 byPort) {
 	return (b == TRUE ? 0 : JC_STATUS_ERROR_SET_SWITCH_FAIL);
 }
 
+//设置pim平均此时
 int fnSetImAvg(JcInt8 byAvgTime) {
 	if (byAvgTime < 1) byAvgTime = 1;
 	pim->imAvg = byAvgTime;
@@ -202,6 +224,7 @@ int fnSetImAvg(JcInt8 byAvgTime) {
 	return 0;
 }
 
+//设置阶数
 int fnSetImOrder(JcInt8 byImOrder) {
 	//设置当前测试互调阶数,默认3
 	pim->order = byImOrder > 1 ? byImOrder : 3;
@@ -210,26 +233,26 @@ int fnSetImOrder(JcInt8 byImOrder) {
 	return 0;
 }
 
+//voc检测(针对ATE)
 int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
+	//判断vco_enable
 	if (__pobj->isUseExtBand){
 		JcInt8 byTemp = __pobj->GetExtBandToIntBand(byBandIndex);
 		if (__pobj->now_vco_enable[byTemp] == 0)
 			return 0;
 	}
-	
+	//切开关
 	fnSetMeasBand(byBandIndex);
 	int s = fnSetDutPort(byPort);
 	if (s <= -10000){
 		Util::logged(L"fnVco: Set Switch Error!");
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	}
-
+	//延时
 	Util::setSleep(500);
-
 	//开始测量
 	double real_val = 0;
 	double vco_val = 0;
-
 	if (HwGet_Vco(real_val, vco_val) == FALSE){
 		Util::logged(L"fnVco: VCO Error (%lf)", real_val - vco_val);
 		return JC_STATUS_ERROR_CHECK_VCO_FAIL;	
@@ -238,6 +261,7 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 		return 0;
 }
 
+//时钟同步检测(针对ATE)
 int fnCheckTwoSignalROSC() {
 	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX1) == FALSE) {
 		Util::logged(L"fnCheckTwoSignalROSC: (SG1) Check Fail!");
@@ -251,6 +275,7 @@ int fnCheckTwoSignalROSC() {
 	return 0;
 }
 
+//设置rf1,rf2
 int fnSetTxPower(double dTxPower1, double dTxPower2,
 	double dPowerOffset1, double dPowerOffset2) {
 	//__pobj->now_txPow1 = dTxPower1;
@@ -266,12 +291,11 @@ int fnSetTxPower(double dTxPower1, double dTxPower2,
 	return 0;
 }
 
-//设置频率
+//设置频率(针对ATE)
 JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits) {
 	//单位转换
 	rf1->freq_khz = __pobj->TransKhz(dCarrierFreq1, cUnits);
 	rf2->freq_khz = __pobj->TransKhz(dCarrierFreq2, cUnits);
-	
 	JC_STATUS js;
 	double dd = 0;
 	//---------------------------------------------------------------------------------
@@ -332,10 +356,19 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	js = fnSetTxOn(false, JC_CARRIER_TX1TX2);
 	if (0 != js) return js;
 	//---------------------------------------------------------------------------------
-	//设置中心频率
-	double freq_pim_khz = __pobj->GetPimFreq();
-	__pobj->ana->InstrSetCenterFreq(freq_pim_khz);
-
+	//设置pim参数,需在GetPimFreq()前-----(15/6/5新加)
+	if (pim->band == DD800) {
+		pim->is_high_pim = false;
+		pim->is_less_pim = 0;
+	}
+	else {
+		pim->is_high_pim = true;
+		pim->is_less_pim = 0;
+	}
+	//计算pim互调频率，设置中心频率
+	pim->freq_khz = __pobj->GetPimFreq();
+	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
+	
 	return 0;
 }
 
@@ -355,18 +388,17 @@ int fnSetTxOn(JcBool bOn, JcInt8 byCarrier){
 	return (isSucc ? 0 : JC_STATUS_ERROR_SET_TX_ONOFF_FAIL);
 }
 
+//获取互调结果
 int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UNIT cUnits) {
-	pim->freq_khz = __pobj->GetPimFreq();
-	//获取内部校准
+	//pim->freq_khz = __pobj->GetPimFreq();
+	//获取pim模块内部校准
 	double rxoff;
 	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, pim->freq_khz / 1000);
 	if (s) rxoff = 0;
-	//获取互调
-	//dPimResult = __pobj->ana->InstrGetAnalyzer(dFreq, false);
+	//设置pim模块补偿(直接设置ana内置补偿)
 	JcSetAna_RefLevelOffset(rxoff);
+	//获取互调,返回数据
 	dPimResult = JcGetAna(pim->freq_khz, false);
-	//返回数据
-	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
 	if (dPimResult == JC_STATUS_ERROR){
 		Util::logged(L"fnGetImResult: Spectrum Read Error!");
@@ -394,6 +426,7 @@ int fnSetVBW(int iVBW, const JC_UNIT cUnits) {
 	return 0;
 }
 
+//通用设备命令
 int fnSendCmd(JcInt8 byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
 	bool b = 0;
 	int num = 0;
@@ -432,12 +465,14 @@ int fnSendCmd(JcInt8 byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
 	return 0;
 }
 
+//获取频谱型号
 int fnGetSpectrumType(char* cSpectrumType) {
 	long num =  __pobj->ana->InstrWriteAndRead("*IDN?\n", cSpectrumType);
-	if (num > 0)
-		return 0;
-	else
-		return JC_STATUS_ERROR_READ_SPECTRUM_IDN_FAIL;
+	//if (num > 0)
+	//	return 0;
+	//else
+	//	return JC_STATUS_ERROR_READ_SPECTRUM_IDN_FAIL;
+	return num > 0 ? 0 : JC_STATUS_ERROR_READ_SPECTRUM_IDN_FAIL;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -451,6 +486,19 @@ void HwSetBandEnable(int iBand, JcBool isEnable) {
 	//_switch_enable[iBand] = isEnable;
 }
 
+//设置外部频段（ATE请设true，其他false）
+void HwSetIsExtBand(JcBool isUse) {
+	if (isUse == FALSE) {
+		__pobj->isUseExtBand = false;
+		__pobj->wstrLogFlag = L"MBP";
+	}
+	else {
+		__pobj->isUseExtBand = true;
+		__pobj->wstrLogFlag = L"ATE";
+	}
+}
+
+//释放
 void HwSetExit(){
 	JcPimObject::release();
 }
@@ -462,17 +510,6 @@ JcBool FnGet_Vco() {
 	double vco_val = 0;
 	return HwGet_Vco(real_val, vco_val);
 
-}
-
-void HwSetIsExtBand(JcBool isUse) {
-	if (isUse == FALSE) {
-		__pobj->isUseExtBand = false;
-		__pobj->wstrLogFlag = L"MBP";
-	}
-	else {
-		__pobj->isUseExtBand = true;
-		__pobj->wstrLogFlag = L"ATE";
-	}
 }
 
 //设置当前功放的耦合器
@@ -535,13 +572,14 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 	return sen;
 }
 
+//读取vco
 JcBool HwGet_Vco(double& real_val, double& vco_val) {
 	//获取实际值
 	JcBool b = JcGetVcoDsp(real_val, pim->switch_port);
 	//获取校准值
 	JcGetOffsetVco(vco_val, pim->band, pim->dutport);
 	double dd = real_val - vco_val;
-
+	//判断
 	b = (dd > (__pobj->now_vco_threasold * -1) && dd < __pobj->now_vco_threasold);
 	//if (!b) 
 	//	Util::logged(L"HwVco: VCO Error (%lf)", dd);
@@ -550,18 +588,18 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 
 //检测功放稳定度(必须功放开启后检测) return dd
 JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
+	//tx显示值
 	double tx_dsp = 0;
-	dd = 0;
+	//tx偏差值
 	double tx_deviate = 0;
+	dd = 0;
 	std::string strLog = "start smooth-tx-" + std::to_string(byCarrier) + "\r\n";
 
 	for (int i = 0; i < 4; i++){
 		if (i == 0)
 			Util::setSleep(100);
 		if (byCarrier == JC_CARRIER_TX1) {
-			//获取检测功率
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
-			//获取偏差值
 			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;	
 		}
 		else if (byCarrier == JC_CARRIER_TX2) {
@@ -625,7 +663,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 	return JC_STATUS_SUCCESS;
 }
 
-//设置频率
+//设置频率(针对非ATE)
 JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits) {
 	//单位转换
 	rf1->freq_khz = __pobj->TransKhz(dCarrierFreq1, cUnits);
@@ -637,9 +675,21 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	if (js) return js;
 	js = JcSetSig_Advanced(JC_CARRIER_TX2, true, rf2->dd);
 	if (js) return js;
-	//设置中心频率
+	//设置pim参数,需在GetPimFreq()前-----(15/6/5新加)
+	if (pim->band == DD800) {
+		pim->is_high_pim = false;
+		pim->is_less_pim = 0;
+	}
+	else {
+		pim->is_high_pim = true;
+		pim->is_less_pim = 0;
+	}
+	//计算pim互调频率，设置中心频率
 	pim->freq_khz = __pobj->GetPimFreq();
 	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
+	//设置中心频率
+	//pim->freq_khz = __pobj->GetPimFreq();
+	//__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
 
 	return JC_STATUS_SUCCESS;
 }
@@ -773,6 +823,7 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	__pobj->ana->InstrPimSetting();
 	return vco >= -95 ? true : false;
 }
+
 //获取错误
 void JcGetError(char* msg, unsigned int max) {
 	if (NULL == __pobj) return;
@@ -810,7 +861,7 @@ JcBool JcGetSig_ExtRefStatus(JcInt8 byCarrier) {
 	return isExt;
 }
 
-//设置功放参数 (打开关闭功放请使用HwSetTxOn())
+//设置功放参数 (打开关闭功放请使用FnSetTxOn())
 JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm) {
 	if (NULL == __pobj) return FALSE;
 
@@ -829,6 +880,7 @@ JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm) {
 
 	return b;
 }
+
 //设置功放参数(高级)
 JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
@@ -878,6 +930,7 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	}
 	return JC_STATUS_SUCCESS;
 }
+
 //读取当前SIG功率值(tx1或tx2) return sen
 double JcGetSig_CoupDsp(JcInt8 byCoup, JcInt8 byBand, JcInt8 byPort,
 						double freq_khz, double pow_dbm, double dExtOffset) {
@@ -900,7 +953,6 @@ double JcGetSen() {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
 	return __pobj->sen->InstrGetSesnor();
 }
-
 
 //设置频谱REF LEVEL OFFSET
 void JcSetAna_RefLevelOffset(double offset) {
@@ -958,6 +1010,7 @@ JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 		return JC_STATUS_SUCCESS;
 }
 
+//获取rx点数
 long JcGetOffsetRxNum(JcInt8 byInternalBand){
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
@@ -1070,6 +1123,7 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 		return JC_STATUS_SUCCESS;
 }
 
+//获取tx点数
 long JcGetOffsetTxNum(JcInt8 byInternalBand) {
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
@@ -1079,7 +1133,7 @@ long JcGetOffsetTxNum(JcInt8 byInternalBand) {
 	return freq_num;
 }
 
-//自动校准发射Tx (校准前请确认连线)，(band:当前频段，dutport:当前测试端kou), 同时校准tx1,tx2
+//自动校准Tx (校准前请确认连线)，(band:当前频段，dutport:当前测试端kou), 同时校准tx1,tx2
 JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 						double des_p_dbm, double loss_db,
 						Callback_Get_TX_Offset_Point pHandler) {
@@ -1168,6 +1222,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	return JC_STATUS_SUCCESS;
 }
 
+//自动校准Tx - single
 JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 							   JC_RETURN_VALUE resulte_sen,
 							   int coup, 
@@ -1293,6 +1348,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 }
 
 
+//获取vco校准数值
 JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, JcInt8 byInternalBand, JcInt8 byDutport) {
 	std::string sband = __pobj->GetBandString(byInternalBand);
 
@@ -1305,6 +1361,7 @@ JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, JcInt8 byInternalBand, JcIn
 		return JC_STATUS_SUCCESS;
 }
 
+//保存vco校准数值
 JC_STATUS JcSetOffsetVco(JcInt8 byInternalBand, JcInt8 byDutport, double val) {
 	std::string sband = __pobj->GetBandString(byInternalBand);
 
@@ -1317,6 +1374,7 @@ JC_STATUS JcSetOffsetVco(JcInt8 byInternalBand, JcInt8 byDutport, double val) {
 		return JC_STATUS_SUCCESS;
 }
 
+//设置自动校准tx的配置
 JcBool JcSetOffsetTX_Config(int iAnalyzer, const JC_ADDRESS Device_Info) {
 	__pobj->ext_sen_index = iAnalyzer;
 	if (__pobj->ext_sen_index == 0) 
@@ -1355,6 +1413,7 @@ JcBool JcSetOffsetTX_Config(int iAnalyzer, const JC_ADDRESS Device_Info) {
 	return __pobj->isExtSenConn;
 }
 
+//设置自动校准tx的配置（关闭）
 void JcSetOffsetTX_Config_Close() {
 	if (__pobj->isExtSenConn) {
 		__pobj->ext_sen->InstrClose();
@@ -1367,6 +1426,36 @@ void JcSetOffsetTX_Config_Close() {
 //OTHER FUNC
 //////////////////////////////////////////////////////////////////////////////////////////////
 
+//废除
+int JcGetSwtichEnable(int byInternalBandIndex){
+	//if (byInternalBandIndex < 0 || byInternalBandIndex > 6)
+	//	return 0;
+	//return _switch_enable[byInternalBandIndex];
+	return 0;
+}
+
+void JcFindRsrc() {
+	char instrAddr[VI_FIND_BUFLEN];
+	ViUInt32 num;
+	ViFindList findlist;
+	ViSession _defaultRm;
+	ViStatus _status;
+
+	_status = viOpenDefaultRM(&_defaultRm);
+	_status = viFindRsrc(_defaultRm, const_cast<char*>("?*INSTR"), &findlist, &num, instrAddr);
+
+	std::cout << "Num:  " << num << std::endl;
+	std::cout << "Addr: " << instrAddr << std::endl;
+
+	while (--num) {
+		_status = viFindNext(findlist, instrAddr);
+		std::cout << "Addr: " << instrAddr << std::endl;
+	}
+
+	_status = viClose(_defaultRm);
+	fflush(stdin);
+}
+
 int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 	int iDeviceIDN = -1;
 	unsigned char buf[1024] = { 0 };
@@ -1375,7 +1464,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 	int s = viPrintf(vi, const_cast<char*>("*IDN?\n"));
 	s = viRead(vi, buf, 1024, &retCount);
 	
-	if (retCount) {
+	if (retCount > 0) {
 		if (NULL != cIdn)
 			memcpy(cIdn, buf, retCount);
 		std::string strIdn((char*)buf);
@@ -1404,14 +1493,6 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 			Util::logged(L"JcGetIDN: We Cannot Support (%s)!", Util::utf8_to_wstring(strIdn).c_str());
 	}
 	return iDeviceIDN;
-}
-
-//废除
-int JcGetSwtichEnable(int byInternalBandIndex){
-	//if (byInternalBandIndex < 0 || byInternalBandIndex > 6)
-	//	return 0;
-	//return _switch_enable[byInternalBandIndex];
-	return 0;
 }
 
 int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {
@@ -1443,32 +1524,10 @@ int JcGetDllVersion(int &major, int &minor, int &build, int &revision) {
 	return 0;
 }
 
-void JcFindRsrc() {
-	char instrAddr[VI_FIND_BUFLEN];
-	ViUInt32 num;
-	ViFindList findlist;
-	ViSession _defaultRm;
-	ViStatus _status;
-	
-	_status = viOpenDefaultRM(&_defaultRm);
-	_status = viFindRsrc(_defaultRm, const_cast<char*>("?*INSTR"), &findlist, &num, instrAddr);
-	
-	std::cout << "Num:  " << num << std::endl;
-	std::cout << "Addr: " << instrAddr << std::endl;
-	
-	while (--num) {
-		_status = viFindNext(findlist, instrAddr);
-		std::cout << "Addr: " << instrAddr << std::endl;
-	}
-	
-	_status = viClose(_defaultRm);
-	fflush(stdin);
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //VNA 测试 ！(请无视)
 //////////////////////////////////////////////////////////////////////////////////////////////
-
 
 void testcb(Callback_Get_RX_Offset_Point pHandler) {
 	double d = 1;

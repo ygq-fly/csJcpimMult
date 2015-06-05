@@ -24,6 +24,7 @@
 //static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
 
+//dll加载初始化地址
 static std::wstring _startPath = [](){
 	wchar_t wcBuff[512] = { 0 };
 	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
@@ -33,6 +34,7 @@ static std::wstring _startPath = [](){
 	return std::wstring(wcBuff);
 }();
 
+//rf发射模块参数类(15/6/5新加)
 struct JcRFModule {
 	JcRFModule() 
 		: band(0)
@@ -44,18 +46,23 @@ struct JcRFModule {
 		, offset_int(0)
 		, dd(0)
 	{}
+	//rf当前频段(物理模块位置)
 	uint8_t band;
+	//rf当前频段端口
 	uint8_t dutport;
-	//输出通道
+	//rf当前输出通道
 	uint8_t switch_port;
-	//检测通道
+	//rf当前检测通道
 	uint8_t switch_coup;
-	//RF单位KHZ
+	//rf输出频率单位KHZ
 	double freq_khz;
-	//RF单位dBm
+	//rf输出功率单位dBm
 	double pow_dbm;
+	//外部校准参数
 	double offset_ext;
+	//内部校准参数
 	double offset_int;
+	//other
 	double dd;
 
 	double freq_min;
@@ -64,6 +71,7 @@ struct JcRFModule {
 	double power_max;
 } *rf1, *rf2;
 
+//pim接收模块参数类(15/6/5新加)
 struct JcPimModule {
 	JcPimModule()
 		: band(0)
@@ -71,52 +79,76 @@ struct JcPimModule {
 		, switch_port(0)
 		, freq_khz(0)
 		, is_high_pim(true)
+		, is_less_pim(0)
 		, order(3)
 		, imAvg(1)
 	{}
+	//pim当前频段(物理模块位置)
 	uint8_t band;
+	//pim当前频段端口
 	uint8_t dutport;
-	//接收通道
+	//pim接收通道
 	uint8_t switch_port;
-	//PIM单位KHZ
+	//pim接收频率单位KHZ
 	double freq_khz;
-
+	//pim高频互调(f1 *M - f2 *N 和 f2 *M- f1 *N 的区别)
 	bool is_high_pim;
+	//pim计算公式(f1 *M + f2 *N 和 f1 *M- f2 *N的区别)
+	uint8_t is_less_pim;
+	//pim阶数
 	uint8_t order;
+	//pim接收平均次数
 	uint8_t imAvg;
 } *pim;
 
+//仪表类
 struct JcPimObject
 {
 #define LINEFEED_CHAR 0x0D
 #define TIMEOUT_VALUE 10000
 public:
+	//vco功能启用标志
 	int now_vco_enable[10];
+
+	//vco检测门限
 	double now_vco_threasold;
+	//功率调整门限
 	double now_tx_smooth_threasold;
+	//功率精测度
 	double now_tx_smooth_accuracy;
-	//启用外部频段名（针对华为）
+	//启用外部频段名(针对ATE)
 	bool isUseExtBand;
-    //启用传输模式
+    //启用传输模式(针对传输模式)
 	bool isUseTransType;
+	//错误信息
 	std::string strErrorInfo;
 	std::wstring wstrLogPath;
 	std::wstring wstrLogFlag;
 
 public:
-	bool isAllConn;
+	//各个设备连接状态
 	//0-SIG1,1-SIG2,2-ANA,3-SEN,4-SWH
 	bool device_status[5];
-	ViSession viDefaultRM;
-	std::shared_ptr<IfAnalyzer> ana;
-	std::shared_ptr<IfSensor> sen;
-	std::shared_ptr<IfSignalSource> sig1;
-	std::shared_ptr<IfSignalSource> sig2;
-	std::shared_ptr<IfVna> vna;
-	std::shared_ptr<ClsJcSwitch> swh;
+	bool isAllConn;
+	//连接地址
 	std::vector<std::string> vaddr;
-
+	//vi资源管理参数
+	ViSession viDefaultRM;
+	//pim模块使用的设备
+	std::shared_ptr<IfAnalyzer> ana;
+	//检测模块使用的设备
+	std::shared_ptr<IfSensor> sen;
+	//rf1模块使用的设备
+	std::shared_ptr<IfSignalSource> sig1;
+	//rf2模块使用的设备
+	std::shared_ptr<IfSignalSource> sig2;
+	//...(test)
+	std::shared_ptr<IfVna> vna;
+	//开关模块
+	std::shared_ptr<ClsJcSwitch> swh;
+	//数据库
 	JcOffsetDB offset;
+
 	//外部传感器(预留)
 	bool isExtSenConn;
 	int ext_sen_index;
@@ -136,34 +168,35 @@ private:
 		, ext_sen_index(0)
 		, wstrLogFlag(L"MBP")
 	{
+		//初始化(15/6/5新加)
 		rf1 = new JcRFModule;
 		rf2 = new JcRFModule;
 		pim = new JcPimModule;
-
+		//状态初始化
 		for (int i = 0; i < 5; ++i) {
 			device_status[i] = false;
 		}
-
 		for (int i = 0; i < 10; ++i){
 			now_vco_enable[i] = 1;
 		}
-
+		//设置配置文件地址
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
-		//VCO_ENABLE
+		//获取VCO_ENABLE
 		for (int i = 0; i < 7; i++){
 			wchar_t key[10] = { 0 };
 			swprintf_s(key, L"vco_band%d", i);
 			now_vco_enable[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
 		}
-		//PATH
+		//获取PATH
 		wchar_t temp[1024] = { 0 };
 		GetPrivateProfileStringW(L"PATH", L"logging_file_path", L"", temp, 1024, wsPath_ini.c_str());
 		wstrLogPath = std::wstring(temp);
-		//SETTINGS
+		//获取SETTINGS
 		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", SMOOTH_VCO_THREASOLD, wsPath_ini.c_str());
 		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", SMOOTH_TX_THREASOLD, wsPath_ini.c_str());
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", SMOOTH_TX_ACCURACY, wsPath_ini.c_str());
 		int iUseTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
+		//设置SETTINGS
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
@@ -173,6 +206,7 @@ private:
 	~JcPimObject() {}
 
 public:
+	//设置vi连接参数
 	void JcSetViAttribute(ViSession vi){
 		char cInfo[32] = { 0 };
 		int s = viGetAttribute(vi, 0xBFFF0001UL, &cInfo);
@@ -195,6 +229,7 @@ public:
 		}
 	}
 
+	//转换单位khz
 	double TransKhz(double val, char* cUnits) {
 		std::string sUnits(cUnits);
 		std::transform(sUnits.begin(), sUnits.end(), sUnits.begin(), ::tolower);
@@ -210,6 +245,7 @@ public:
 		return _val;
 	}
 
+	//转换单位
 	double TransToUnit(double val_khz, char* cUnits) {
 		std::string sUnits(cUnits);
 		std::transform(sUnits.begin(), sUnits.end(), sUnits.begin(), ::tolower);
@@ -225,6 +261,7 @@ public:
 		return _val;
 	}
 
+	//设置外部参数(针对ATE)
 	//enum JC_EXTERNAL_BAND{
 	//	_DD800 = 0,
 	//	_GSM900 = 1,
@@ -251,6 +288,7 @@ public:
 		return sband;
 	}
 
+	//获取band名称
 	std::string GetBandString(const uint8_t& MeasBand) {
 		std::string sband;
 		switch (MeasBand)
@@ -267,16 +305,25 @@ public:
 		return sband;
 	}
 
+	//各种互调公式计算(15/6/5新加)
 	double GetPimFreq() {
 		double dFreq = 0;
-		int ord = pim->order / 2;
-		if (pim->is_high_pim)
-			dFreq = rf1->freq_khz * (ord + 1) - rf2->freq_khz * ord;
+		//设置F1,F2
+		double dF1 = pim->is_high_pim ? rf1->freq_khz : rf2->freq_khz;
+		double dF2 = pim->is_high_pim ? rf2->freq_khz : rf1->freq_khz;
+		//设置阶数
+		int ord1 = pim->order == 2 ? 1 : (pim->order / 2 + 1);
+		int ord2 = pim->order == 2 ? 1 : (pim->order / 2);
+		//设置算法
+		if (pim->is_less_pim == 0)
+			dFreq = dF1 * ord1 - dF2 * ord2;
 		else
-			dFreq = rf2->freq_khz * (ord + 1) - rf1->freq_khz * ord;
-		return dFreq;
+			dFreq = dF1 * ord1 + dF2 * ord2;
+
+		return abs(dFreq);
 	}
 
+	//日志
 	void LoggingWrite(std::string strLog) {
 		std::string strTime;
 		Util::getNowTime(strTime);

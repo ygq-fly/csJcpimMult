@@ -151,9 +151,9 @@ JIONTCOM_API int fnSendCmd(JcInt8 byDevice, const JC_CMD cmd, char* cResult, lon
 JIONTCOM_API int fnGetSpectrumType(char* cSpectrumType);
 //Other
 JIONTCOM_API void HwSetBandEnable(int iBand, JcBool isEnable); 
+JIONTCOM_API void HwSetIsExtBand(JcBool isUse);
 JIONTCOM_API void HwSetExit();
 JIONTCOM_API JcBool FnGet_Vco();
-JIONTCOM_API void HwSetIsExtBand(JcBool isUse);
 JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
 JIONTCOM_API double HwGetCoup_Dsp(JcInt8 byCoup);
 JIONTCOM_API JcBool HwGet_Vco(double& real_val, double& vco_val);
@@ -215,9 +215,9 @@ JC_API void  JcSetOffsetTX_Config_Close();
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 JC_API int JcGetSwtichEnable(int byInternalBandIndex);
+JC_API void JcFindRsrc();
 JC_API int JcGetDllVersion(int &major, int &minor, int &build, int &revision);
 JC_API int  JcGetIDN(unsigned long viSession, char* cIdn);
-JC_API void JcFindRsrc();
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //≤‚ ‘£®«ÎŒﬁ ”£©
