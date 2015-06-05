@@ -96,8 +96,6 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 
 		//开始连接数据库
 #ifdef WIN32
-		//std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-		//std::string sPath = conv.to_bytes(_startPath + L"\\JcOffset.db");
 		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
 		isSqlConn = __pobj->offset.Dbconnect(sPath.c_str());
 		if (!isSqlConn) {
@@ -194,6 +192,7 @@ int fnSetMeasBand(JcInt8 byBandIndex){
 
 //请先设置 HwSetMeasBand
 int fnSetDutPort(JcInt8 byPort) {
+	if (byPort > 2) return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	rf1->dd = 0;
 	rf2->dd = 0;
 	//__pobj->now_dut_port = byPort;
@@ -202,7 +201,6 @@ int fnSetDutPort(JcInt8 byPort) {
 	pim->dutport = byPort;
 
 	//Band转换开关参数 , byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
-	//int iSwitch = __pobj->now_band * 2 + byPort;
 	rf1->switch_port = rf1->band * 2 + rf1->dutport;
 	rf2->switch_port = rf2->band * 2 + rf2->dutport;
 	pim->switch_port = pim->band * 2 + pim->dutport;
@@ -969,21 +967,18 @@ double JcGetAna(double freq_khz, bool isMax){
 //设置开关(iSwitchTx: 0 ~ 13)
 JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
 				  int iSwitchPim, int iSwitchCoup) {
-	if (NULL == __pobj) {
-		__pobj->strErrorInfo = "object: Not init!\r\n";
-		return false; 
-	}
+	if (NULL == __pobj) return JC_STATUS_ERROR;
 	if (false == __pobj->device_status[4]) {
 		__pobj->strErrorInfo = "Switch: All not connected\r\n";
 		return false;
 	}
-
-	int coup = 0;
-	if (iSwitchTx1 % 2 == 0)
-		coup = iSwitchTx1 + iSwitchCoup;
-	else
-		coup = (iSwitchTx1 - 1) + iSwitchCoup;
-	bool isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
+	//int coup = 0;
+	//if (iSwitchTx1 % 2 == 0)
+	//	coup = iSwitchTx1 + iSwitchCoup;
+	//else
+	//	coup = (iSwitchTx1 - 1) + iSwitchCoup;
+	//bool isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
+	bool isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchCoup);
 	if (!isSucc) __pobj->strErrorInfo = "Switch: Excut Error!\r\n";
 
 	return isSucc;
@@ -1107,7 +1102,8 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 						double freq_mhz, double tx_dbm) {
 	//传输模式
 	JcInt8 byTempDutPort = byDutPort;
-	if ((__pobj->isUseTransType == true) && (byDutPort == JC_DUTPORT_B))
+	//if ((__pobj->isUseTransType == true) && (byDutPort == JC_DUTPORT_B))
+	if ((__pobj->now_mode == MODE_TRANSMISSION) && (byDutPort == JC_DUTPORT_B))
 		byTempDutPort = JC_DUTPORT_A;
 
 	//获取当前频段显示字符

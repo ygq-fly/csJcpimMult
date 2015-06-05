@@ -21,6 +21,13 @@
 #define SMOOTH_TX_THREASOLD 2
 #define SMOOTH_TX_ACCURACY 0.15
 
+enum
+{
+	MODE_HUAWEI = 0,
+	MODE_TRANSMISSION = 1,
+	MODE_POI = 2
+};
+
 //static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
 
@@ -93,7 +100,7 @@ struct JcPimModule {
 	double freq_khz;
 	//pim高频互调(f1 *M - f2 *N 和 f2 *M- f1 *N 的区别)
 	bool is_high_pim;
-	//pim计算公式(f1 *M + f2 *N 和 f1 *M- f2 *N的区别)
+	//pim计算公式(f1 *M + f2 *N 和 f1 *M- f2 *N 的区别)
 	uint8_t is_less_pim;
 	//pim阶数
 	uint8_t order;
@@ -118,8 +125,10 @@ public:
 	double now_tx_smooth_accuracy;
 	//启用外部频段名(针对ATE)
 	bool isUseExtBand;
-    //启用传输模式(针对传输模式)
-	bool isUseTransType;
+    //仪表模式
+	//0-华为互调模式， 1-支持传输模式， 2-POI模式
+	//isUseTransType 
+	uint8_t now_mode;
 	//错误信息
 	std::string strErrorInfo;
 	std::wstring wstrLogPath;
@@ -160,7 +169,7 @@ private:
 		, now_vco_threasold(SMOOTH_VCO_THREASOLD)
 		, now_tx_smooth_threasold(SMOOTH_TX_THREASOLD)
 		, now_tx_smooth_accuracy(SMOOTH_TX_ACCURACY)
-		, isUseTransType(false)
+		, now_mode(0)//isUseTransType(false)
 		, isUseExtBand(true)
 		, strErrorInfo("Not")
 		, viDefaultRM(VI_NULL)
@@ -192,15 +201,15 @@ private:
 		GetPrivateProfileStringW(L"PATH", L"logging_file_path", L"", temp, 1024, wsPath_ini.c_str());
 		wstrLogPath = std::wstring(temp);
 		//获取SETTINGS
+		int iTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
 		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", SMOOTH_VCO_THREASOLD, wsPath_ini.c_str());
 		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", SMOOTH_TX_THREASOLD, wsPath_ini.c_str());
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", SMOOTH_TX_ACCURACY, wsPath_ini.c_str());
-		int iUseTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
 		//设置SETTINGS
+		now_mode = (iTransType < 0 || iTransType > 2) ? MODE_HUAWEI : iTransType;
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
-		isUseTransType = iUseTransType & 1;
 	}
 
 	~JcPimObject() {}

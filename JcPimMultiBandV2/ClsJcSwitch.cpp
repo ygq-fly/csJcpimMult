@@ -60,12 +60,18 @@ bool ClsJcSwitch::SwitchConnect() {
 //开关执行切换
 bool ClsJcSwitch::SwitchExcut(const int& iSwitchTx1, const int& iSwitchTx2,
 							  const int& iSwitchPim, const int& iSwitchDet) {
+	int coup = 0;
+	if (iSwitchTx1 % 2 == 0)
+		coup = iSwitchTx1 + iSwitchDet;
+	else
+		coup = (iSwitchTx1 - 1) + iSwitchDet;
+
 	//操作开关矩阵
 	_cic.Clear();
 	_cic.SelChanTx1(_nltx1[iSwitchTx1]);
 	_cic.SelChanTx2(_nltx2[iSwitchTx2]);
 	_cic.SelChanPim(_nlpim[iSwitchPim]);
-	_cic.SelChanDet(_nldet[iSwitchDet]);
+	_cic.SelChanDet(_nldet[coup]);
 	return _cic.Excute();
 }
 
