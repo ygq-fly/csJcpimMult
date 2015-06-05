@@ -173,15 +173,13 @@ JC_API JcBool JcGetDeviceStatus(JcInt8 byDevic);
 
 JC_API JcBool JcGetSig_ExtRefStatus(JcInt8 byCarrier);
 JC_API JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm);
-JC_API JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, JcInt8 byBand, JcInt8 byPort,
-								   double freq_khz, double pow_dbm,
-								   bool isOffset, double dExtOffset);
+JC_API JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther);
 JC_API double JcGetSig_CoupDsp(JcInt8 byCoup, JcInt8 byBand, JcInt8 byPort,
 							   double freq_khz, double pow_dbm, double dExtOffset);
 JC_API double JcGetSen();
 JC_API void   JcSetAna_RefLevelOffset(double offset);
 JC_API double JcGetAna(double freq_khz, bool isMax);
-JC_API JcBool  JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
+JC_API JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
 						  int iSwitchPim, int iSwitchDet);
 
 /////////////////////////////////////////////////////////////////////////////////////////////

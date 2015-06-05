@@ -21,7 +21,7 @@
 #define SMOOTH_TX_THREASOLD 2
 #define SMOOTH_TX_ACCURACY 0.15
 
-static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
+//static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
 
 static std::wstring _startPath = [](){
@@ -33,44 +33,69 @@ static std::wstring _startPath = [](){
 	return std::wstring(wcBuff);
 }();
 
+struct JcRFModule {
+	JcRFModule() 
+		: band(0)
+		, dutport(0)
+		, switch_port(0)
+		, pow_dbm(-60)
+		, freq_khz(200)
+		, offset_ext(0)
+		, offset_int(0)
+		, dd(0)
+	{}
+	uint8_t band;
+	uint8_t dutport;
+	//输出通道
+	uint8_t switch_port;
+	//检测通道
+	uint8_t switch_coup;
+	//RF单位KHZ
+	double freq_khz;
+	//RF单位dBm
+	double pow_dbm;
+	double offset_ext;
+	double offset_int;
+	double dd;
+
+	double freq_min;
+	double freq_max;
+	double power_min;
+	double power_max;
+} *rf1, *rf2;
+
+struct JcPimModule {
+	JcPimModule()
+		: band(0)
+		, dutport(0)
+		, switch_port(0)
+		, freq_khz(0)
+		, is_high_pim(true)
+		, order(3)
+		, imAvg(1)
+	{}
+	uint8_t band;
+	uint8_t dutport;
+	//接收通道
+	uint8_t switch_port;
+	//PIM单位KHZ
+	double freq_khz;
+
+	bool is_high_pim;
+	uint8_t order;
+	uint8_t imAvg;
+} *pim;
+
 struct JcPimObject
 {
 #define LINEFEED_CHAR 0x0D
 #define TIMEOUT_VALUE 10000
 public:
-	uint8_t now_band;
-	uint8_t now_dut_port;
-	uint8_t now_order;
-	uint8_t now_imAvg;
-
-	double now_txPow1;
-	double now_txPow2;
-	//单位KHZ
-	double now_txFreq1;
-	//单位KHZ
-	double now_txFreq2;
-
-	//外部补偿1
-	double offset_txPow1;
-	//外部补偿2
-	double offset_txPow2;
-
-	//内部校准1
-	double offset_internal_txPow1;
-	double dd1;
-	//内部校准2
-	double offset_internal_txPow2;
-	double dd2;
-
-	bool isAllConn;
-	bool isSwhConn;
-	bool isExtSenConn;
-	bool now_status[4];
-	int now_vco_enbale[10];
+	int now_vco_enable[10];
 	double now_vco_threasold;
 	double now_tx_smooth_threasold;
 	double now_tx_smooth_accuracy;
-	int debug_time;
+	//启用外部频段名（针对华为）
 	bool isUseExtBand;
     //启用传输模式
 	bool isUseTransType;
@@ -79,6 +104,9 @@ public:
 	std::wstring wstrLogFlag;
 
 public:
+	bool isAllConn;
+	//0-SIG1,1-SIG2,2-ANA,3-SEN,4-SWH
+	bool device_status[5];
 	ViSession viDefaultRM;
 	std::shared_ptr<IfAnalyzer> ana;
 	std::shared_ptr<IfSensor> sen;
@@ -89,70 +117,57 @@ public:
 	std::vector<std::string> vaddr;
 
 	JcOffsetDB offset;
-	//外部传感器
+	//外部传感器(预留)
+	bool isExtSenConn;
 	int ext_sen_index;
 	std::shared_ptr<IfSensor> ext_sen;
 
 private:
 	JcPimObject()
-		: now_band(0),
-		now_dut_port(0),
-		now_order(3),
-		now_imAvg(1),
-		now_txPow1(-60),
-		now_txPow2(-60),
-		now_txFreq1(200),
-		now_txFreq2(200),
-		offset_txPow1(0),
-		offset_txPow2(0),
-		offset_internal_txPow1(0),
-		dd1(0),
-		dd2(0),
-		offset_internal_txPow2(0),
-		isAllConn(false),
-		isSwhConn(false),
-		isExtSenConn(false),
-        isUseTransType(false),
-		now_vco_threasold(SMOOTH_VCO_THREASOLD),
-		now_tx_smooth_threasold(SMOOTH_TX_THREASOLD),
-		now_tx_smooth_accuracy(SMOOTH_TX_ACCURACY),
-		debug_time(200),
-		isUseExtBand(true),
-		strErrorInfo("Not"),
-		viDefaultRM(VI_NULL),
-		ext_sen_index(0),
-		wstrLogFlag(L"MBP")
+		: isAllConn(false)
+		, now_vco_threasold(SMOOTH_VCO_THREASOLD)
+		, now_tx_smooth_threasold(SMOOTH_TX_THREASOLD)
+		, now_tx_smooth_accuracy(SMOOTH_TX_ACCURACY)
+		, isUseTransType(false)
+		, isUseExtBand(true)
+		, strErrorInfo("Not")
+		, viDefaultRM(VI_NULL)
+		, isExtSenConn(false)
+		, ext_sen_index(0)
+		, wstrLogFlag(L"MBP")
 	{
-		for (int i = 0; i < 4; ++i) {
-			now_status[i] = false;
+		rf1 = new JcRFModule;
+		rf2 = new JcRFModule;
+		pim = new JcPimModule;
+
+		for (int i = 0; i < 5; ++i) {
+			device_status[i] = false;
 		}
 
 		for (int i = 0; i < 10; ++i){
-			now_vco_enbale[i] = 1;
+			now_vco_enable[i] = 1;
 		}
 
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
-
+		//VCO_ENABLE
 		for (int i = 0; i < 7; i++){
 			wchar_t key[10] = { 0 };
 			swprintf_s(key, L"vco_band%d", i);
-			now_vco_enbale[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
+			now_vco_enable[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
 		}
-
 		//PATH
 		wchar_t temp[1024] = { 0 };
 		GetPrivateProfileStringW(L"PATH", L"logging_file_path", L"", temp, 1024, wsPath_ini.c_str());
 		wstrLogPath = std::wstring(temp);
+		//SETTINGS
 		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", SMOOTH_VCO_THREASOLD, wsPath_ini.c_str());
 		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", SMOOTH_TX_THREASOLD, wsPath_ini.c_str());
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", SMOOTH_TX_ACCURACY, wsPath_ini.c_str());
-        int iUseTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
-
+		int iUseTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
 		isUseTransType = iUseTransType & 1;
-		debug_time = GetPrivateProfileIntW(L"Settings", L"time", 200, wsPath_ini.c_str());
 	}
 
 	~JcPimObject() {}
@@ -254,35 +269,11 @@ public:
 
 	double GetPimFreq() {
 		double dFreq = 0;
-		//计算阶数
-		if (now_band == 1) {
-			if (now_order == 3)
-				dFreq = now_txFreq2 * 2 - now_txFreq1 * 1;
-			else if (now_order == 5)
-				dFreq = now_txFreq2 * 3 - now_txFreq1 * 2;
-			else if (now_order == 7)
-				dFreq = now_txFreq2 * 4 - now_txFreq1 * 3;
-			else if (now_order == 9)
-				dFreq = now_txFreq2 * 5 - now_txFreq1 * 4;
-			else if (now_order == 11)
-				dFreq = now_txFreq2 * 6 - now_txFreq1 * 5;
-			else
-				dFreq = now_txFreq2 * 2 - now_txFreq1 * 1;
-		}
-		else {
-			if (now_order == 3)
-				dFreq = now_txFreq1 * 2 - now_txFreq2 * 1;
-			else if (now_order == 5)
-				dFreq = now_txFreq1 * 3 - now_txFreq2 * 2;
-			else if (now_order == 7)
-				dFreq = now_txFreq1 * 4 - now_txFreq2 * 3;
-			else if (now_order == 9)
-				dFreq = now_txFreq1 * 5 - now_txFreq2 * 4;
-			else if (now_order == 11)
-				dFreq = now_txFreq1 * 6 - now_txFreq2 * 5;
-			else 
-				dFreq = now_txFreq1 * 2 - now_txFreq2 * 1;
-		}
+		int ord = pim->order / 2;
+		if (pim->is_high_pim)
+			dFreq = rf1->freq_khz * (ord + 1) - rf2->freq_khz * ord;
+		else
+			dFreq = rf2->freq_khz * (ord + 1) - rf1->freq_khz * ord;
 		return dFreq;
 	}
 
@@ -329,6 +320,10 @@ public:
 			_singleton->sig2.reset();
 			_singleton->vna.reset();
 			_singleton->swh.reset();
+
+			delete rf1;
+			delete rf2;
+			delete pim;
 
 			delete _singleton;
 			_singleton = NULL;
