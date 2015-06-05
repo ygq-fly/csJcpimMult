@@ -111,7 +111,9 @@
     <ClInclude Include="ClsJcSwitch.h" />
     <ClInclude Include="Switch\com_io_ctl.h" />
     <ClInclude Include="Switch\implementsetting.h" />
-    <ClInclude Include="Switch\switch_info.h" />
+    <ClInclude Include="Switch\JcMatrixSwitch.h" />
+    <ClInclude Include="Switch\switch_info_huawei.h" />
+    <ClInclude Include="Switch\switch_info_poi.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ClsSenAgU2000A.hpp" />
   </ItemGroup>
@@ -127,6 +129,7 @@
     <ClCompile Include="ClsJcSwitch.cpp" />
     <ClCompile Include="Switch\com_io_ctl.cpp" />
     <ClCompile Include="Switch\implementsetting.cpp" />
+    <ClCompile Include="Switch\JcMatrixSwitch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="JcPimMultiBandV2.rc" />

@@ -21,13 +21,6 @@
 #define SMOOTH_TX_THREASOLD 2
 #define SMOOTH_TX_ACCURACY 0.15
 
-enum
-{
-	MODE_HUAWEI = 0,
-	MODE_TRANSMISSION = 1,
-	MODE_POI = 2
-};
-
 //static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
 

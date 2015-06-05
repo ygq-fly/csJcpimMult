@@ -111,9 +111,6 @@
     <ClInclude Include="Switch\implementsetting.h">
       <Filter>Switch</Filter>
     </ClInclude>
-    <ClInclude Include="Switch\switch_info.h">
-      <Filter>Switch</Filter>
-    </ClInclude>
     <ClInclude Include="JcPimObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -131,6 +128,15 @@
     </ClInclude>
     <ClInclude Include="RohdeSchwarz\ClsSigRsSMxSerial.h">
       <Filter>RohdeSchwarz</Filter>
+    </ClInclude>
+    <ClInclude Include="Switch\JcMatrixSwitch.h">
+      <Filter>Switch</Filter>
+    </ClInclude>
+    <ClInclude Include="Switch\switch_info_huawei.h">
+      <Filter>Switch</Filter>
+    </ClInclude>
+    <ClInclude Include="Switch\switch_info_poi.h">
+      <Filter>Switch</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +172,9 @@
     </ClCompile>
     <ClCompile Include="RohdeSchwarz\ClsSigRsSMxSerial.cpp">
       <Filter>RohdeSchwarz</Filter>
+    </ClCompile>
+    <ClCompile Include="Switch\JcMatrixSwitch.cpp">
+      <Filter>Switch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

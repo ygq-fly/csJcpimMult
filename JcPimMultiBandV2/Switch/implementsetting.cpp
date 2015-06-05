@@ -23,6 +23,9 @@
 2015.5.4
 	将Connect中的功能禁用
 *------------------------------------------------------------------------------*/
+#include "../stdafx.h"
+#include "switch_info_poi.h"
+#include "switch_info_huawei.h"
 #include "implementsetting.h"
 
 namespace ns_com_io_ctl
@@ -119,7 +122,7 @@ namespace ns_com_io_ctl
 		return result;  
 	}  
 	//加载映射表
-	bool implementsetting::LoadMap(void)
+	bool implementsetting::LoadMap(int type)
 	{
 		bool result = true;
 		string iopath = GetRunPath();
@@ -144,10 +147,22 @@ namespace ns_com_io_ctl
 
 		string fstr;
 
-		fstr.assign(IO_STRING);
-		ofio.write(fstr.c_str(), fstr.size());
-		fstr.assign(IMPLEMENT_STRING);
-		ofimplt.write(fstr.c_str(), fstr.size());
+		switch (type)
+		{
+			case 1://ID_HUAWEI:
+				fstr.assign(IO_STRING_HUAWEI); 
+				ofio.write(fstr.c_str(), fstr.size());
+				fstr.assign(IMPLEMENT_STRING_HUAWEI);
+				ofimplt.write(fstr.c_str(), fstr.size());
+				break;
+			case 2://ID_POI:
+				fstr.assign(IO_STRING_POI);
+				ofio.write(fstr.c_str(), fstr.size());
+				fstr.assign(IMPLEMENT_STRING_POI);
+				ofimplt.write(fstr.c_str(), fstr.size());				
+				break;
+			default:break;
+		}		
 
 		ofio.close();
 		ofimplt.close();
@@ -262,7 +277,7 @@ namespace ns_com_io_ctl
 		}
 	}
 	//获取名称列表
-	vector<string>&implementsetting::GetNameList(string&& strBase)
+	vector<string>&implementsetting::GetNameList(string&strBase)
 	{	
 		__nameList.clear();
 		StringReplace(strBase," ","");
@@ -302,8 +317,7 @@ namespace ns_com_io_ctl
 			vector<string>&temp =  GetNameList( GetRowFromIMFile("switch",__switchNameList[i],""));
 			for(int j=0;j<(int)temp.size();j++)
 			{
-				//mingw编译不通过，改为拷贝赋值
-				string index = GetRowFromIMFile("switch",temp[j],"0");
+				string&index = GetRowFromIMFile("switch",temp[j],"0");
 				is.io[temp[j]] = atol(index.c_str());
 			}
 			__switchMap[__switchNameList[i]] = is;
@@ -352,8 +366,7 @@ namespace ns_com_io_ctl
 
 		for(int i=0;i<(int)ac.namelist.size();i++)
 		{
-			//mingw编译不通过，改为拷贝赋值
-			string funcStr = GetRowFromIMFile(section,ac.namelist[i],"");
+			string&funcStr = GetRowFromIMFile(section,ac.namelist[i],"");
 			rowRun rr;
 			GetRowRunFunc(funcStr,rr);
 			ac.actionMap[ac.namelist[i]] = rr;		
@@ -362,9 +375,10 @@ namespace ns_com_io_ctl
 	//获取行函数列表
 	void implementsetting::GetRowRunFunc(string str,rowRun&rr)
 	{
+		if (str == "") return;
+
 		StringReplace(str," ","");
-		//mingw编译不通过，改为拷贝赋值
-		vector<string>temp = split(str,"),");
+		vector<string>&temp = split(str,"),");
 					
 		iniFunc ifc;
 		string buff;
@@ -373,8 +387,7 @@ namespace ns_com_io_ctl
 		{						
 			buff = split(temp[j],"(")[1];
 			StringReplace(buff,")","");
-			//mingw编译不通过，改为拷贝赋值
-			vector<string>parav = split(buff,",");
+			vector<string>&parav = split(buff,",");
 
 			ifc.swName = split(temp[j],"(")[0];
 			ifc.ip = __ipmap[parav[0]];
@@ -394,11 +407,7 @@ namespace ns_com_io_ctl
 		{
 			for(int i = 0,j=0;i<100;i++)
 			{
-				#ifdef _MSC_VER
 				_itoa_s(i,pBuf,10);
-				#else
-				itoa(i, pBuf, 10);
-				#endif
 				strBuff = GetRowFromIOFile(*swName,pBuf,"");
 				if(strBuff != "")
 				{				
@@ -415,6 +424,35 @@ namespace ns_com_io_ctl
 	void implementsetting::Clear(void)
 	{
 		__actionList.clear();
+	}
+	//单独开关操作
+	void implementsetting::AddSwitchActionList(int addr, int swId, int swIdx)
+	{
+		if (addr > (int)__ipNameList.size() || addr < 0)
+		{
+			char buf[10];
+			sprintf_s(buf,"%d",addr);
+			Message("JcMatrixSwitch : Switch : ModuleNumber < "+string(buf));
+			return;
+		}
+
+		if (swId > (int)__switchNameList.size() || swId < 0)
+		{
+			char buf[10];
+			sprintf_s(buf, "%d", swId);
+			Message("JcMatrixSwitch : Switch : SwitchNumber < " + string(buf));
+			return;
+		}
+
+		auto itrIP = __ipNameList.begin();
+
+		for (int i = 1; i < addr && itrIP != __ipNameList.end(); itrIP++, i++){}
+
+		auto itrSwName = __switchNameList.begin();
+
+		for (int i = 1; i < swId && itrSwName != __switchNameList.end(); itrSwName++, i++){}
+
+		AddActionList(__ipmap[*itrIP],*itrSwName,swIdx);
 	}
 	//添加动作列表
 	void implementsetting::AddActionList(const string&ip,const string&sw,int chan)
@@ -433,6 +471,14 @@ namespace ns_com_io_ctl
 			{				
 				port[i] |= atoi(gpioValueStr[i].c_str());
 			}
+		}
+
+		if (chan < 1 || chan > (int)__ioInfoMap[sw].size())
+		{
+			char buf[10];
+			sprintf_s(buf,"%d",chan);
+			Message("JcMatrixSwitch : " + sw + " : has no Idx = " + string(buf));
+			return;
 		}
 
 		str = __ioInfoMap[sw][chan-1];
@@ -702,8 +748,7 @@ namespace ns_com_io_ctl
 	bool implementsetting::ExcuteCmd(const string&ip,const string&sw,int chan)
 	{
 		string str = __ioInfoMap[sw][chan-1];
-		//mingw编译不通过，改为拷贝赋值
-		vector<string> gpioValueStr = split(str,",");
+		vector<string>&gpioValueStr = split(str,",");
 		unsigned short *gpioBak = __ipGpioBak[ip];
 
 		for(int i =0;i<5;i++)
@@ -824,11 +869,7 @@ namespace ns_com_io_ctl
 			itr++
 			)
 		{
-			#ifdef _MSC_VER
 			_itoa_s(*itr, str, 10);
-			#else
-			itoa(*itr, str, 10);
-			#endif
 			__moduleList.push_back(str);
 		}
 

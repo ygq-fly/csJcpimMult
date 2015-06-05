@@ -23,7 +23,7 @@
 //-------------------------------------------------------------------------
 //版本
 //-------------------------------------------------------------------------
-//V1.7
+//V1.7 (build 200)
 //	1, 添加R&S设备的支持
 //	2, 性能改进
 // 
@@ -33,7 +33,7 @@
 //  3，改进vco检测
 //	4，改进R&S时钟同步检测
 //
-//v1.9 
+//v1.9 (build 260)
 //	1, 新增rf1,rf2,pim参数模块
 //	2, 支持POI模式
 //  3，升级最新switch
@@ -135,8 +135,7 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 
 		if ("0" != __pobj->vaddr[4]) {
 			if (false == JcConnSwh())
-				//strConnMsg = __pobj->swh->SwitchGetInfo();
-				strConnMsg = "Switch Init: LoadMap Error!";
+				strConnMsg = __pobj->swh->SwitchGetError();
 		}
 
 		//判断连接
@@ -206,10 +205,9 @@ int fnSetDutPort(JcInt8 byPort) {
 	pim->switch_port = pim->band * 2 + pim->dutport;
 
 	JcBool b = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, JC_COUP_TX2);
-	//if (TRUE == b)
-	//	return 0;
-	//else
-	//	return JC_STATUS_ERROR_SET_SWITCH_FAIL;
+	if (b == FALSE)
+		__pobj->strErrorInfo = "fnSetDutPort: Switch Set Error!\r\n";
+
 	return (b == TRUE ? 0 : JC_STATUS_ERROR_SET_SWITCH_FAIL);
 }
 
@@ -243,7 +241,7 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 	fnSetMeasBand(byBandIndex);
 	int s = fnSetDutPort(byPort);
 	if (s <= -10000){
-		Util::logged(L"fnVco: Set Switch Error!");
+		Util::logged(L"fnVco: Set Switch-Band-%d-%d Error!", (int)byBandIndex, (int)byPort);
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	}
 	//延时
@@ -516,7 +514,7 @@ JcBool HwSetCoup(JcInt8 byCoup) {
 	JcBool r = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, byCoup);
 	Util::setSleep(250);
 	if (FALSE == r) 
-		Util::logged(L"HwSetCoup: Switch-Coup-%d Error!", (int)byCoup);		
+		Util::logged(L"HwSetCoup: Switch-Coup-%d Set Error!", (int)byCoup);		
 	
 	return r;
 }
@@ -706,22 +704,22 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 		int index = JcGetIDN(vi, cIdn);
 		//安捷伦
 		if (index == INSTR_AG_MXG_SERIES){
-			if (byDevice == JC_DEVICE::SIGNAL1) {
+			if (byDevice == SIGNAL1) {
 				__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
 				__pobj->sig1->InstrSession(vi, cIdn);
 			}
-			else if (byDevice == JC_DEVICE::SIGNAL2) {
+			else if (byDevice == SIGNAL2) {
 				__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
 				__pobj->sig2->InstrSession(vi, cIdn);
 			}
 		}
 		//罗德斯瓦茨
 		else if (index == INSTR_RS_SM_SERIES) {
-			if (byDevice == JC_DEVICE::SIGNAL1) {
+			if (byDevice == SIGNAL1) {
 				__pobj->sig1 = std::make_shared<ClsSigRsSMxSerial>();
 				__pobj->sig1->InstrSession(vi, cIdn);
 			}
-			else if (byDevice == JC_DEVICE::SIGNAL2) {
+			else if (byDevice == SIGNAL2) {
 				__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>();
 				__pobj->sig2->InstrSession(vi, cIdn);
 			}
@@ -755,7 +753,7 @@ JcBool JcConnAna(JC_ADDRESS cAddr) {
 			return FALSE;
 	}
 
-	__pobj->device_status[JC_DEVICE::ANALYZER] = !s;
+	__pobj->device_status[ANALYZER] = !s;
 	return !s;
 }
 
@@ -787,27 +785,14 @@ JcBool JcConnSen(JC_ADDRESS cAddr) {
 		isConn = __pobj->sen->InstrConnect(cAddr);
 	}
 
-	__pobj->device_status[JC_DEVICE::SENSOR] = isConn;
+	__pobj->device_status[SENSOR] = isConn;
 	return isConn;
 }
 
 JcBool JcConnSwh() {
 	__pobj->swh = std::make_shared<ClsJcSwitch>();
-	bool isConn = false;
-	if (__pobj->swh->SwitchInit()){
-		//for (int i = 0; i < 7; ++i) {
-		//	if (_switch_enable[i] == 0)
-		//		__pobj->swh->SwitchSetEnable(i, false);
-		//	else
-		//		__pobj->swh->SwitchSetEnable(i, true);
-		//}
-
-		//开始连接
-		isConn = __pobj->swh->SwitchConnect();
-	}
-	
-	__pobj->device_status[4] = isConn;
-	return isConn;
+	__pobj->device_status[4] = __pobj->swh->SwitchInit(__pobj->now_mode, 2);
+	return __pobj->device_status[SWITCH];
 }
 
 JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
@@ -978,10 +963,7 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
 	//else
 	//	coup = (iSwitchTx1 - 1) + iSwitchCoup;
 	//bool isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
-	bool isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchCoup);
-	if (!isSucc) __pobj->strErrorInfo = "Switch: Excut Error!\r\n";
-
-	return isSucc;
+	return __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchCoup);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

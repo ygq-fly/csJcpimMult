@@ -15,6 +15,7 @@
 2015.5.4
 	在IOWrite中加入第一次连接
 *------------------------------------------------------------------------------*/
+#include "../stdafx.h"
 #include "com_io_ctl.h"
 
 namespace ns_com_io_ctl{
@@ -269,7 +270,7 @@ namespace ns_com_io_ctl{
 	{
 		char strBuff[MAX_PATH] = { 0 };
 		//GetCurrentDirectoryA(256,strBuff);  //危险
-		GetModuleFileNameA(GetModuleHandleA(DLL_HOST_NAME), strBuff, MAX_PATH);
+		GetModuleFileNameA(GetModuleHandleA(__dllHostName.c_str()), strBuff, MAX_PATH);
 		return string(strBuff);
 	}
 	//模块复位一个
@@ -281,7 +282,7 @@ namespace ns_com_io_ctl{
 
 		ip = split(host, ":")[0];
 
-		SOCKET sckt = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, 0);
+		SOCKET sckt = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, NULL);
 		SOCKADDR_IN addr;
 		addr.sin_family = AF_INET;
 		addr.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -682,7 +683,7 @@ namespace ns_com_io_ctl{
 	void com_io_ctl::Message(const string&info)
 	{			
 		if (ACTION_MESSAGE_REPORT == 1)
-			MessageBoxW(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK|MB_TOPMOST);
+			MessageBox(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK|MB_TOPMOST);
 	}
 
 	string com_io_ctl::logGetLastError()

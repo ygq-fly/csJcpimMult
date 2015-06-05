@@ -54,5 +54,12 @@
 #define g_sprintf  sprintf_s
 #define g_snprintf snprintf_s
 
+enum
+{
+	MODE_HUAWEI = 0,
+	MODE_TRANSMISSION = 1,
+	MODE_POI = 2
+};
+
 // TODO: reference additional headers your program requires here
 #endif
