@@ -13,7 +13,7 @@
 #include "RohdeSchwarz/ClsAnaRsFspSerial.h"
 #include "RohdeSchwarz/ClsSigRsSMxSerial.h"
 
-#include "JcOffsetDB.hpp"
+#include "JcOffsetDB.h"
 
 #include "stdafx.h"
 
@@ -162,13 +162,14 @@ private:
 		, now_vco_threasold(SMOOTH_VCO_THREASOLD)
 		, now_tx_smooth_threasold(SMOOTH_TX_THREASOLD)
 		, now_tx_smooth_accuracy(SMOOTH_TX_ACCURACY)
-		, now_mode(0)//isUseTransType(false)
+		, now_mode(MODE_HUAWEI)//isUseTransType(false)
 		, isUseExtBand(true)
 		, strErrorInfo("Not")
 		, viDefaultRM(VI_NULL)
 		, isExtSenConn(false)
 		, ext_sen_index(0)
 		, wstrLogFlag(L"MBP")
+		, offset()
 	{
 		//初始化(15/6/5新加)
 		rf1 = new JcRFModule;
@@ -285,7 +286,7 @@ public:
 		case 4: sband =5 /*"WCDMA2100"*/; break;
 		case 5: sband =6 /*"LTE2600"*/; break;
 		case 6: sband =0 /*"LTE700"*/; break;
-		default: return 0;
+		default: return 0 /*"LTE700"*/;
 		}
 		return sband;
 	}

@@ -35,7 +35,6 @@
 
 #include "3rdParty/visa.h"
 #include "3rdParty/rsnrpz.h"
-#include "3rdParty/sqlite3.h"
 
 #ifdef _MSC_VER
 #include <codecvt>

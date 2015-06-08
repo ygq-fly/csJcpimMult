@@ -94,7 +94,7 @@
     <ClInclude Include="ClsSigAgN5181A.hpp" />
     <ClInclude Include="IfSwitch.hpp" />
     <ClInclude Include="JcApi.h" />
-    <ClInclude Include="JcOffsetDB.hpp" />
+    <ClInclude Include="JcOffsetDB.h" />
     <ClInclude Include="JcPimObject.h" />
     <ClInclude Include="IfAnalyzer.hpp" />
     <ClInclude Include="IfInstrument.hpp" />
@@ -122,6 +122,7 @@
     <ClCompile Include="3rdParty\sqlite3.c" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JcApi.cpp" />
+    <ClCompile Include="JcOffsetDB.cpp" />
     <ClCompile Include="MyUtil\JcCommonAPI.cpp" />
     <ClCompile Include="RohdeSchwarz\ClsAnaRsFspSerial.cpp" />
     <ClCompile Include="RohdeSchwarz\ClsSigRsSMxSerial.cpp" />

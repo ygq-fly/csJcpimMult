@@ -72,9 +72,6 @@
     <ClInclude Include="JcApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JcOffsetDB.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -138,6 +135,9 @@
     <ClInclude Include="Switch\switch_info_poi.h">
       <Filter>Switch</Filter>
     </ClInclude>
+    <ClInclude Include="JcOffsetDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -175,6 +175,9 @@
     </ClCompile>
     <ClCompile Include="Switch\JcMatrixSwitch.cpp">
       <Filter>Switch</Filter>
+    </ClCompile>
+    <ClCompile Include="JcOffsetDB.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

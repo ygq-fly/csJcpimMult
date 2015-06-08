@@ -97,7 +97,8 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 		//开始连接数据库
 #ifdef WIN32
 		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
-		isSqlConn = __pobj->offset.Dbconnect(sPath.c_str());
+		isSqlConn = __pobj->offset.DbConnect(sPath.c_str());
+		__pobj->offset.DbInit(__pobj->now_mode);
 		if (!isSqlConn) {
 			Util::logged(L"fnSetInit: DB Connected Error!");
 			//return JC_STATUS_ERROR_DATABASE_CONN_FAIL;

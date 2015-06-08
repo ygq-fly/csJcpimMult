@@ -113,9 +113,11 @@ void Test_dll(){
 		std::cout << i << "-Tx-Num: " << n << std::endl;
 	}
 	double val = 0;
-	s = getOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_REAL, 728, 43);
-	std::cout << "tx_offset = " << val << std::endl;
-	s = getOffsetRx(val, 0, JC_DUTPORT_A, 715);
+	s = getOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_REAL, 728.5, 43);
+	std::cout << "tx_offset_real = " << val << std::endl;
+	s = getOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_DSP, 728, 43);
+	std::cout << "tx_offset_dsp = " << val << std::endl;
+	s = getOffsetRx(val, 0, JC_DUTPORT_A, 713.2);
 	std::cout << "rx_offset = " << val << std::endl;
 	s = getOffsetVco(val, 0, JC_DUTPORT_A);
 	std::cout << "vco_offset = " << val << std::endl;

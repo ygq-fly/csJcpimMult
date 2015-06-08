@@ -19,7 +19,10 @@ set(SHARE_LIB_SOURCE_FILES
     Switch/com_io_ctl.h
     Switch/implementsetting.cpp
     Switch/implementsetting.h
-    Switch/switch_info.h
+    Switch/switch_info_poi.h
+    Switch/switch_info_huawei.h
+    Switch/JcMatrixSwitch.cpp
+    Switch/JcMatrixSwitch.h
     ClsAnaAgN9020A.hpp
     ClsInstrAgilent.hpp
     ClsInstrRohdeSchwarz.h
@@ -39,7 +42,8 @@ set(SHARE_LIB_SOURCE_FILES
     Interface.h
     JcApi.cpp
     JcApi.h
-    JcOffsetDB.hpp
+    JcOffsetDB.cpp
+    JcOffsetDB.h
     JcPimObject.h
     dllmain.cpp
     stdafx.cpp
