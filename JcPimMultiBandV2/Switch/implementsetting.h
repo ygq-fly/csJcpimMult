@@ -125,7 +125,7 @@ namespace ns_com_io_ctl
 		void SelChan(rowRun&rr);
 		void AddActionList(const string&ip,const string&sw,const int chan);
 		bool ExcuteCmd(const string&ip,const string&sw,int chan);
-		bool LoadParaIM(void);
+		bool LoadParaIM(const string&ipSection);
 		bool LoadParaIO(void);
 		void GetRowRunFunc(string str,rowRun&rr);
 		void LoadActionList(const string&section,actionCellc&ac);

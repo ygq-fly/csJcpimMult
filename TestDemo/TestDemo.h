@@ -29,6 +29,7 @@
 typedef int(*pTest)(int, int);
 //JIONTCOM_API int fnSetInit(ADDRESS_ cDeviceAddr);
 typedef int(*pSetInit)(const char*);
+typedef void(*pHwSetIsExtBand)(BOOL);
 //JIONTCOM_API int fnSetExit();
 typedef int(*pSetExit)();
 //JIONTCOM_API int fnSetMeasBand(BYTE_ byBandIndex);
@@ -48,6 +49,7 @@ typedef int(*pCheckTwoSignalROSC)();
 typedef int(*pSetTxPower)(double, double, double, double);
 //JIONTCOM_API int fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const UNIT_ cUnits);
 typedef int(*pSetTxFreqs)(double, double, const char*);
+typedef int(*pHwSetTxFreqs)(double, double, const char*);
 //JIONTCOM_API int fnSetTxOn(BOOL_ bOn, BYTE_ byCarrier = 0);
 typedef int(*pSetTxOn)(BOOL, uint8_t);
 //JIONTCOM_API int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const UNIT_ cUnits);

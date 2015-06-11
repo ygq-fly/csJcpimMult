@@ -74,25 +74,6 @@ enum JC_INTERNAL_BAND {
 	LTE2600 = 6
 };
 
-//内部开关频段
-enum JC_SWITCH_BAND {
-	LTE700_A = 0,
-	LTE700_B = 1,
-	DD800_A = 2,
-	DD800_B = 3,
-	GSM900_A = 4,
-	GSM900_B = 5,
-	DCS1800_A = 6,
-	DCS1800_B = 7,
-	PCS1900_A = 8,
-	PCS1900_B = 9,
-	WCDMA2100_A = 10,
-	WCDMA2100_B = 11,
-	LTE2600_A = 12,
-	LTE2600_B = 13
-};
-
-
 #define JC_CARRIER_TX1TX2 0
 #define JC_CARRIER_TX1 1
 #define JC_CARRIER_TX2 2
@@ -116,10 +97,13 @@ enum JC_DEVICE {
 
 //设置初始化地址：格式为逗号隔开SG1addr,SG2Addr,SAAddr,PMAddr
 JIONTCOM_API int fnSetInit(const JC_ADDRESS cDeviceAddr);
+JIONTCOM_API void HwSetIsExtBand(JcBool isUse);
 //关闭连接
 JIONTCOM_API int fnSetExit();
+JIONTCOM_API void HwSetExit();
 //设置频段
 JIONTCOM_API int fnSetMeasBand(JcInt8 byBandIndex);
+JIONTCOM_API int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx);
 //设置平均次数
 JIONTCOM_API int fnSetImAvg(JcInt8 byAvgTime);
 //设置测试端口(请先设置频段后)
@@ -135,6 +119,7 @@ JIONTCOM_API int fnSetTxPower(double dTxPower1, double dTxPower2,
 							   double dPowerOffset1, double dPowerOffset2);
 //设置tx频率
 JIONTCOM_API int fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits);
+JIONTCOM_API JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits);
 //tx开启
 JIONTCOM_API int fnSetTxOn(JcBool bOn, JcInt8 byCarrier = 0);
 //获取互调值
@@ -151,14 +136,11 @@ JIONTCOM_API int fnSendCmd(JcInt8 byDevice, const JC_CMD cmd, char* cResult, lon
 JIONTCOM_API int fnGetSpectrumType(char* cSpectrumType);
 //Other
 JIONTCOM_API void HwSetBandEnable(int iBand, JcBool isEnable); 
-JIONTCOM_API void HwSetIsExtBand(JcBool isUse);
-JIONTCOM_API void HwSetExit();
-JIONTCOM_API JcBool FnGet_Vco();
 JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
 JIONTCOM_API double HwGetCoup_Dsp(JcInt8 byCoup);
+JIONTCOM_API JcBool FnGet_Vco();
 JIONTCOM_API JcBool HwGet_Vco(double& real_val, double& vco_val);
 JIONTCOM_API JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier);
-JIONTCOM_API JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //扩展API

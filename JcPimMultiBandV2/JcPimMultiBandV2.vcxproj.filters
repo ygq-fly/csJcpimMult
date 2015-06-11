@@ -102,12 +102,6 @@
     <ClInclude Include="3rdParty\NrpControl2.h">
       <Filter>3rdParty</Filter>
     </ClInclude>
-    <ClInclude Include="Switch\com_io_ctl.h">
-      <Filter>Switch</Filter>
-    </ClInclude>
-    <ClInclude Include="Switch\implementsetting.h">
-      <Filter>Switch</Filter>
-    </ClInclude>
     <ClInclude Include="JcPimObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -129,14 +123,20 @@
     <ClInclude Include="Switch\JcMatrixSwitch.h">
       <Filter>Switch</Filter>
     </ClInclude>
+    <ClInclude Include="JcOffsetDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Switch\com_io_ctl.h">
+      <Filter>Switch</Filter>
+    </ClInclude>
+    <ClInclude Include="Switch\implementsetting.h">
+      <Filter>Switch</Filter>
+    </ClInclude>
     <ClInclude Include="Switch\switch_info_huawei.h">
       <Filter>Switch</Filter>
     </ClInclude>
     <ClInclude Include="Switch\switch_info_poi.h">
       <Filter>Switch</Filter>
-    </ClInclude>
-    <ClInclude Include="JcOffsetDB.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -155,12 +155,6 @@
     <ClCompile Include="3rdParty\sqlite3.c">
       <Filter>3rdParty</Filter>
     </ClCompile>
-    <ClCompile Include="Switch\com_io_ctl.cpp">
-      <Filter>Switch</Filter>
-    </ClCompile>
-    <ClCompile Include="Switch\implementsetting.cpp">
-      <Filter>Switch</Filter>
-    </ClCompile>
     <ClCompile Include="MyUtil\JcCommonAPI.cpp">
       <Filter>MyUtil</Filter>
     </ClCompile>
@@ -173,11 +167,17 @@
     <ClCompile Include="RohdeSchwarz\ClsSigRsSMxSerial.cpp">
       <Filter>RohdeSchwarz</Filter>
     </ClCompile>
-    <ClCompile Include="Switch\JcMatrixSwitch.cpp">
-      <Filter>Switch</Filter>
-    </ClCompile>
     <ClCompile Include="JcOffsetDB.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Switch\com_io_ctl.cpp">
+      <Filter>Switch</Filter>
+    </ClCompile>
+    <ClCompile Include="Switch\implementsetting.cpp">
+      <Filter>Switch</Filter>
+    </ClCompile>
+    <ClCompile Include="Switch\JcMatrixSwitch.cpp">
+      <Filter>Switch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

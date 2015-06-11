@@ -683,7 +683,7 @@ namespace ns_com_io_ctl{
 	void com_io_ctl::Message(const string&info)
 	{			
 		if (ACTION_MESSAGE_REPORT == 1)
-			MessageBoxW(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK|MB_TOPMOST);
+			MessageBox(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK|MB_TOPMOST);
 	}
 
 	string com_io_ctl::logGetLastError()

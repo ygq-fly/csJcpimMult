@@ -8,8 +8,31 @@ bool JcOffsetDB::DbConnect(const char* addr) {
 	return _bConn;
 }
 
+//初始化
+void JcOffsetDB::DbInit(uint8_t mode) {
+	std::string hw_sql_param[7] = huawei_sql_body;
+	std::string poi_sql_param[12] = poi_sql_body;
+
+	_hw_band_table_sql = sql_header + hw_sql_param[0];
+	for (int i = 1; i < 7; i++){
+		_hw_band_table_sql += " union all select " + hw_sql_param[i];
+	}
+
+	_poi_band_table_sql = sql_header + poi_sql_param[0];
+	for (int i = 1; i < 12; i++){
+		_poi_band_table_sql += " union all select " + poi_sql_param[i];
+	}
+
+	if (mode == MODE_POI)
+		_offset_mode = continuous_offset_mode;
+	else
+		_offset_mode = discontinuous_offset_mode;
+}
+
+//查找步进频段的校准方式
 int JcOffsetDB::FreqBand(const uint8_t& tx_or_rx, const char* band, double& f_start, double& f_stop) {
-	if (_mode == MODE_POI) {
+	if (_offset_mode == continuous_offset_mode)
+	{
 		char sql[1024] = { 0 };
 		if (tx_or_rx == OFFSET_TX)
 			sprintf_s(sql, "select [tx_start],[tx_end] from [JC_BAND_INFO] where band = '%s'", band);
@@ -18,65 +41,105 @@ int JcOffsetDB::FreqBand(const uint8_t& tx_or_rx, const char* band, double& f_st
 
 		if (GetSqlVal(sql, f_start, f_stop))
 			return JCOFFSET_ERROR;
+	}
+	else
+	{
+		f_start = JCOFFSET_ERROR;
+		f_stop = JCOFFSET_ERROR;
 	}
 	return 0;
 }
 
+//查找固定点序列的校准方式
+int JcOffsetDB::FreqBand_Old(const uint8_t& tx_or_rx, const double& freq_mhz, const char* band,
+							double &f1, double &f2, double &index1, double &index2) {
+	std::stringstream ss;
+	//选择校准频率表TX_EGSM900, 选择列 EGSM900
+	//get(Freq) f1, f2!
+	//查询freq_now的所在区间
+	std::string stable = tx_or_rx == OFFSET_TX ? "TX_" + std::string(band) : "RX_" + std::string(band);
+	std::string scolomn(band);
+	//查找校准频率区间f1,f2的频率值
+	ss.str("");
+	ss << "select Max_val, Min_val from (select max(" + scolomn +
+		") Max_val from [" + stable + "] where " + scolomn +
+		" <= " << freq_mhz << "), (select min(" + scolomn +
+		") Min_val from [" + stable + "] where " + scolomn +
+		" >= " << freq_mhz << ")";
+	if (GetSqlVal(ss.str().c_str(), f1, f2))
+		return JCOFFSET_ERROR;
+#ifdef JC_SQL_DEBUG
+	std::cout << "freq Range: " << f1 << ", " << f2 << std::endl;
+#endif
+	//查找f1,f2对应的index
+	ss.str("");
+	ss << "select A,B from (select [ID] A from [" << stable << "] where " + scolomn +
+		"=" << f1 << "),(select [ID] B from [" << stable << "] where " + scolomn +
+		"=" << f2 << ")";
+	if (GetSqlVal(ss.str().c_str(), index1, index2))
+		return JCOFFSET_ERROR;
+#ifdef JC_SQL_DEBUG
+	std::cout << "freq_index Range: " << f1_index << ", " << f2_index << std::endl;
+#endif
+	return 0;
+}
+
+//获取校准频率点集合
 int JcOffsetDB::FreqHeader(const char& tx_or_rx, const char* band, double* freq, int maxnum) {
 	int i;
-	std::string shead = tx_or_rx == OFFSET_TX ? "TX_" : "RX_";
-
-	std::string sband(band);
-	std::string stable = shead + sband;
-	std::string sql = "select [" + sband + "] from [" + stable + "]";
-
-	sqlite3_stmt* pstmt = NULL;
-	sqlite3_prepare(_pConn, sql.c_str(), -1, &pstmt, NULL);
-
-	for (i = 0; i < maxnum; ++i) {
-		if (sqlite3_step(pstmt) == SQLITE_ROW) {
-
-			double val = sqlite3_column_double(pstmt, 0);
-			if (val != 0)
-				*(freq + i) = val;
-			else
-				break;
-#ifdef JC_SQL_DEBUG
-			std::cout << val << "/";
-#endif
-		}
-		else 
-			break;
-	}
-#ifdef JC_SQL_DEBUG
-	std::cout << "\n";
-	std::cout << "Num:" << i << std::endl;
-#endif
 
 	//新增POI获取频率区间
-	if (_mode == MODE_POI) {
+	if (_offset_mode == continuous_offset_mode)
+	{
 		double f_start, f_stop;
-		char sql[1024] = { 0 };
-		memset(freq, 0, sizeof(double)*maxnum);
-		if (tx_or_rx == OFFSET_TX)
-			sprintf_s(sql, "select [tx_start],[tx_end] from [JC_BAND_INFO] where band = '%s'", band);
-		else
-			sprintf_s(sql, "select [rx_start],[rx_end] from [JC_BAND_INFO] where band = '%s'", band);
-		if (GetSqlVal(sql, f_start, f_stop))
-			return JCOFFSET_ERROR;
+		int s = FreqBand(tx_or_rx, band, f_start, f_stop);
+		if (s == JCOFFSET_ERROR)
+			return s;
 
 		int num = ceil((f_stop - f_start) / OFFSET_STEP) + 1;
-		num = num < maxnum ? num: maxnum;
-		for (int j = 0; j < num; ++j) {
+		num = num < maxnum ? num : maxnum;
+		for (int j = 0; j < num; ++j)
+		{
 			*(freq + j) = f_start + OFFSET_STEP*j;
 		}
+
 		//最后一点不在步进点上时，修正最后一点
-		if ((f_start + (num -1)  * OFFSET_STEP) > f_stop)
-			*(freq + num -1) = f_stop;
+		if ((f_start + (num - 1)  * OFFSET_STEP) > f_stop)
+			*(freq + num - 1) = f_stop;
 		i = num;
 	}
+	else
+	{
+		std::string shead = tx_or_rx == OFFSET_TX ? "TX_" : "RX_";
+		std::string sband(band);
+		std::string stable = shead + sband;
+		std::string sql = "select [" + sband + "] from [" + stable + "]";
 
-	sqlite3_finalize(pstmt);
+		sqlite3_stmt* pstmt = NULL;
+		sqlite3_prepare(_pConn, sql.c_str(), -1, &pstmt, NULL);
+
+		for (i = 0; i < maxnum; ++i) {
+			if (sqlite3_step(pstmt) == SQLITE_ROW) 
+			{
+				double val = sqlite3_column_double(pstmt, 0);
+				if (val != 0)
+					*(freq + i) = val;
+				else
+					break;
+#ifdef JC_SQL_DEBUG
+				std::cout << val << "/";
+#endif
+			}
+			else
+				break;
+		}
+#ifdef JC_SQL_DEBUG
+		std::cout << "\n";
+		std::cout << "Num:" << i << std::endl;
+#endif
+		sqlite3_finalize(pstmt);
+	}
+
 	return i;
 }
 
@@ -88,68 +151,45 @@ double JcOffsetDB::OffsetTx(const char* band, const char& dut, const char& coup,
 	std::string sSuffix = dut == 0 ? "_A" : "_B";
 	sSuffix += (coup == 0 ? "_TX1" : "_TX2");
 
-	//选择校准频率表TX_EGSM900, 选择列 EGSM900
-	//get(Freq) f1, f2!
-	//查询freq_now的所在区间
-	std::string stable = "TX_" + std::string(band);
-	std::string scolomn(band);
-	//查找校准频率区间f1,f2的频率值
-	double f1_temp, f2_temp;
-	ss.str("");
-	ss << "select Max_val, Min_val from (select max(" + scolomn +
-		") Max_val from [" + stable + "] where " + scolomn +
-		" <= " << freq_mhz << "), (select min(" + scolomn +
-		") Min_val from [" + stable + "] where " + scolomn +
-		" >= " << freq_mhz << ")";
-	if (GetSqlVal(ss.str().c_str(), f1_temp, f2_temp))
-		return JCOFFSET_ERROR;
-#ifdef JC_SQL_DEBUG
-	std::cout << "freq Range: " << f1 << ", " << f2 << std::endl;
-#endif
-	//查找f1,f2对应的index
-	double f1_index, f2_index;
-	ss.str("");
-	ss << "select A,B from (select [ID] A from [" << stable << "] where " + scolomn +
-		"=" << f1_temp << "),(select [ID] B from [" << stable << "] where " + scolomn +
-		"=" << f2_temp << ")";
-	if (GetSqlVal(ss.str().c_str(), f1_index, f2_index))
-		return JCOFFSET_ERROR;
-#ifdef JC_SQL_DEBUG
-	std::cout << "freq_index Range: " << f1_index << ", " << f2_index << std::endl;
-#endif
+	//double f1_index, f2_index, f1_temp, f2_temp;
+	double freq1, freq2, f1, f2;
 	//新增POI获取频率区间
-	if (_mode == MODE_POI) {
+	if (_offset_mode == continuous_offset_mode) {
 		double f_start, f_stop;
-		char sql[1024] = { 0 };
-		sprintf_s(sql, "select [tx_start],[tx_end] from [JC_BAND_INFO] where band = '%s'", band);
-		if (GetSqlVal(sql, f_start, f_stop))
-			return JCOFFSET_ERROR;
+		int s = FreqBand(OFFSET_TX, band, f_start, f_stop);
+		if (s == JCOFFSET_ERROR) 
+			return s;
 
 		if (freq_mhz<f_start || freq_mhz>f_stop)
 			return JCOFFSET_ERROR;
-
-		f1_index = floor((freq_mhz - f_start) / OFFSET_STEP) + 1;
-		f2_index = ceil ((freq_mhz - f_start) / OFFSET_STEP) + 1;
-		f1_temp = f_start + OFFSET_STEP * (f1_index - 1);
-		f2_temp = f_start + OFFSET_STEP * (f2_index - 1);
+		//查找序号
+		f1 = floor((freq_mhz - f_start) / OFFSET_STEP) + 1;
+		f2 = ceil ((freq_mhz - f_start) / OFFSET_STEP) + 1;
+		//查找序号对应的值
+		freq1 = f_start + OFFSET_STEP * (f1 - 1);
+		freq2 = f_start + OFFSET_STEP * (f2 - 1);
+	}
+	else 
+	{
+		FreqBand_Old(OFFSET_TX, freq_mhz, band, freq1, freq2, f1, f2);
 	}
 
-	double freq1 = f1_temp;
-	double freq2 = f2_temp;
-	double f1 = f1_index;
-	double f2 = f2_index;
+	//double freq1 = f1_temp;
+	//double freq2 = f2_temp;
+	//double f1 = f1_index;
+	//double f2 = f2_index;
+
 	double tx1 = 0;
 	double tx2 = 0;
-
 	//选择校准数据表 EGSM900, 选择列 Power
 	//get(TX) tx1, tx2!
 	//查询tx_now的所在区间
-	stable = "JC_TX_OFFSET_ALL";
+	std::string stable = "JC_TX_OFFSET_ALL";
 	//设置复合主键Port
 	std::string sport = std::string(band) + sSuffix;
 	//设置复合主键Dsp
 	int idsp = real_or_dsp;
-	scolomn = "Power";
+	std::string scolomn = "Power";
 	ss.str("");
 	ss << "select Max_val, Min_val from (select max(" + scolomn +
 		") Max_val from [" + stable + "] where " + scolomn +
@@ -207,61 +247,37 @@ double JcOffsetDB::OffsetRx(const char* band, const char& dut, const double& fre
 	std::stringstream ss;
 	std::string sSuffix = dut == 0 ? "_A" : "_B";
 
-	//选择校准频率表RX_EGSM900, 选择列 EGSM900
-	//get(Freq) f1, f2!
-	std::string stable = "RX_" + std::string(band);
-	std::string scolomn(band);
-	//查找校准频率区间f1,f2的频率值
-	double f1_temp, f2_temp;
-	ss.str("");
-	ss << "select Max_val, Min_val from (select max(" + scolomn +
-		") Max_val from [" + stable + "] where " + scolomn +
-		" <= " << freq_now << "), (select min(" + scolomn +
-		") Min_val from [" + stable + "] where " + scolomn +
-		" >= " << freq_now << ")";
-	if (GetSqlVal(ss.str().c_str(), f1_temp, f2_temp))
-		return JCOFFSET_ERROR;
-#ifdef JC_SQL_DEBUG
-	std::cout << "Rxfreq Range: " << f1 << ", " << f2 << std::endl;
-#endif
-	//查找f1,f2对应的index
-	double f1_index, f2_index;
-	ss.str("");
-	ss << "select A,B from (select [ID] A from [" << stable << "] where " + scolomn +
-		"=" << f1_temp << "),(select [ID] B from [" << stable << "] where " + scolomn +
-		"=" << f2_temp << ")";
-	if (GetSqlVal(ss.str().c_str(), f1_index, f2_index))
-		return JCOFFSET_ERROR;
-#ifdef JC_SQL_DEBUG
-	std::cout << "Rxfreq_index Range: " << f1_index << ", " << f2_index << std::endl;
-#endif
+	double freq1, freq2, f1, f2;
 	//新增POI获取频率区间
-	if (_mode == MODE_POI) {
+	if (_offset_mode == continuous_offset_mode) {
 		double f_start, f_stop;
-		char sql[1024] = { 0 };
-		sprintf_s(sql, "select [rx_start],[rx_end] from [JC_BAND_INFO] where band = '%s'", band);
-		if (GetSqlVal(sql, f_start, f_stop))
-			return JCOFFSET_ERROR;
+		int s = FreqBand(OFFSET_RX, band, f_start, f_stop);
+		if (s == JCOFFSET_ERROR) 
+			return s;
 
 		if (freq_now<f_start || freq_now>f_stop)
 			return JCOFFSET_ERROR;
 
-		f1_index = floor((freq_now - f_start) / OFFSET_STEP) + 1;
-		f2_index = ceil((freq_now - f_start) / OFFSET_STEP) + 1;
-		f1_temp = f_start + OFFSET_STEP * (f1_index - 1);
-		f2_temp = f_start + OFFSET_STEP * (f2_index - 1);
+		f1 = floor((freq_now - f_start) / OFFSET_STEP) + 1;
+		f2 = ceil((freq_now - f_start) / OFFSET_STEP) + 1;
+		freq1 = f_start + OFFSET_STEP * (f1 - 1);
+		freq2 = f_start + OFFSET_STEP * (f2 - 1);
+	}
+	else
+	{
+		FreqBand_Old(OFFSET_RX, freq_now, band, freq1, freq2, f1, f2);
 	}
 
-	double freq1 = f1_temp;
-	double freq2 = f2_temp;
-	double f1 = f1_index;
-	double f2 = f2_index;
+	//double freq1 = f1_temp;
+	//double freq2 = f2_temp;
+	//double f1 = f1_index;
+	//double f2 = f2_index;
 
 	double y1 = 0;
 	double y2 = 0;
 	//设置复合主键Port
 	std::string sport = std::string(band) + sSuffix;
-	stable = "JC_RX_OFFSET_ALL";
+	std::string stable = "JC_RX_OFFSET_ALL";
 	//get y1, y2!
 	//查询表中2个点的值(tx1,f1),(tx1,f2)
 	ss.str("");

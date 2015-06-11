@@ -9,6 +9,7 @@ using namespace std;
 using namespace ns_com_io_ctl;
 
 com_io_ctl *__cic = nullptr;
+int __switchType = ID_HUAWEI;
 
 int Lameda1 = []{
 	
@@ -24,6 +25,8 @@ int MartrixSwitchInit(int handle,char *dllName, int swType,int comType)
 {
 	int result = MATRIX_SWITCH_OK;
 	com_io_ctl *cic;
+
+	__switchType = swType;
 
 	try
 	{
@@ -87,15 +90,19 @@ int MartrixSwitchBoxExcute(int tx1, int tx2, int pim, int det)
 	vector<string> nldet = cic->GetDetNameList();
 
 	cic->Clear();
-	cic->SelChanTx1(nltx1[tx1]);
-	cic->SelChanTx2(nltx2[tx2]);
-	cic->SelChanPim(nlpim[pim]);
-	cic->SelChanDet(nldet[det]);
+
+	if (tx1 != ID_CHAN_IGNORE) cic->SelChanTx1(nltx1[tx1]);
+	if (tx2 != ID_CHAN_IGNORE) cic->SelChanTx2(nltx2[tx2]);
+	if (pim != ID_CHAN_IGNORE) cic->SelChanPim(nlpim[pim]);
+	if (det != ID_CHAN_IGNORE) cic->SelChanDet(nldet[det]);
 
 	result = cic->Excute() ? MATRIX_SWITCH_OK : MATRIX_SWITCH_EXCUTE_FAILED;
 
-	if (tx1 == 8 || tx2 == 10 || pim == 8)
-		result = MATRIX_SWITCH_ERROR_CHAN_NO_EXIST;
+	if (__switchType == ID_POI)
+	{
+		if (tx1 == 8 || tx2 == 10 || pim == 8)
+			result = MATRIX_SWITCH_ERROR_CHAN_NO_EXIST;
+	}
 
 	return result;
 }

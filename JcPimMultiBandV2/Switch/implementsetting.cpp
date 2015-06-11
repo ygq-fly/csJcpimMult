@@ -149,13 +149,13 @@ namespace ns_com_io_ctl
 
 		switch (type)
 		{
-			case 1://ID_HUAWEI:
+			case 1:
 				fstr.assign(IO_STRING_HUAWEI); 
 				ofio.write(fstr.c_str(), fstr.size());
 				fstr.assign(IMPLEMENT_STRING_HUAWEI);
 				ofimplt.write(fstr.c_str(), fstr.size());
 				break;
-			case 2://ID_POI:
+			case 2:
 				fstr.assign(IO_STRING_POI);
 				ofio.write(fstr.c_str(), fstr.size());
 				fstr.assign(IMPLEMENT_STRING_POI);
@@ -167,7 +167,10 @@ namespace ns_com_io_ctl
 		ofio.close();
 		ofimplt.close();
 
-		if (LoadParaIM() == false)
+		//string ipSection = (type == ID_HUAWEI) ? "ip_huawei" : "ip_poi";
+		string ipSection = "ip";
+
+		if (LoadParaIM(ipSection) == false)
 		{
 			result = false;
 		}
@@ -176,7 +179,7 @@ namespace ns_com_io_ctl
 			LoadParaIO();
 		}
 
-		__logEnable = (0 != atoi(GetRowFromFile("ip","log","0",__cfgPath).c_str()));
+		__logEnable = (0 != atoi(GetRowFromFile(ipSection, "log", "0", __cfgPath).c_str()));
 
 		WindowsDeleteFile(iopath.c_str());
 		WindowsDeleteFile(impath.c_str());
@@ -286,16 +289,16 @@ namespace ns_com_io_ctl
 		return dynamic_cast<vector<string>&>(__nameList);
 	}
 	//¼ÓÔØIM²ÎÊý
-	bool implementsetting::LoadParaIM(void)
+	bool implementsetting::LoadParaIM(const string&ipSection)
 	{
 		string strValue;
 		//ip
-		__ipNameList = GetNameList( GetRowFromIMFile("ip","namelist",""));
+		__ipNameList = GetNameList(GetRowFromIMFile(ipSection, "namelist", ""));
 
 		for(int i=0;i<(int)__ipNameList.size();i++)
 		{
-			__ipmap[__ipNameList[i]] = GetRowFromIMFile("ip",__ipNameList[i],"");
-			strValue = GetRowFromCfgFile("ip", __ipNameList[i], "");
+			__ipmap[__ipNameList[i]] = GetRowFromIMFile(ipSection, __ipNameList[i], "");
+			strValue = GetRowFromCfgFile(ipSection, __ipNameList[i], "");
 			if (strValue != "")
 			{
 				__ipmap[__ipNameList[i]] = strValue;

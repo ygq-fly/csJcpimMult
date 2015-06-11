@@ -39,6 +39,7 @@ void Test_dll(){
     ptestcb testcb = (ptestcb)GetProcAddress(hinst, "testcb");
 
 	pSetInit setInit = (pSetInit)GetProcAddress(hinst, "fnSetInit");
+	pHwSetIsExtBand hwSetIsExtBand = (pHwSetIsExtBand)GetProcAddress(hinst, "HwSetIsExtBand");
 	pSetMeasBand setMeasBand = (pSetMeasBand)GetProcAddress(hinst, "fnSetMeasBand");
 	pSetExit setExit = (pSetExit)GetProcAddress(hinst, "fnSetExit");
 	pSetImAvg setImAvg = (pSetImAvg)GetProcAddress(hinst, "fnSetImAvg");
@@ -48,6 +49,7 @@ void Test_dll(){
 	pCheckTwoSignalROSC checkTwoSignalROSC = (pCheckTwoSignalROSC)GetProcAddress(hinst, "fnCheckTwoSignalROSC");
 	pSetTxPower setTxPower = (pSetTxPower)GetProcAddress(hinst, "fnSetTxPower");
 	pSetTxFreqs setTxFreqs = (pSetTxFreqs)GetProcAddress(hinst, "fnSetTxFreqs");
+	pHwSetTxFreqs hwSetTxFreqs = (pHwSetTxFreqs)GetProcAddress(hinst, "HwSetTxFreqs");
 	pSetTxOn setTxOn = (pSetTxOn)GetProcAddress(hinst, "fnSetTxOn");
 	pGetImResult getImResult = (pGetImResult)GetProcAddress(hinst, "fnGetImResult");
 	pGetSpectrumType getSpectrumType = (pGetSpectrumType)GetProcAddress(hinst, "fnGetSpectrumType");
@@ -80,17 +82,19 @@ void Test_dll(){
 	
 	//TCPIP0::192.168.1.3::5025::SOCKET
 	std::string addr_sig1 = "TCPIP0::192.168.1.3::5025::SOCKET";
+
 	//TCPIP0::192.168.1.4::5025::SOCKET
 	std::string addr_sig2 = "TCPIP0::192.168.1.4::5025::SOCKET";
-	//std::string addr_ana = "TCPIP0::192.168.1.5::inst0::INSTR";
+
 	//GPIB0::20::INSTR
-	std::string addr_ana = "GPIB0::20::INSTR";
+	//std::string addr_ana = "GPIB0::20::INSTR";
+	std::string addr_ana = "TCPIP0::192.168.1.5::inst0::INSTR";
+
 	//USB::0x0aad::0x000c::102838
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
 	//USB0::0x0957::0x2B18::MY51050018::0::INSTR
 	std::string addr_sen = "0";
-
-	std::string addr_swh = "0";
+	std::string addr_swh = "1";
 	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen + "," + addr_swh;
 	bool isCont = true;
 	int s = setInit("0,0,0,0,0");
@@ -103,6 +107,14 @@ void Test_dll(){
 		getError(msg, 512);
 		std::cout << msg << std::endl;
 	}
+
+	//hwSetIsExtBand(FALSE);
+	//setMeasBand(4);
+	//setDutPort(0);
+	//setTxPower(43, 43, 0.5, 0.5);
+	//hwSetTxFreqs(1942, 1990, "mhz");
+	//double pim_freq, pim_val;
+	//getImResult(pim_freq, pim_val, "mhz");
 
 	//���
 	std::cout << std::endl;

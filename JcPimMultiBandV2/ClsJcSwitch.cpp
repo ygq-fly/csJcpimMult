@@ -46,21 +46,8 @@ bool ClsJcSwitch::SwitchInit(int switch_work_type, int switch_conn_type) {
 //开关执行切换
 bool ClsJcSwitch::SwitchExcut(const int& iSwitchTx1, const int& iSwitchTx2,
 							  const int& iSwitchPim, const int& iSwitchDet) {
-	int coup = 0;
-	//查找ID_HUAWEI检测通道标号
-	if (_switch_work_type == ID_HUAWEI) {
-		if (iSwitchTx1 % 2 == 0)
-			coup = iSwitchTx1 + iSwitchDet;
-		else
-			coup = (iSwitchTx1 - 1) + iSwitchDet;
-	}
-	//查找ID_POI检测通道标号
-	else {
-
-	}
-
 	//操作开关矩阵
-	int b = MartrixSwitchBoxExcute(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
+	int b = MartrixSwitchBoxExcute(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchDet);
 	//开关操作执行失败
 	if (b == -1) {
 		_error_info = "SwitchExcut: switch set error";

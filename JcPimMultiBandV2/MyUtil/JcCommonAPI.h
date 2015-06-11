@@ -14,20 +14,23 @@
 
 namespace Util {
     int getMyPath(OUT wchar_t* w_path, uint16_t max, const wchar_t* module_name);
+	int getMyPath(OUT char* path, uint16_t max, const char* module_name);
     int isFileExist(const wchar_t* w_path);
     int getFileSize(const wchar_t* w_path);
     int setSleep(uint32_t millisecond);
 	std::string ToString(double val);
     uint64_t get_tick_count();
 	double getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double DefaultVal, const wchar_t* FilePath);
+	std::string getIniRow(const char* AppName, const char* Key, const char* DefaultValue, const char* FileName);
 	void getNowTime(OUT std::string& strTime);
 	void logged(const wchar_t* fmt, ...);
 	void logged(const char* fmt, ...);
-	void logging(const wchar_t* log_name, const char* fmt, ...);//不满足张博需求
+	void logging(const wchar_t* log_name, const char* fmt, ...);//不满足张博需求,要重写
 	void strTrim(std::string& str);
 	bool strFind(const std::string& str, const char* str_find);
 	std::wstring utf8_to_wstring(const std::string& str);
 	std::string wstring_to_utf8(const std::wstring& str);
+	std::vector<std::string> split(const std::string str, const char sc);
 }
 
 #endif //_SAN_JCCOMMONAPI_H

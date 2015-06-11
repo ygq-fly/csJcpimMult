@@ -162,6 +162,18 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	return 0;
 }
 
+//设置外部频段（ATE请设true，其他false）
+void HwSetIsExtBand(JcBool isUse) {
+	if (isUse == FALSE) {
+		__pobj->isUseExtBand = false;
+		__pobj->wstrLogFlag = L"MBP";
+	}
+	else {
+		__pobj->isUseExtBand = true;
+		__pobj->wstrLogFlag = L"ATE";
+	}
+}
+
 //释放
 int fnSetExit(){
 	JcPimObject::release();
@@ -170,23 +182,33 @@ int fnSetExit(){
 	return 0;
 }
 
+void HwSetExit(){
+	JcPimObject::release();
+}
+
 //设置频段
 int fnSetMeasBand(JcInt8 byBandIndex){
+	return HwSetMeasBand(byBandIndex, byBandIndex, byBandIndex);
+}
+
+int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx){
 	if (__pobj->isUseExtBand) {
 		//__pobj->now_band = __pobj->GetExtBandToIntBand(byBandIndex);
-		rf1->band = __pobj->GetExtBandToIntBand(byBandIndex);
-		rf2->band = __pobj->GetExtBandToIntBand(byBandIndex);
-		pim->band = __pobj->GetExtBandToIntBand(byBandIndex);
+		rf1->band = __pobj->GetExtBandToIntBand(byBandTx1);
+		rf2->band = __pobj->GetExtBandToIntBand(byBandTx2);
+		pim->band = __pobj->GetExtBandToIntBand(byBandRx);
 	}
 	else {
 		//__pobj->now_band = byBandIndex;
-		rf1->band = byBandIndex;
-		rf2->band = byBandIndex;
-		pim->band = byBandIndex;
+		rf1->band = byBandTx1;
+		rf2->band = byBandTx2;
+		pim->band = byBandRx;
 	}
 
-	if (pim->band == 1)
+	//if (pim->band == 1)
+	if (__pobj->GetBandString(pim->band) == "DD800")
 		pim->is_high_pim = false;
+
 	return 0;
 }
 
@@ -201,9 +223,16 @@ int fnSetDutPort(JcInt8 byPort) {
 	pim->dutport = byPort;
 
 	//Band转换开关参数 , byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
-	rf1->switch_port = rf1->band * 2 + rf1->dutport;
-	rf2->switch_port = rf2->band * 2 + rf2->dutport;
-	pim->switch_port = pim->band * 2 + pim->dutport;
+	if (__pobj->now_mode == MODE_HUAWEI) {
+		rf1->switch_port = rf1->band * 2 + rf1->dutport;
+		rf2->switch_port = rf2->band * 2 + rf2->dutport;
+		pim->switch_port = pim->band * 2 + pim->dutport;
+	}
+	else {
+		rf1->switch_port = rf1->band;
+		rf2->switch_port = rf2->band;
+		pim->switch_port = pim->band;
+	}
 
 	JcBool b = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, JC_COUP_TX2);
 	if (b == FALSE)
@@ -369,6 +398,37 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	return 0;
 }
 
+//设置频率(针对非ATE)
+JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits) {
+	//单位转换
+	rf1->freq_khz = __pobj->TransKhz(dCarrierFreq1, cUnits);
+	rf2->freq_khz = __pobj->TransKhz(dCarrierFreq2, cUnits);
+
+	//设置功放
+	JC_STATUS js;
+	js = JcSetSig_Advanced(JC_CARRIER_TX1, true, rf1->dd);
+	if (js) return js;
+	js = JcSetSig_Advanced(JC_CARRIER_TX2, true, rf2->dd);
+	if (js) return js;
+	//设置pim参数,需在GetPimFreq()前-----(15/6/5新加)
+	if (pim->band == DD800) {
+		pim->is_high_pim = false;
+		pim->is_less_pim = 0;
+	}
+	else {
+		pim->is_high_pim = true;
+		pim->is_less_pim = 0;
+	}
+	//计算pim互调频率，设置中心频率
+	pim->freq_khz = __pobj->GetPimFreq();
+	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
+	//设置中心频率
+	//pim->freq_khz = __pobj->GetPimFreq();
+	//__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
+
+	return JC_STATUS_SUCCESS;
+}
+
 //开启功放
 int fnSetTxOn(JcBool bOn, JcInt8 byCarrier){
 	bool isSucc = false;
@@ -483,32 +543,6 @@ void HwSetBandEnable(int iBand, JcBool isEnable) {
 	//_switch_enable[iBand] = isEnable;
 }
 
-//设置外部频段（ATE请设true，其他false）
-void HwSetIsExtBand(JcBool isUse) {
-	if (isUse == FALSE) {
-		__pobj->isUseExtBand = false;
-		__pobj->wstrLogFlag = L"MBP";
-	}
-	else {
-		__pobj->isUseExtBand = true;
-		__pobj->wstrLogFlag = L"ATE";
-	}
-}
-
-//释放
-void HwSetExit(){
-	JcPimObject::release();
-}
-
-//vco检测
-JcBool FnGet_Vco() {
-	//开始测量
-	double real_val = 0;
-	double vco_val = 0;
-	return HwGet_Vco(real_val, vco_val);
-
-}
-
 //设置当前功放的耦合器
 JcBool HwSetCoup(JcInt8 byCoup) {
 	//int iSwitch = __pobj->now_band * 2 + __pobj->now_dut_port;
@@ -524,7 +558,8 @@ JcBool HwSetCoup(JcInt8 byCoup) {
 double HwGetCoup_Dsp(JcInt8 byCoup) {
 	double val = 0;
 	double tx_temp = 0;
-	if (byCoup == JC_COUP_TX1) {
+	if (byCoup == JC_COUP_TX1) 
+	{
 		//所有校准数据以mhz为单位，注意转换
 		int s = JcGetOffsetTx(val, rf1->band, rf1->dutport,
 							  byCoup, OFFSET_DSP,
@@ -532,7 +567,8 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 		if (s) return s;
 		tx_temp = rf1->pow_dbm + rf1->offset_ext;
 	}
-	else if (byCoup == JC_COUP_TX2) {
+	else if (byCoup == JC_COUP_TX2) 
+	{
 		//所有校准数据以mhz为单位，注意转换
 		int s = JcGetOffsetTx(val, rf2->band, rf2->dutport,
 							  byCoup, OFFSET_DSP,
@@ -542,35 +578,52 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 	}
 	//读取功率计
 	double sen = JcGetSen();
-	if (Util::strFind(__pobj->sen->InstrGetIdn(), "nrpz")) {
+	if (Util::strFind(__pobj->sen->InstrGetIdn(), "nrpz")) 
+	{
 		sen += val;
 	}
-	else {
+	else 
+	{
 		sen += JcGetSen();
 		sen += JcGetSen();
 		//计算补偿
 		sen = sen / 3 + val;
 	}
-
+	//log
 	std::string strLog = "start Dsp-Coup-" + std::to_string(byCoup) + "\r\n";
 	strLog += "   Avg3rd_1: " + std::to_string(sen) + " \r\n";
-
+	//retest
 	double dd = tx_temp - sen;
-	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) {
+	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) 
+	{
 		Util::setSleep(100);
 		//读2次后平均
 		sen = JcGetSen();
 		sen += JcGetSen();
 		sen += JcGetSen();
 		sen = sen / 3 + val;
+		//log
 		strLog += "   Avg3rd_2: " + std::to_string(sen) + " \r\n";
 		JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 	}
 	return sen;
 }
 
+//vco检测
+JcBool FnGet_Vco() {
+	//开始测量
+	double real_val = 0;
+	double vco_val = 0;
+	return HwGet_Vco(real_val, vco_val);
+
+}
 //读取vco
 JcBool HwGet_Vco(double& real_val, double& vco_val) {
+	real_val = -10000;
+	vco_val = -10000;
+	if (__pobj->now_mode == MODE_POI)
+		return FALSE;
+
 	//获取实际值
 	JcBool b = JcGetVcoDsp(real_val, pim->switch_port);
 	//获取校准值
@@ -591,7 +644,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 	double tx_deviate = 0;
 	dd = 0;
 	std::string strLog = "start smooth-tx-" + std::to_string(byCarrier) + "\r\n";
-
+	//adjust
 	for (int i = 0; i < 4; i++){
 		if (i == 0)
 			Util::setSleep(100);
@@ -605,21 +658,22 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		}
 		else
 			return JC_STATUS_ERROR_SET_BOSH_USE_TX1TX2;
-
+		//log
 		strLog += "   dd: " + std::to_string(dd) + "\r\n";
 		strLog += "   No.: " + std::to_string(i) + "\r\n";
 		strLog += "   tx_dsp: " + std::to_string(tx_dsp) + "\r\n";
 		strLog += "   tx_deviate: " + std::to_string(tx_deviate) + "\r\n";
-
 		//未检测功率时
-		if (tx_dsp <= 33){
+		if (tx_dsp <= 33)
+		{
 			__pobj->strErrorInfo = "   PowerSmooth: No find Power!\r\n";
 			strLog += __pobj->strErrorInfo;
 			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			return JC_STATUS_ERROR_NO_FIND_POWER;
 		}
-
-		if (tx_deviate > __pobj->now_tx_smooth_threasold || tx_deviate < (__pobj->now_tx_smooth_threasold * -1)) {
+		//超出范围
+		if (tx_deviate > __pobj->now_tx_smooth_threasold || tx_deviate < (__pobj->now_tx_smooth_threasold * -1)) 
+		{
 			rf1->dd = 0;
 			rf2->dd = 0;
 			//检测错误后，关闭功放
@@ -629,7 +683,8 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			return JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
 		}
-		else {
+		else 
+		{
 			if (tx_deviate >= (__pobj->now_tx_smooth_accuracy * -1) && tx_deviate <= __pobj->now_tx_smooth_accuracy)
 				return JC_STATUS_SUCCESS;
 
@@ -639,17 +694,19 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 				dd += (tx_deviate * 0.6);
 
 			double sig_val = 0;
-			if (byCarrier == JC_CARRIER_TX1) {
+			if (byCarrier == JC_CARRIER_TX1) 
+			{
 				rf1->dd = dd;
 				sig_val = rf1->pow_dbm + rf1->offset_ext + rf1->offset_int + dd;
-				JcBool b = JcSetSig(JC_CARRIER_TX1, rf1->pow_dbm, sig_val);
+				JcBool b = JcSetSig(JC_CARRIER_TX1, rf1->freq_khz, sig_val);
 				if (FALSE == b)
 					return -10000;
 			}
-			else if (byCarrier == JC_CARRIER_TX2) {
+			else if (byCarrier == JC_CARRIER_TX2) 
+			{
 				rf2->dd = dd;
 				sig_val = rf2->pow_dbm + rf2->offset_ext + rf2->offset_int + dd;
-				JcBool b = JcSetSig(JC_CARRIER_TX2, rf2->pow_dbm, sig_val);
+				JcBool b = JcSetSig(JC_CARRIER_TX2, rf2->freq_khz, sig_val);
 				if (FALSE == b)
 					return -10000;
 			}
@@ -660,36 +717,6 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 	return JC_STATUS_SUCCESS;
 }
 
-//设置频率(针对非ATE)
-JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits) {
-	//单位转换
-	rf1->freq_khz = __pobj->TransKhz(dCarrierFreq1, cUnits);
-	rf2->freq_khz = __pobj->TransKhz(dCarrierFreq2, cUnits);
-
-	//设置功放
-	JC_STATUS js;
-	js = JcSetSig_Advanced(JC_CARRIER_TX1, true, rf1->dd);
-	if (js) return js;
-	js = JcSetSig_Advanced(JC_CARRIER_TX2, true, rf2->dd);
-	if (js) return js;
-	//设置pim参数,需在GetPimFreq()前-----(15/6/5新加)
-	if (pim->band == DD800) {
-		pim->is_high_pim = false;
-		pim->is_less_pim = 0;
-	}
-	else {
-		pim->is_high_pim = true;
-		pim->is_less_pim = 0;
-	}
-	//计算pim互调频率，设置中心频率
-	pim->freq_khz = __pobj->GetPimFreq();
-	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
-	//设置中心频率
-	//pim->freq_khz = __pobj->GetPimFreq();
-	//__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
-
-	return JC_STATUS_SUCCESS;
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //扩展API
@@ -951,20 +978,52 @@ double JcGetAna(double freq_khz, bool isMax){
 }
 
 //设置开关(iSwitchTx: 0 ~ 13)
-JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
-				  int iSwitchPim, int iSwitchCoup) {
+//enum JC_HUAWEI_BAND {
+//	LTE700_A = 0,
+//	LTE700_B = 1,
+//	DD800_A = 2,
+//	DD800_B = 3,
+//	GSM900_A = 4,
+//	GSM900_B = 5,
+//	DCS1800_A = 6,
+//	DCS1800_B = 7,
+//	PCS1900_A = 8,
+//	PCS1900_B = 9,
+//	WCDMA2100_A = 10,
+//	WCDMA2100_B = 11,
+//	LTE2600_A = 12,
+//	LTE2600_B = 13
+//};
+JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCoup) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
 	if (false == __pobj->device_status[4]) {
 		__pobj->strErrorInfo = "Switch: All not connected\r\n";
 		return false;
 	}
-	//int coup = 0;
-	//if (iSwitchTx1 % 2 == 0)
-	//	coup = iSwitchTx1 + iSwitchCoup;
-	//else
-	//	coup = (iSwitchTx1 - 1) + iSwitchCoup;
-	//bool isSucc = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
-	return __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchCoup);
+	//查找检测通道标号
+	int coup = 0;
+	if (__pobj->now_mode == MODE_POI)
+	{
+		//查找ID_POI检测通道标号
+		int coup1 = __pobj->now_mode_bandset[iSwitchTx1].switch_coup1;
+		int coup2 = __pobj->now_mode_bandset[iSwitchTx2].switch_coup2;
+		if (coup1 == -1 || coup2 == -1)
+			coup = 0;// 当前没有检测通道
+		else
+			coup = iSwitchCoup == JC_COUP_TX1 ? coup1 - 1 : coup2 - 1;
+	}
+	else
+	{
+		//查找ID_HUAWEI检测通道标号
+		if (iSwitchTx1 % 2 == 0)
+			coup = iSwitchTx1 + iSwitchCoup;
+		else
+			coup = (iSwitchTx1 - 1) + iSwitchCoup;
+	}
+
+	JcBool ret = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
+	if (!ret) __pobj->strErrorInfo = "Switch: Excut Error!\r\n";
+	return ret;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1137,7 +1196,11 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	double off_dsp[256] = { 0 };
 
 	//Band转换开关参数
-	int iswitch = byInternalBand * 2 + byDutPort;
+	int iswitch ;
+	if (__pobj->now_mode == MODE_POI)
+		iswitch = byInternalBand;
+	else
+		iswitch = byInternalBand * 2 + byDutPort;
 	//----------------------------------------------------------------------------------------------
 	//coup ==> JC_COUP_TX1 to JC_COUP_TX2
 	for (int coup = 0; coup < 2; ++coup)

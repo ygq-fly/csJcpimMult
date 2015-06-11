@@ -26,6 +26,25 @@ int Util::getMyPath(wchar_t *w_path, uint16_t max, const wchar_t* module_name) {
     return ret;
 }
 
+int Util::getMyPath(char* path, uint16_t max, const char* module_name) {
+	int ret = -1;
+	if (NULL != path) {
+		HMODULE hm = NULL;
+		hm = GetModuleHandleA(module_name);
+		//GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)&SAN::getMyPath, &hm);
+		char cPath[1024] = { 0 };
+		::GetModuleFileNameA(hm, cPath, 1024);
+		std::string sPath(cPath);
+		if (std::string::npos != sPath.find(L'\\')) {
+			sPath = sPath.substr(0, sPath.rfind(L'\\'));
+			ret = sPath.size();
+			ret = ret <= max ? ret : max;
+			memcpy(path, sPath.c_str(), ret);
+		}
+	}
+	return ret;
+}
+
 int Util::isFileExist(const wchar_t *w_path) {
     //00: exist, 02: read,  04: write, 06: read and write
     return  _waccess(w_path, 0);
@@ -77,6 +96,11 @@ double Util::getIniDouble(const wchar_t* AppName, const wchar_t* KeyName, double
 	wchar_t w_value[10] = { 0 };
 	GetPrivateProfileStringW(AppName, KeyName, std::to_wstring(DefaultVal).c_str(), w_value, 10, FilePath);
 	return _wtof(w_value);
+}
+std::string Util::getIniRow(const char* AppName, const char* Key, const char* DefaultValue, const char* FileName) {
+	char strBuff[512] = { 0 };
+	GetPrivateProfileStringA(AppName, Key, DefaultValue, strBuff, 512, FileName);
+	return std::string(strBuff);
 }
 
 void Util::getNowTime(OUT std::string& strTime) {
@@ -193,5 +217,15 @@ std::string Util::wstring_to_utf8(const std::wstring& str)
 
 	return std::string(dst_str);
 #endif
+}
+
+std::vector<std::string> Util::split(const std::string str, const char sc){
+	std::istringstream iss(str);
+	std::vector<std::string> ret;
+	std::string stemp = "";
+	while (std::getline(iss, stemp, sc)) {
+		ret.push_back(stemp);
+	}
+	return ret;
 }
 
