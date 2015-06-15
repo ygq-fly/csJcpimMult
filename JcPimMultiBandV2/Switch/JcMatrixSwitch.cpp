@@ -91,18 +91,37 @@ int MartrixSwitchBoxExcute(int tx1, int tx2, int pim, int det)
 
 	cic->Clear();
 
-	if (tx1 != ID_CHAN_IGNORE) cic->SelChanTx1(nltx1[tx1]);
-	if (tx2 != ID_CHAN_IGNORE) cic->SelChanTx2(nltx2[tx2]);
-	if (pim != ID_CHAN_IGNORE) cic->SelChanPim(nlpim[pim]);
-	if (det != ID_CHAN_IGNORE) cic->SelChanDet(nldet[det]);
+	if (tx1 != ID_CHAN_IGNORE && tx1 < (int)nltx1.size())
+		cic->SelChanTx1(nltx1[tx1]);
+	else
+		result = MATRIX_CHAN_IDX_INVAID_1;
+
+	if (tx2 != ID_CHAN_IGNORE && tx2 < (int)nltx2.size())
+		cic->SelChanTx2(nltx2[tx2]);
+	else
+		result = MATRIX_CHAN_IDX_INVAID_2;
+
+	if (pim != ID_CHAN_IGNORE && pim <  (int)nlpim.size())
+		cic->SelChanPim(nlpim[pim]);
+	else
+		result = MATRIX_CHAN_IDX_INVAID_3;
+
+	if (det != ID_CHAN_IGNORE && det <  (int)nldet.size())
+		cic->SelChanDet(nldet[det]);
+	else
+		result = MATRIX_CHAN_IDX_INVAID_4;
+
+	//通道非法的结果不处理...
+	//if (result != MATRIX_SWITCH_OK)
+	//	return result;
 
 	result = cic->Excute() ? MATRIX_SWITCH_OK : MATRIX_SWITCH_EXCUTE_FAILED;
 
-	if (__switchType == ID_POI)
-	{
-		if (tx1 == 8 || tx2 == 10 || pim == 8)
-			result = MATRIX_SWITCH_ERROR_CHAN_NO_EXIST;
-	}
+	//if (__switchType == ID_POI)
+	//{
+	//	if (tx1 == 8 || tx2 == 10 || pim == 8)
+	//		result = MATRIX_SWITCH_ERROR_CHAN_NO_EXIST;
+	//}
 
 	return result;
 }

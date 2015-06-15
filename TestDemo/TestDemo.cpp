@@ -58,13 +58,15 @@ void Test_dll(){
 	pJcGetAna jcGetAna = (pJcGetAna)GetProcAddress(hinst, "JcGetAna");
 	pJcSetSig jcSetSig = (pJcSetSig)GetProcAddress(hinst, "JcSetSig");
 	pJcGetSen jcGetSen = (pJcGetSen)GetProcAddress(hinst, "JcGetSen");
+	pJcSetSwitch jcSetSwitch = (pJcSetSwitch)GetProcAddress(hinst, "JcSetSwitch");
 	pJcGetSig_ExtRefStatus jcGetSig_ExtRefStatus = (pJcGetSig_ExtRefStatus)GetProcAddress(hinst, "JcGetSig_ExtRefStatus");
 
 	pGetError getError = (pGetError)GetProcAddress(hinst, "JcGetError");
 	pGetOffsetRx getOffsetRx = (pGetOffsetRx)GetProcAddress(hinst, "JcGetOffsetRx");
 	pGetOffsetRxNum getOffsetRxNum = (pGetOffsetRxNum)GetProcAddress(hinst, "JcGetOffsetRxNum");
-	pGetOffsetTx getOffsetTx = (pGetOffsetTx)GetProcAddress(hinst, "JcGetOffsetTx");
-	pGetOffsetTxNum getOffsetTxNum = (pGetOffsetTxNum)GetProcAddress(hinst, "JcGetOffsetTxNum");
+	pJcGetOffsetTx jcGetOffsetTx = (pJcGetOffsetTx)GetProcAddress(hinst, "JcGetOffsetTx");
+	pJcGetOffsetTxNum jcGetOffsetTxNum = (pJcGetOffsetTxNum)GetProcAddress(hinst, "JcGetOffsetTxNum");
+	pJcSetOffsetTx jcSetOffsetTx = (pJcSetOffsetTx)GetProcAddress(hinst, "JcSetOffsetTx");
 	pGetOffsetVco getOffsetVco = (pGetOffsetVco)GetProcAddress(hinst, "JcGetOffsetVco");
 	pSetOffsetVco setOffsetVco = (pSetOffsetVco)GetProcAddress(hinst, "JcSetOffsetVco");
 
@@ -107,29 +109,34 @@ void Test_dll(){
 		getError(msg, 512);
 		std::cout << msg << std::endl;
 	}
+	
+	//jcSetSwitch(0, 0, 0, 1);
 
-	//hwSetIsExtBand(FALSE);
-	//setMeasBand(4);
+	hwSetIsExtBand(FALSE);
+	if (setMeasBand(8) < 0) {
+		printf("set band error!\n");
+	}
 	//setDutPort(0);
 	//setTxPower(43, 43, 0.5, 0.5);
 	//hwSetTxFreqs(1942, 1990, "mhz");
 	//double pim_freq, pim_val;
 	//getImResult(pim_freq, pim_val, "mhz");
-
+	
+	//jcSetOffsetTx(8, 0, 43, 42.5, NULL);
 	//���
 	std::cout << std::endl;
 	for (int i = 0; i < 7; i++) {
 		long n = getOffsetRxNum(i);
 		std::cout << i << "-Rx-Num: " << n << std::endl;
-		n = getOffsetTxNum(i);
+		n = jcGetOffsetTxNum(i);
 		std::cout << i << "-Tx-Num: " << n << std::endl;
 	}
 	double val = 0;
-	s = getOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_REAL, 728.5, 43);
+	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_REAL, 930.5, 43);
 	std::cout << "tx_offset_real = " << val << std::endl;
-	s = getOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_DSP, 728, 43);
+	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_DSP, 925, 43);
 	std::cout << "tx_offset_dsp = " << val << std::endl;
-	s = getOffsetRx(val, 0, JC_DUTPORT_A, 713.2);
+	s = getOffsetRx(val, 0, JC_DUTPORT_A, 881.2);
 	std::cout << "rx_offset = " << val << std::endl;
 	s = getOffsetVco(val, 0, JC_DUTPORT_A);
 	std::cout << "vco_offset = " << val << std::endl;

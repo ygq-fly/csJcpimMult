@@ -149,12 +149,14 @@ namespace ns_com_io_ctl
 
 		switch (type)
 		{
+			//case ID_HUAWEI:
 			case 1:
 				fstr.assign(IO_STRING_HUAWEI); 
 				ofio.write(fstr.c_str(), fstr.size());
 				fstr.assign(IMPLEMENT_STRING_HUAWEI);
 				ofimplt.write(fstr.c_str(), fstr.size());
 				break;
+			//case ID_POI:
 			case 2:
 				fstr.assign(IO_STRING_POI);
 				ofio.write(fstr.c_str(), fstr.size());

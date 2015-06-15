@@ -21,10 +21,15 @@
 #define SMOOTH_TX_THREASOLD 2
 #define SMOOTH_TX_ACCURACY 0.15
 
+#define SUM_LOW	       0
+#define SUM_HIGH	   1
+#define SUM_LESS       0
+#define SUM_ADD        1
+
 //static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
 
-//dll???????????
+//dll加载初始化地址
 static std::wstring _startPath = [](){
 	wchar_t wcBuff[512] = { 0 };
 	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
@@ -38,11 +43,11 @@ static std::wstring _startPath = [](){
 
 struct JcBandModule {
 	std::string band_name;
-	//?????????1, (????1???,??????-1)
+	//当前band检测通道1, (标号1开始,使用时需-1)
 	int switch_coup1;
-	//?????????2, (????1???,??????-1)
+	//当前band检测通道2, (标号1开始,使用时需-1)
 	int switch_coup2;
-	//??????
+	//band频率范围
 	double tx1_start;
 	double tx1_stop;
 	double tx2_start;
@@ -51,12 +56,13 @@ struct JcBandModule {
 	double rx_stop;
 	bool tx1_enable;
 	bool tx2_enable;
-	//???????
+	bool rx_enable;
+	//功率范围
 	double power_min;
 	double power_max;
 };
 
-//rf????????????(15/6/5???)
+//rf发射模块参数类
 struct JcRFModule {
 	JcRFModule() 
 		: band(0)
@@ -69,54 +75,54 @@ struct JcRFModule {
 		, offset_int(0)
 		, dd(0)
 	{}
-	//rf??????(?????????), ????0???
+	//rf当前频段(物理模块位置), 标号从0开始
 	uint8_t band;
-	//rf?????????, ????0???
+	//rf当前频段端口, 标号从0开始
 	uint8_t dutport;
-	//rf?????????, ????0???
+	//rf当前输出通道, 标号从0开始
 	uint8_t switch_port;
-	//rf?????????, ????0???
-	//??????
+	//rf当前检测通道, 标号从0开始
+	//预留
 	uint8_t switch_coup;
-	//rf?????????KHZ
+	//rf输出频率单位KHZ
 	double freq_khz;
-	//rf??????????dBm
+	//rf输出功率单位dBm
 	double pow_dbm;
-	//?????????
+	//外部校准参数
 	double offset_ext;
-	//??????????
+	//内部校准参数
 	double offset_int;
 	//other
 	double dd;
 } *rf1, *rf2;
 
-//pim????????????(15/6/5???)
+//pim接收模块参数类
 struct JcPimModule {
 	JcPimModule()
 		: band(0)
 		, dutport(0)
 		, switch_port(0)
 		, freq_khz(0)
-		, is_high_pim(true)
-		, is_less_pim(0)
-		, order(3)
+		, im_low(SUM_LOW)
+		, im_less(SUM_LESS)
+		, im_order(3)
 		, imAvg(1)
 	{}
-	//pim??????(???????????)
+	//pim当前频段(物理模块位置)
 	uint8_t band;
-	//pim?????????
+	//pim当前频段端口
 	uint8_t dutport;
-	//pim???????
+	//pim接收通道
 	uint8_t switch_port;
-	//pim??????????KHZ
+	//pim接收频率单位KHZ
 	double freq_khz;
-	//pim???????(f1 *M - f2 *N ?? f2 *M- f1 *N ??????)
-	bool is_high_pim;
-	//pim?????(f1 *M + f2 *N ?? f1 *M- f2 *N ??????)
-	uint8_t is_less_pim;
-	//pim????
-	uint8_t order;
-	//pim???????????
+	//pim高频互调(f1 *M - f2 *N 和 f2 *M- f1 *N 的区别)
+	uint8_t im_low;
+	//pim计算公式(f1 *M + f2 *N 和 f1 *M- f2 *N 的区别)
+	uint8_t im_less;
+	//pim阶数
+	uint8_t im_order;
+	//pim接收平均次数
 	uint8_t imAvg;
 } *pim;
 
@@ -129,22 +135,22 @@ public:
 	//vco??????????
 	int now_vco_enable[10];
 
-	//vco???????
+	//vco门限
 	double now_vco_threasold;
-	//???????????
+	//校准功率门限
 	double now_tx_smooth_threasold;
-	//????????
+	//校准功率精度
 	double now_tx_smooth_accuracy;
-	//???????????(???ATE)
+	//external band (only support ATE)
 	bool isUseExtBand;
-    //?????
-	//0-??????????? 1-?????????? 2-POI??
+    //mode:
+	//0-huwei 1-trans 2-POI
 	//isUseTransType 
 	uint8_t now_mode;
 	//????????????????
-	//???????????????
+	//bande_set
 	std::vector<JcBandModule> now_mode_bandset;
-	//??????????
+	//band_number
 	int now_num_band;
 	int now_num_port;
 	//???????
@@ -153,30 +159,30 @@ public:
 	std::wstring wstrLogFlag;
 
 public:
-	//?????????????
+	//连接地址
 	//0-SIG1,1-SIG2,2-ANA,3-SEN,4-SWH
 	bool device_status[5];
 	bool isAllConn;
-	//??????
+	//vi地址集合
 	std::vector<std::string> vaddr;
-	//vi??????????
+	//vi资源管理参数
 	ViSession viDefaultRM;
-	//pim??????????
+	//pim_module device
 	std::shared_ptr<IfAnalyzer> ana;
-	//?????????????
+	//rf detect channel
 	std::shared_ptr<IfSensor> sen;
-	//rf1??????????
+	//rf1_module device
 	std::shared_ptr<IfSignalSource> sig1;
-	//rf2??????????
+	//rf2_module device
 	std::shared_ptr<IfSignalSource> sig2;
 	//...(test)
 	std::shared_ptr<IfVna> vna;
-	//???????
+	//开关模块
 	std::shared_ptr<ClsJcSwitch> swh;
-	//?????
+	//数据库
 	JcOffsetDB offset;
 
-	//????????(???)
+	//外部传感器(预留)
 	bool isExtSenConn;
 	int ext_sen_index;
 	std::shared_ptr<IfSensor> ext_sen;
@@ -196,12 +202,12 @@ private:
 		, wstrLogFlag(L"MBP")
 		, offset()
 	{
-		//?????(15/6/5???)
+		//INIT
 		rf1 = new JcRFModule;
 		rf2 = new JcRFModule;
 		pim = new JcPimModule;
 
-		//???????
+		//INIT status
 		for (int i = 0; i < 5; ++i) {
 			device_status[i] = false;
 		}
@@ -209,34 +215,34 @@ private:
 			now_vco_enable[i] = 1;
 		}
 
-		//??????????????
+		//SET INI PATH
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 
-		//???VCO_ENABLE
+		//INIT VCO_ENABLE
 		for (int i = 0; i < 7; i++){
 			wchar_t key[10] = { 0 };
 			swprintf_s(key, L"vco_band%d", i);
 			now_vco_enable[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
 		}
 
-		//???PATH
+		//GET PATH
 		wchar_t temp[1024] = { 0 };
 		GetPrivateProfileStringW(L"PATH", L"logging_file_path", L"", temp, 1024, wsPath_ini.c_str());
 		wstrLogPath = std::wstring(temp);
 
-		//???SETTINGS
+		//GET SETTINGS
 		int iTransType = GetPrivateProfileIntW(L"Settings", L"type_trans", 0, wsPath_ini.c_str());
 		double vco_limit = Util::getIniDouble(L"Settings", L"vco_limit", SMOOTH_VCO_THREASOLD, wsPath_ini.c_str());
 		double tx_smooth = Util::getIniDouble(L"Settings", L"tx_smooth", SMOOTH_TX_THREASOLD, wsPath_ini.c_str());
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", SMOOTH_TX_ACCURACY, wsPath_ini.c_str());
 
-		//????SETTINGS
+		//SET SETTINGS
 		now_mode = (iTransType < 0 || iTransType > 2) ? MODE_HUAWEI : iTransType;
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
 
-		//???POI????????
+		//GET band
 		std::string hw_band_set[7] = huawei_sql_body;
 		std::string poi_band_set[12] = poi_sql_body;
 
@@ -257,13 +263,15 @@ private:
 			{
 				band_row = hw_band_set[i];
 			}
-		
+			Util::strTrim(band_row);
+			band_row.erase(std::remove(band_row.begin(), band_row.end(), '\''), band_row.end());
 			std::vector<std::string> band_items = Util::split(band_row, ',');
 			JcBandModule bm;
-			bm.band_name = Util::split(band_items[0], '\'')[1];
-			int tx_enable = atoi(band_items[1].c_str());
-			bm.tx1_enable = (tx_enable == 1 || tx_enable == 12);
-			bm.tx2_enable = (tx_enable >= 2);
+			bm.band_name = band_items[0];
+			int channel_enable = std::stoi(band_items[1].c_str(), 0, 16);
+			bm.tx1_enable = (channel_enable & 0x100) >> 8;
+			bm.tx2_enable = (channel_enable & 0x010) >> 4;
+			bm.rx_enable = channel_enable & 0x001;
 			bm.switch_coup1 = atoi(band_items[2].c_str());
 			bm.switch_coup2 = atoi(band_items[3].c_str());
 			bm.tx1_start = atof(band_items[4].c_str());
@@ -280,25 +288,25 @@ private:
 	~JcPimObject() {}
 
 public:
-	//????vi???????
+	//vi_attribute
 	void JcSetViAttribute(ViSession vi){
 		char cInfo[32] = { 0 };
 		int s = viGetAttribute(vi, 0xBFFF0001UL, &cInfo);
-		//??????:0x3FFF001AUL
+		//超时时间:0x3FFF001AUL
 		s = viSetAttribute(vi, 0x3FFF001AUL, TIMEOUT_VALUE);
 		//write by san
 		if (0 == strcmp(cInfo, "INSTR")) {
-			//???????????????0x3FFF0171UL
+			//获取设备连接类型：0x3FFF0171UL
 			//memset(cInfo, 0, sizeof(cInfo));
 			//s = viGetAttribute(vi, 0x3FFF0171UL, &cInfo);
-			//1-gpib;2-vxi;3-gpib_vxi;4-asrl(????);5-pxi;6-tcpip;7-usb
+			//1-gpib;2-vxi;3-gpib_vxi;4-asrl(串口);5-pxi;6-tcpip;7-usb
 			//..todo
 		}
 		else if (0 == strcmp(cInfo, "SOCKET")) {
-			//????TERM_CHAR?????????:0x3FFF0018UL??(windows????????/r)
+			//设置TERM_CHAR返回结束码:0x3FFF0018UL，(windows可以设置/r)
 			//s = viSetAttribute(vi, 0x3FFF0018UL, LINEFEED_CHAR);
 
-			//????TERM_CHAR(?????????):0x3FFF0038UL
+			//设置TERM_CHAR(必须要设置):0x3FFF0038UL
 			s = viSetAttribute(vi, 0x3FFF0038UL, VI_TRUE);
 		}
 	}
@@ -334,7 +342,7 @@ public:
 		return _val;
 	}
 
-	//??????????(???ATE)
+	//??????????(ture: support ATE)
 	//enum JC_EXTERNAL_BAND{
 	//	_DD800 = 0,
 	//	_GSM900 = 1,
@@ -345,6 +353,9 @@ public:
 	//	_LTE700 = 6
 	//};
 	uint8_t GetExtBandToIntBand(const uint8_t& byExtMeasBand) {
+		if (now_mode == MODE_POI)
+			return byExtMeasBand;
+
 		uint8_t sband;
 		switch (byExtMeasBand)
 		{		
@@ -378,17 +389,29 @@ public:
 		return now_mode_bandset[MeasBand].band_name;
 	}
 
-	//??????????????(15/6/5???)
+	//各种互调公式计算(15/6/5新加)
 	double GetPimFreq() {
 		double dFreq = 0;
 		//????F1,F2
-		double dF1 = pim->is_high_pim ? rf1->freq_khz : rf2->freq_khz;
-		double dF2 = pim->is_high_pim ? rf2->freq_khz : rf1->freq_khz;
-		//???????
-		int ord1 = pim->order == 2 ? 1 : (pim->order / 2 + 1);
-		int ord2 = pim->order == 2 ? 1 : (pim->order / 2);
-		//??????
-		if (pim->is_less_pim == 0)
+		double dF1, dF2;
+		if (pim->im_low == SUM_LOW) {
+			dF1 = rf1->freq_khz;
+			dF2 = rf2->freq_khz;
+		}
+		else {
+			dF1 = rf2->freq_khz;
+			dF2 = rf1->freq_khz;
+		}
+		//DD800例外
+		if (GetBandString(pim->band) == "DD800") {
+			dF1 = rf2->freq_khz;
+			dF2 = rf1->freq_khz;
+		}
+		//设置阶数
+		int ord1 = pim->im_order == 2 ? 1 : (pim->im_order / 2 + 1);
+		int ord2 = pim->im_order == 2 ? 1 : (pim->im_order / 2);
+		//设置算法
+		if (pim->im_less == SUM_LESS)
 			dFreq = dF1 * ord1 - dF2 * ord2;
 		else
 			dFreq = dF1 * ord1 + dF2 * ord2;
@@ -402,7 +425,7 @@ public:
 		Util::getNowTime(strTime);
 		strLog = "==>(" + strTime + ")" + strLog;
 		std::wstring log_path = wstrLogPath + L"log_" + wstrLogFlag;
-		//???????
+		//暂时关闭！
 		//Util::logging(log_path.c_str(), strLog.c_str());
 	}
 

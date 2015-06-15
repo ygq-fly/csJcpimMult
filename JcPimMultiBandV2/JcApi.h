@@ -77,6 +77,7 @@ enum JC_INTERNAL_BAND {
 #define JC_CARRIER_TX1TX2 0
 #define JC_CARRIER_TX1 1
 #define JC_CARRIER_TX2 2
+#define JC_CARRIER_RX 3
 
 #define JC_DUTPORT_A 0
 #define JC_DUTPORT_B 1
@@ -104,12 +105,13 @@ JIONTCOM_API void HwSetExit();
 //设置频段
 JIONTCOM_API int fnSetMeasBand(JcInt8 byBandIndex);
 JIONTCOM_API int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx);
-//设置平均次数
-JIONTCOM_API int fnSetImAvg(JcInt8 byAvgTime);
 //设置测试端口(请先设置频段后)
 JIONTCOM_API int fnSetDutPort(JcInt8 byPort);
 //设置互调阶数
 JIONTCOM_API int fnSetImOrder(JcInt8 byImOrder);
+JIONTCOM_API int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess);
+//设置平均次数
+JIONTCOM_API int fnSetImAvg(JcInt8 byAvgTime);
 //检测VCO
 JIONTCOM_API int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort);
 //检测ext
@@ -163,6 +165,7 @@ JC_API void   JcSetAna_RefLevelOffset(double offset);
 JC_API double JcGetAna(double freq_khz, bool isMax);
 JC_API JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
 						  int iSwitchPim, int iSwitchDet);
+JC_API JcBool JcGetChannelEnable(int channel_num);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //OFFSET-API

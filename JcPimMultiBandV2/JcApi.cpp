@@ -192,6 +192,11 @@ int fnSetMeasBand(JcInt8 byBandIndex){
 }
 
 int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx){
+	if (byBandTx1 > (__pobj->now_num_band -1) ||
+		byBandTx2 > (__pobj->now_num_band -1) ||
+		byBandRx  > (__pobj->now_num_band -1))
+		return JC_STATUS_ERROR;
+
 	if (__pobj->isUseExtBand) {
 		//__pobj->now_band = __pobj->GetExtBandToIntBand(byBandIndex);
 		rf1->band = __pobj->GetExtBandToIntBand(byBandTx1);
@@ -204,10 +209,6 @@ int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx){
 		rf2->band = byBandTx2;
 		pim->band = byBandRx;
 	}
-
-	//if (pim->band == 1)
-	if (__pobj->GetBandString(pim->band) == "DD800")
-		pim->is_high_pim = false;
 
 	return 0;
 }
@@ -241,21 +242,26 @@ int fnSetDutPort(JcInt8 byPort) {
 	return (b == TRUE ? 0 : JC_STATUS_ERROR_SET_SWITCH_FAIL);
 }
 
+//设置阶数
+int fnSetImOrder(JcInt8 byImOrder) {
+	return HwSetImOrder(byImOrder, SUM_LOW, SUM_LESS);
+}
+
+int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess) {
+	//设置当前测试互调阶数,默认3
+	pim->im_order = byImOrder > 1 ? byImOrder : 3;
+	pim->im_low = byImLow;
+	pim->im_less = byImLess;
+
+	return 0;
+}
+
 //设置pim平均此时
 int fnSetImAvg(JcInt8 byAvgTime) {
 	if (byAvgTime < 1) byAvgTime = 1;
 	pim->imAvg = byAvgTime;
 	//设置频谱仪平均
 	__pobj->ana->InstrSetAvg(byAvgTime);
-	return 0;
-}
-
-//设置阶数
-int fnSetImOrder(JcInt8 byImOrder) {
-	//设置当前测试互调阶数,默认3
-	pim->order = byImOrder > 1 ? byImOrder : 3;
-
-	//return JC_STATUS_ERROR_SET_IM_FAIL;
 	return 0;
 }
 
@@ -382,15 +388,6 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	js = fnSetTxOn(false, JC_CARRIER_TX1TX2);
 	if (0 != js) return js;
 	//---------------------------------------------------------------------------------
-	//设置pim参数,需在GetPimFreq()前-----(15/6/5新加)
-	if (pim->band == DD800) {
-		pim->is_high_pim = false;
-		pim->is_less_pim = 0;
-	}
-	else {
-		pim->is_high_pim = true;
-		pim->is_less_pim = 0;
-	}
 	//计算pim互调频率，设置中心频率
 	pim->freq_khz = __pobj->GetPimFreq();
 	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
@@ -410,15 +407,7 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	if (js) return js;
 	js = JcSetSig_Advanced(JC_CARRIER_TX2, true, rf2->dd);
 	if (js) return js;
-	//设置pim参数,需在GetPimFreq()前-----(15/6/5新加)
-	if (pim->band == DD800) {
-		pim->is_high_pim = false;
-		pim->is_less_pim = 0;
-	}
-	else {
-		pim->is_high_pim = true;
-		pim->is_less_pim = 0;
-	}
+
 	//计算pim互调频率，设置中心频率
 	pim->freq_khz = __pobj->GetPimFreq();
 	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
@@ -996,25 +985,32 @@ double JcGetAna(double freq_khz, bool isMax){
 //};
 JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCoup) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
-	if (false == __pobj->device_status[4]) {
-		__pobj->strErrorInfo = "Switch: All not connected\r\n";
-		return false;
-	}
+	//if (false == __pobj->device_status[4]) {
+	//	__pobj->strErrorInfo = "Switch: All not connected\r\n";
+	//	return false;
+	//}
 	//查找检测通道标号
 	int coup = 0;
 	if (__pobj->now_mode == MODE_POI)
 	{
+		int temp_iSwitchTx1 = iSwitchTx1;
+		int temp_iSwitchTx2 = iSwitchTx2;
+		if (iSwitchTx1 > 11 && iSwitchTx1 < 17)
+			temp_iSwitchTx1 -= 5;
+		if (iSwitchTx2 > 11 && iSwitchTx2 < 17)
+			temp_iSwitchTx2 -= 5;
 		//查找ID_POI检测通道标号
-		int coup1 = __pobj->now_mode_bandset[iSwitchTx1].switch_coup1;
-		int coup2 = __pobj->now_mode_bandset[iSwitchTx2].switch_coup2;
-		if (coup1 == -1 || coup2 == -1)
-			coup = 0;// 当前没有检测通道
-		else
-			coup = iSwitchCoup == JC_COUP_TX1 ? coup1 - 1 : coup2 - 1;
+		//这里的iSwitch和band相配对
+		int coup1 = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
+		int coup2 = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
+
+		coup = iSwitchCoup == JC_COUP_TX1 ? coup1 - 1 : coup2 - 1;
+		if (coup < 0) coup = -1;
 	}
 	else
 	{
 		//查找ID_HUAWEI检测通道标号
+		//这里的iSwitch和band不会配对
 		if (iSwitchTx1 % 2 == 0)
 			coup = iSwitchTx1 + iSwitchCoup;
 		else
@@ -1026,6 +1022,22 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 	return ret;
 }
 
+JcBool JcGetChannelEnable(int channel_num) {
+	switch (channel_num)
+	{
+	case 1:
+		return __pobj->now_mode_bandset[rf1->band].tx1_enable;
+	case 2:
+		return __pobj->now_mode_bandset[rf2->band].tx2_enable;
+	case 3:
+		return __pobj->now_mode_bandset[pim->band].rx_enable;
+	default:
+		break;
+	}
+
+	return FALSE;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Rx 校准API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1034,13 +1046,20 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 						JcInt8 byInternalBand, JcInt8 byDutPort,
 						double freq_mhz){
+	//检查当前频段是否允许
+	if (__pobj->now_mode_bandset[byInternalBand].rx_enable == FALSE)
+	{
+		__pobj->strErrorInfo = "GetRxOffset: rx channel can not used";
+		return JC_STATUS_ERROR;
+	}
+
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//计算校准数据点
 	offset_val = __pobj->offset.OffsetRx(sband.c_str(), byDutPort, freq_mhz);
 	if (offset_val == JC_STATUS_ERROR) {
 
-		__pobj->strErrorInfo = "RxOffset: Read error!\r\n";
+		__pobj->strErrorInfo = "GetRxOffset: Read error!\r\n";
 		return JC_STATUS_ERROR_GET_RX_OFFSET;
 	}
 	else 
@@ -1060,6 +1079,12 @@ long JcGetOffsetRxNum(JcInt8 byInternalBand){
 //自动校准接收Rx (校准前请确认连线)，（只使用JC_TX1来校准）
 JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 						double loss_db, Callback_Get_RX_Offset_Point pHandler) {
+	//检查当前接收频段是否允许
+	if (JcGetChannelEnable(JC_CARRIER_RX) == FALSE)
+	{
+		__pobj->strErrorInfo = "RxOffset: rx channel can not used";
+		return JC_STATUS_ERROR;
+	}
 
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
@@ -1142,6 +1167,17 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 						JcInt8 byInternalBand, JcInt8 byDutPort,
 						JcInt8 coup, JcInt8 real_or_dsp,
 						double freq_mhz, double tx_dbm) {
+
+	//检查当前频段是否允许
+	JcBool tx_enable = coup == JC_DUTPORT_A ? 
+		__pobj->now_mode_bandset[byInternalBand].tx1_enable : 
+		__pobj->now_mode_bandset[byInternalBand].tx2_enable;
+	if (tx_enable == FALSE)
+	{
+		__pobj->strErrorInfo = "GetTxOffset: tx channel can not used, tx" + std::to_string(coup + 1);
+		return JC_STATUS_ERROR;
+	}
+
 	//传输模式
 	JcInt8 byTempDutPort = byDutPort;
 	//if ((__pobj->isUseTransType == true) && (byDutPort == JC_DUTPORT_B))
@@ -1175,6 +1211,13 @@ long JcGetOffsetTxNum(JcInt8 byInternalBand) {
 JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 						double des_p_dbm, double loss_db,
 						Callback_Get_TX_Offset_Point pHandler) {
+	//检查当前接收频段是否允许
+	if (JcGetChannelEnable(JC_CARRIER_TX1) == FALSE &&
+		JcGetChannelEnable(JC_CARRIER_TX2) == FALSE)
+	{
+		__pobj->strErrorInfo = "TxOffset: tx1_tx2 channel can not used";
+		return JC_STATUS_ERROR;
+	}
 
 	if (__pobj->ext_sen_index == 1){
 		//to do
@@ -1198,7 +1241,12 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//Band转换开关参数
 	int iswitch ;
 	if (__pobj->now_mode == MODE_POI)
-		iswitch = byInternalBand;
+	{
+		if (sband.find("td") == std::string::npos)
+			iswitch = byInternalBand;
+		else//查找TD模块特殊TX校准通道
+			iswitch = byInternalBand + 5;
+	}
 	else
 		iswitch = byInternalBand * 2 + byDutPort;
 	//----------------------------------------------------------------------------------------------
@@ -1209,6 +1257,10 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		std::cout << "\n";
 		std::cout << "Start: " << coup << std::endl;
 #endif
+		//检查TX1TX2是否允许发射
+		if (JcGetChannelEnable(coup + 1) == FALSE)
+			continue;
+
 		//----------------------------------------------------------------------------------------------
 		//切换开关
 		JcBool isSwhConn = JcSetSwitch(iswitch, iswitch, iswitch, coup);

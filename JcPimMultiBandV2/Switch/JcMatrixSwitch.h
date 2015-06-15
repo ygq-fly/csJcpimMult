@@ -16,6 +16,11 @@
 #define MATRIX_SWITCH_ERROR_OBJECT_NULL			(-3)    //对象不存在
 #define MATRIX_SWITCH_ERROR_CHAN_NO_EXIST		(-4)    //通道序号不存在
 #define MATRIX_SWITCH_EXCUTE_FAILED				(-1)    //开关操作执行失败
+
+#define MATRIX_CHAN_IDX_INVAID_1				(-10001)//通道1不合法
+#define MATRIX_CHAN_IDX_INVAID_2				(-10002)//通道2不合法
+#define MATRIX_CHAN_IDX_INVAID_3				(-10003)//通道3不合法
+#define MATRIX_CHAN_IDX_INVAID_4				(-10004)//通道4不合法
 //通信连接方式定义
 #define COMM_TYPE_TCP		(2)
 #define COMM_TYPE_UDP		(3)

@@ -26,6 +26,9 @@
 #define JC_OFFSET_REAL 0
 #define JC_OFFSET_DSP 1
 
+typedef void(*Callback_Get_RX_Offset_Point)(double offset_freq, double Offset_val);
+typedef void(*Callback_Get_TX_Offset_Point)(double offset_freq, double Offset_real_val, double Offset_dsp_val);
+
 typedef int(*pTest)(int, int);
 //JIONTCOM_API int fnSetInit(ADDRESS_ cDeviceAddr);
 typedef int(*pSetInit)(const char*);
@@ -69,6 +72,7 @@ typedef double(*pJcGetAna)(double, bool);
 typedef BOOL(*pJcSetSig)(uint8_t, double, double);
 //JC_API double JcGetSen();
 typedef double(*pJcGetSen)();
+typedef BOOL(*pJcSetSwitch)(int, int, int, int);
 //JIONTCOM_API JcBool HwSetCoup(JcInt8 byCoup);
 typedef BOOL(*pHwSetCoup)(uint8_t);
 
@@ -80,7 +84,7 @@ typedef BOOL(*pJcGetSig_ExtRefStatus)(uint8_t);
 //JC_API long JcGetOffsetRxNum(BYTE_ byInternalBand);
 typedef long(*pGetOffsetRxNum)(uint8_t);
 //JC_API long JcGetOffsetTxNum(BYTE_ byInternalBand);
-typedef long(*pGetOffsetTxNum)(uint8_t);
+typedef long(*pJcGetOffsetTxNum)(uint8_t);
 //JC_API JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 //								 BYTE_ byInternalBand, BYTE_ byDutPort,
 //								 double freq_mhz);
@@ -89,7 +93,8 @@ typedef int(*pGetOffsetRx)(double&, char, char, double);
 //								 BYTE_ byInternalBand, BYTE_ byDutPort,
 //								 BYTE_ coup, BYTE_ real_or_dsp,
 //								 double freq_mhz, double tx_dbm);
-typedef int(*pGetOffsetTx)(double&, uint8_t, uint8_t, uint8_t, uint8_t, double, double);
+typedef int(*pJcGetOffsetTx)(double&, uint8_t, uint8_t, uint8_t, uint8_t, double, double);
+typedef int(*pJcSetOffsetTx)(char, char,double, double, Callback_Get_TX_Offset_Point);
 //JC_API JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, BYTE_ byInternalBand, BYTE_ byDutport);
 typedef int(*pGetOffsetVco)(double&, uint8_t, uint8_t);
 //JC_API JC_STATUS JcSetOffsetVco(BYTE_ byInternalBand, BYTE_ byDutport, double val);
@@ -97,7 +102,6 @@ typedef int(*pSetOffsetVco)(uint8_t, uint8_t, double);
 
 typedef int(*pGetDllVersion)(int&, int&, int&, int&);
 
-typedef void(*Callback_Get_RX_Offset_Point)(double offset_freq, double Offset_val);
 //JC_API void testcb(Callback_Get_RX_Offset_Point pHandler);
 typedef void(*ptestcb)(Callback_Get_RX_Offset_Point);
 
