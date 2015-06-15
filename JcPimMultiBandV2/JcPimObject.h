@@ -408,8 +408,18 @@ public:
 			dF2 = rf1->freq_khz;
 		}
 		//设置阶数
-		int ord1 = pim->im_order == 2 ? 1 : (pim->im_order / 2 + 1);
-		int ord2 = pim->im_order == 2 ? 1 : (pim->im_order / 2);
+		int ord1, ord2;
+		//正数阶
+		if ((pim->im_order % 2) == 0)
+		{
+			ord1 = pim->im_order / 2;
+			ord2 = pim->im_order / 2;
+		}
+		else//奇数阶
+		{
+			ord1 = pim->im_order / 2 + 1;
+			ord2 = pim->im_order / 2;
+		}
 		//设置算法
 		if (pim->im_less == SUM_LESS)
 			dFreq = dF1 * ord1 - dF2 * ord2;

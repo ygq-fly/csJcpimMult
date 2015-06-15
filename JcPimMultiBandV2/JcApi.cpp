@@ -249,9 +249,10 @@ int fnSetImOrder(JcInt8 byImOrder) {
 
 int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess) {
 	//设置当前测试互调阶数,默认3
-	pim->im_order = byImOrder > 1 ? byImOrder : 3;
+	pim->im_order = byImOrder;
 	pim->im_low = byImLow;
 	pim->im_less = byImLess;
+	//Util::logged("%d, %d, %d", (int)pim->im_order, (int)pim->im_low, (int)pim->im_less);
 
 	return 0;
 }
