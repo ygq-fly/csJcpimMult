@@ -58,29 +58,32 @@ class JcOffsetDB
 {
 public:
     JcOffsetDB()
-		:_pConn(NULL)
-		,_bConn(false)
-		,_sTxFreqtable("TX_FREQ_LIST")
-		, _offset_mode(discontinuous_offset_mode)
+		:m_pConn(NULL)
+		,m_bConn(false)
+		,m_sTxFreqtable("TX_FREQ_LIST")
+		,m_offset_mode(discontinuous_offset_mode)
     {
         //char col_types[][10] = { "" ,"INTEGER", "FLOAT", "Text", "BLOB", "NULL"};
     }
     
     ~JcOffsetDB()
 	{
-        if (_pConn) {
-            sqlite3_close(_pConn);
+        if (m_pConn) {
+            sqlite3_close(m_pConn);
         }
     }
     
 public:
+	//连接数据库
 	bool DbConnect(const char* addr);
+	//初始化数据库，创建表
 	void DbInit(uint8_t mode);
+	//查找连续点序列的频段
 	int FreqBand(const uint8_t& tx_or_rx, const char* band, double& f_start, double& f_stop);
-	int FreqBand_Rx();
-	int JcOffsetDB::FreqBand_Old(const uint8_t& tx_or_rx, const double& freq_mhz, const char* band,
+	//查找固定点序列的校准方式
+	int FreqBand_Old(const uint8_t& tx_or_rx, const double& freq_mhz, const char* band,
 								double &f1, double &f2, double &index1, double &index2);
-    //获取校准头信息
+	//获取校准频率点集合
 	int FreqHeader(const char& tx_or_rx, const char* band, double* freq, int maxnum);
     //获取Tx校准数据
 	double OffsetTx(const char* band, const char& dut, const char& coup,
@@ -106,15 +109,15 @@ private:
 	int GetSqlVal(const char* strsql, double& a1, double& a2);
     
 private:
-    sqlite3* _pConn;
-    bool _bConn;
-    std::string _sTxFreqtable;
+    sqlite3* m_pConn;
+    bool m_bConn;
+    std::string m_sTxFreqtable;
 
 	//使用模式，关系到频段表的调用
-	uint8_t _offset_mode;
+	uint8_t m_offset_mode;
 
 	//频段表sql语句
-	std::string _hw_band_table_sql;
-	std::string _poi_band_table_sql;
+	std::string m_hw_band_table_sql;
+	std::string m_poi_band_table_sql;
 };
 #endif /* defined(__MyTest__JcOffsetDB__) */

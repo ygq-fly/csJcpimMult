@@ -231,6 +231,9 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	//------------------------write by san-------------------
 	InstrSetRef(disp_rlev[pp]);
 	InstrSetOffset(disp_rlev_offset[pp]);
+
+	//以下条命令必须执行
+	AgWrite("INIT:CONT OFF\n");
 }
 
 bool ClsAnaRsFspSerial::CommonSet(char const *command, ...)

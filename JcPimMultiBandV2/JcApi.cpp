@@ -100,7 +100,7 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 		isSqlConn = __pobj->offset.DbConnect(sPath.c_str());
 		__pobj->offset.DbInit(__pobj->now_mode);
 		if (!isSqlConn) {
-			Util::logged(L"fnSetInit: DB Connected Error!");
+			Util::logged(L"fnSetInit: 校准文件错误(JcOffset.db)，请检查校准文件!");
 			//return JC_STATUS_ERROR_DATABASE_CONN_FAIL;
 		}
 #else
@@ -116,22 +116,22 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 
 		if ("0" != __pobj->vaddr[0]){
 			if (false == JcConnSig(0, const_cast<char*>(__pobj->vaddr[0].c_str())))
-				Util::logged(L"fnSetInit: Connect SG1 Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[0]).c_str());
+				Util::logged(L"fnSetInit: 信号源1连接失败 (%s)", Util::utf8_to_wstring(__pobj->vaddr[0]).c_str());
 		}
 
 		if ("0" != __pobj->vaddr[1]){
 			if (false == JcConnSig(1, const_cast<char*>(__pobj->vaddr[1].c_str())))
-				Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[1]).c_str());
+				Util::logged(L"fnSetInit: 信号源2连接失败 (%s)", Util::utf8_to_wstring(__pobj->vaddr[1]).c_str());
 		}
 
 		if ("0" != __pobj->vaddr[3]) {
 			if (false == JcConnSen(const_cast<char*>(__pobj->vaddr[3].c_str())))
-				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[3]).c_str());
+				Util::logged(L"fnSetInit: 功率计连接失败 (%s)", Util::utf8_to_wstring(__pobj->vaddr[3]).c_str());
 		}
 
 		if ("0" != __pobj->vaddr[2]) {
 			if (false == JcConnAna(const_cast<char*>(__pobj->vaddr[2].c_str())))
-				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[2]).c_str());
+				Util::logged(L"fnSetInit: 频谱仪连接失败 (%s)", Util::utf8_to_wstring(__pobj->vaddr[2]).c_str());
 		}
 
 		if ("0" != __pobj->vaddr[4]) {
@@ -252,7 +252,6 @@ int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess) {
 	pim->im_order = byImOrder;
 	pim->im_low = byImLow;
 	pim->im_less = byImLess;
-	//Util::logged("%d, %d, %d", (int)pim->im_order, (int)pim->im_low, (int)pim->im_less);
 
 	return 0;
 }
@@ -278,7 +277,7 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 	fnSetMeasBand(byBandIndex);
 	int s = fnSetDutPort(byPort);
 	if (s <= -10000){
-		Util::logged(L"fnVco: Set Switch-Band-%d-%d Error!", (int)byBandIndex, (int)byPort);
+		Util::logged(L"fnVco: 开关设置失败 (Band-%d-%d)", (int)byBandIndex, (int)byPort);
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	}
 	//延时
@@ -287,7 +286,7 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 	double real_val = 0;
 	double vco_val = 0;
 	if (HwGet_Vco(real_val, vco_val) == FALSE){
-		Util::logged(L"fnVco: VCO Error (%lf)", real_val - vco_val);
+		Util::logged(L"fnVco: VCO检测失败 (%lf)，请重新校准VCO!", real_val - vco_val);
 		return JC_STATUS_ERROR_CHECK_VCO_FAIL;	
 	}
 	else
@@ -297,12 +296,12 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 //时钟同步检测(针对ATE)
 int fnCheckTwoSignalROSC() {
 	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX1) == FALSE) {
-		Util::logged(L"fnCheckTwoSignalROSC: (SG1) Check Fail!");
+		Util::logged(L"fnCheckTwoSignalROSC: 时钟同步线检查失败(SG1)， 请检查连接!");
 		return JC_STATUS_ERROR_CHECK_SIG1_ROSC_FAIL;
 	}
 
 	if (JcGetSig_ExtRefStatus(JC_CARRIER_TX2) == FALSE) {
-		Util::logged(L"fnCheckTwoSignalROSC: (SG2) Check Fail!");
+		Util::logged(L"fnCheckTwoSignalROSC: 时钟同步线检查失败(SG2)， 请检查连接!");
 		return JC_STATUS_ERROR_CHECK_SIG2_ROSC_FAIL;
 	}
 	return 0;
@@ -357,9 +356,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged(_T("错误： TX2未检测到功率！请检功率输出！"));
+			Util::logged(_T("fnSetTxFreqs: TX2未检测到功率！请检功率输出！"));
 		else
-			Util::logged(_T("错误： TX2功率偏差过大！"));
+			Util::logged(_T("fnSetTxFreqs: TX2功率偏差过大！"));
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -377,11 +376,10 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged(_T("错误： TX1未检测到功率！请检功率输出！"));
-            //Util::logged("Tx1_Error: Can not find Power!");
+			Util::logged(_T("fnSetTxFreqs: TX1未检测到功率！请检功率输出！"));
 		else
-			Util::logged(_T("错误： TX1功率偏差过大！"));
-            //Util::logged("Tx1_Error: Power out range!");
+			Util::logged(_T("fnSetTxFreqs: TX1功率偏差过大！"));
+ 
 		return js;
 	}
 	//---------------------------------------------------------------------------------
@@ -448,7 +446,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	dPimResult = JcGetAna(pim->freq_khz, false);
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
 	if (dPimResult == JC_STATUS_ERROR){
-		Util::logged(L"fnGetImResult: Spectrum Read Error!");
+		Util::logged(L"fnGetImResult: 频谱读取失败!");
 		__pobj->strErrorInfo = "Spectrum read error!\r\n";
 		return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
 	}
@@ -539,7 +537,7 @@ JcBool HwSetCoup(JcInt8 byCoup) {
 	JcBool r = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, byCoup);
 	Util::setSleep(250);
 	if (FALSE == r) 
-		Util::logged(L"HwSetCoup: Switch-Coup-%d Set Error!", (int)byCoup);		
+		Util::logged(L"HwSetCoup: 开关设置失败(Coup-%d)", (int)byCoup);		
 	
 	return r;
 }
@@ -877,7 +875,7 @@ JcBool JcSetSig(JcInt8 byCarrier, double freq_khz, double pow_dbm) {
 	}
 
 	if (false == b)
-		Util::logged(L"JcSetSig: sig(%d) Error!", (int)byCarrier);
+		Util::logged(L"JcSetSig: 信号源设置失败(sig-%d)", (int)byCarrier);
 
 	return b;
 }
@@ -917,7 +915,7 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 		rf1->offset_int = internal_offset;
 		bool b = __pobj->sig1->InstrSetFreqPow(freq_khz, tx_true);
 		if (false == b) {
-			Util::logged(L"JcSetSig: (%d)Error!", (int)byCarrier);
+			Util::logged(L"JcSetSig_Adv: 信号源设置失败(sig-%d)", (int)byCarrier);
 			return -10000;
 		}
 	}
@@ -925,7 +923,7 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 		rf2->offset_int = internal_offset;
 		bool b = __pobj->sig2->InstrSetFreqPow(freq_khz, tx_true);
 		if (false == b) {
-			Util::logged(L"JcSetSig: (%d)Error!", (int)byCarrier);
+			Util::logged(L"JcSetSig_Adv: 信号源设置失败(sig-%d)", (int)byCarrier);
 			return -10000;
 		}
 	}
@@ -1585,7 +1583,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;
 		else
-			Util::logged(L"JcGetIDN: We Cannot Support (%s)!", Util::utf8_to_wstring(strIdn).c_str());
+			Util::logged(L"JcGetIDN: 当前设备不支持 (%s)!", Util::utf8_to_wstring(strIdn).c_str());
 	}
 	return iDeviceIDN;
 }
