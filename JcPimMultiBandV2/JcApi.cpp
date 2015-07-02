@@ -27,13 +27,13 @@
 //	1, 添加R&S设备的支持
 //	2, 性能改进
 // 
-//V1.8
+//V1.8 (build 255)
 //	1, 支持mingw编译
 //	2, 支持传输模式
 //  3，改进vco检测
 //	4，改进R&S时钟同步检测
 //
-//v1.9 (build 260)
+//v1.9 (build 273)
 //	1, 新增rf1,rf2,pim参数模块
 //	2, 支持POI模式
 //  3，升级最新switch
@@ -98,11 +98,10 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 #ifdef WIN32
 		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
 		isSqlConn = __pobj->offset.DbConnect(sPath.c_str());
-		__pobj->offset.DbInit(__pobj->now_mode);
-		if (!isSqlConn) {
+		if (isSqlConn) 
+			__pobj->InitBandSet();			
+		else 
 			Util::logged(L"fnSetInit: file error(JcOffset.db)");
-			//return JC_STATUS_ERROR_DATABASE_CONN_FAIL;
-		}
 #else
 		//isconn = __pobj->offset.Dbconnect("D:\\Sync_ProJects\\Jointcom\\JcPimMultiBandV2\\Debug\\JcOffset.db");
 #endif

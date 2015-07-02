@@ -57,6 +57,9 @@ struct JcBandModule {
 	bool tx1_enable;
 	bool tx2_enable;
 	bool rx_enable;
+	//vco
+	double vco_a;
+	double vco_b;
 	//功率范围
 	double power_min;
 	double power_max;
@@ -147,8 +150,9 @@ public:
 	//0-huwei 1-trans 2-POI
 	//isUseTransType 
 	uint8_t now_mode;
-	//????????????????
 	//bande_set
+	//仪表物理模块频段信息，按仪表物理模块安装循序
+	//开关切换后rf和pim工作模块将调用该信息
 	std::vector<JcBandModule> now_mode_bandset;
 	//band_number
 	int now_num_band;
@@ -242,52 +246,69 @@ private:
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
 
-		//GET band
-		std::string hw_band_set[7] = huawei_sql_body;
-		std::string poi_band_set[12] = poi_sql_body;
-
 		std::string bandfreq_path = Util::wstring_to_utf8(_startPath + L"\\JcBandFreq.ini");
 		now_num_band = now_mode == MODE_POI ? 12 : 7;
-		for (int i = 0; i < now_num_band; i++) 
-		{
-			std::string band_row;
-			if (now_mode == MODE_POI) 
-			{
-				//char key[16] = { 0 };
-				//sprintf_s(key, "band%d", i);
-				//wchar_t val[1024] = { 0 };
-				//band_row = Util::getIniRow("Poi Band Set", key, "", bandfreq_path.c_str());
-				band_row = poi_band_set[i];
-			}
-			else
-			{
-				band_row = hw_band_set[i];
-			}
-			Util::strTrim(band_row);
-			band_row.erase(std::remove(band_row.begin(), band_row.end(), '\''), band_row.end());
-			std::vector<std::string> band_items = Util::split(band_row, ',');
-			JcBandModule bm;
-			bm.band_name = band_items[0];
-			int channel_enable = std::stoi(band_items[1].c_str(), 0, 16);
-			bm.tx1_enable = (channel_enable & 0x100) >> 8;
-			bm.tx2_enable = (channel_enable & 0x010) >> 4;
-			bm.rx_enable = channel_enable & 0x001;
-			bm.switch_coup1 = atoi(band_items[2].c_str());
-			bm.switch_coup2 = atoi(band_items[3].c_str());
-			bm.tx1_start = atof(band_items[4].c_str());
-			bm.tx1_stop = atof(band_items[5].c_str());
-			bm.tx2_start = bm.tx1_start;
-			bm.tx2_stop = bm.tx1_stop;
-			bm.rx_start = atof(band_items[6].c_str());
-			bm.rx_stop = atof(band_items[7].c_str());
-			now_mode_bandset.push_back(bm);
-		}		
+
 		isAllConn = false;
 	}
 
 	~JcPimObject() {}
 
 public:
+	//初始化,首先需数据库连接成功
+	void InitBandSet(){
+		//数据库初始化
+		offset.DbInit(now_mode);
+
+		int ret = 0;
+		for (int i = 0; i < now_num_band; i++)
+		{
+			std::string band_row;
+			char prefix[64] = { 0 };
+			char band_info[1024] = { 0 };
+			if (now_mode == MODE_POI)
+			{
+				sprintf_s(prefix, "poi%d", i + 1);
+				ret = offset.GetBandInfo(prefix, band_info);
+				band_row = std::string(band_info);
+			}
+			else
+			{
+				sprintf_s(prefix, "hw%d", i + 1);
+				ret = offset.GetBandInfo(prefix, band_info);
+				band_row = std::string(band_info);
+			}
+			Util::strTrim(band_row);
+			band_row.erase(std::remove(band_row.begin(), band_row.end(), '\''), band_row.end());
+			std::vector<std::string> band_items = Util::split(band_row, ',');
+			if (ret < 0 || band_items.size() < 11) {
+				Util::logged("fnInitBandSet: band's info error!");
+				return;
+			}
+
+			JcBandModule bm;
+			bm.band_name = band_items[1];
+
+			bm.tx1_start = atof(band_items[2].c_str());
+			bm.tx1_stop = atof(band_items[3].c_str());
+			bm.tx2_start = bm.tx1_start;
+			bm.tx2_stop = bm.tx1_stop;
+			bm.rx_start = atof(band_items[4].c_str());
+			bm.rx_stop = atof(band_items[5].c_str());
+
+			bm.vco_a = atof(band_items[6].c_str());
+			bm.vco_b = atof(band_items[7].c_str());
+
+			int channel_enable = std::stoi(band_items[8].c_str(), 0, 16);
+			bm.tx1_enable = (channel_enable & 0x100) >> 8;
+			bm.tx2_enable = (channel_enable & 0x010) >> 4;
+			bm.rx_enable = channel_enable & 0x001;
+			bm.switch_coup1 = atoi(band_items[9].c_str());
+			bm.switch_coup2 = atoi(band_items[10].c_str());
+
+			now_mode_bandset.push_back(bm);
+		}
+	}
 	//vi_attribute
 	void JcSetViAttribute(ViSession vi){
 		char cInfo[32] = { 0 };

@@ -9,47 +9,80 @@ bool JcOffsetDB::DbConnect(const char* addr) {
 }
 
 void JcOffsetDB::DbInit(uint8_t mode) {
-	std::string hw_sql_param[7] = huawei_sql_body;
-	std::string poi_sql_param[12] = poi_sql_body;
-
-	m_hw_band_table_sql = sql_header + hw_sql_param[0];
-	for (int i = 1; i < 7; i++){
-		m_hw_band_table_sql += " union all select " + hw_sql_param[i];
-	}
-
-	m_poi_band_table_sql = sql_header + poi_sql_param[0];
-	for (int i = 1; i < 12; i++){
-		m_poi_band_table_sql += " union all select " + poi_sql_param[i];
-	}
-
-	if (mode == MODE_POI)
+	//if (mode == MODE_POI)
 		m_offset_mode = continuous_offset_mode;
-	else
-		m_offset_mode = discontinuous_offset_mode;
+	//else
+	//	m_offset_mode = discontinuous_offset_mode;
+
+	m_band_info_table = "JC_BAND2_INFO";
+	m_tx_offset_table = "JC_TX_OFFSET_ALL";
+	m_rx_offset_table = "JC_RX_OFFSET_ALL";
+
+	if (!IsExist(m_band_info_table.c_str()))
+	{
+		std::string hw_sql_param[7] = huawei_sql_body;
+		std::string poi_sql_param[12] = poi_sql_body;
+		std::string hw_band_table_sql = sql_header + hw_sql_param[0];
+		for (int i = 1; i < 7; i++){
+			hw_band_table_sql += " union all select " + hw_sql_param[i];
+		}
+		std::string poi_band_table_sql = sql_header + poi_sql_param[0];
+		for (int i = 1; i < 12; i++){
+			poi_band_table_sql += " union all select " + poi_sql_param[i];
+		}
+		if (ExecSql(sql_table)) {
+			ExecSql(hw_band_table_sql.c_str());
+			ExecSql(poi_band_table_sql.c_str());
+		}
+	}
 }
 
-int JcOffsetDB::FreqBand(const uint8_t& tx_or_rx, const char* band, double& f_start, double& f_stop) {
-	if (m_offset_mode == continuous_offset_mode)
-	{
-		char sql[1024] = { 0 };
-		if (tx_or_rx == OFFSET_TX)
-			sprintf_s(sql, "select [tx_start],[tx_end] from [JC_BAND_INFO] where band = '%s'", band);
-		else
-			sprintf_s(sql, "select [rx_start],[rx_end] from [JC_BAND_INFO] where band = '%s'", band);
+int JcOffsetDB::GetBandInfo(const char* prefix, char* band_info) {
 
-		if (GetSqlVal(sql, f_start, f_stop))
-			return JCOFFSET_ERROR;
-	}
-	else
+	char sql[1024] = { 0 };
+	sprintf_s(sql, "select * from %s where prefix = '%s'", m_band_info_table.c_str(), prefix);
+
+	sqlite3_stmt* pstmt = NULL;
+	sqlite3_prepare(m_pConn, sql, -1, &pstmt, NULL);
+
+	std::string str_band_info = "";
+	while (sqlite3_step(pstmt) == SQLITE_ROW)
 	{
-		f_start = JCOFFSET_ERROR;
-		f_stop = JCOFFSET_ERROR;
-	}
+		int n = sqlite3_column_count(pstmt);
+		for (int i = 0; i < n; i++) {
+			std::string temp = reinterpret_cast<const char*>(sqlite3_column_text(pstmt, i));
+			str_band_info += (temp + ",");
+		}
+	} 
+	sqlite3_finalize(pstmt);
+	if (str_band_info == "")
+		return -1;
+
+	memcpy(band_info, str_band_info.c_str(), str_band_info.length());
 	return 0;
 }
 
-int JcOffsetDB::FreqBand_Old(const uint8_t& tx_or_rx, const double& freq_mhz, const char* band,
+int JcOffsetDB::FreqBand_continuous(const uint8_t& tx_or_rx, const char* band, double& f_start, double& f_stop) {
+	if (m_offset_mode != continuous_offset_mode)
+		return -1;
+
+	char sql[1024] = { 0 };
+	if (tx_or_rx == OFFSET_TX)
+		sprintf_s(sql, "select [tx_start],[tx_end] from [%s] where band = '%s'", m_band_info_table.c_str(), band);
+	else
+		sprintf_s(sql, "select [rx_start],[rx_end] from [%s] where band = '%s'", m_band_info_table.c_str(), band);
+
+	if (GetSqlVal(sql, f_start, f_stop))
+		return JCOFFSET_ERROR;
+
+	return 0;
+}
+
+int JcOffsetDB::FreqBand_discontinuous(const uint8_t& tx_or_rx, const double& freq_mhz, const char* band,
 							double &f1, double &f2, double &index1, double &index2) {
+	if (m_offset_mode != discontinuous_offset_mode)
+		return -1;
+
 	std::stringstream ss;
 	//选择校准频率表TX_EGSM900, 选择列 EGSM900
 	//get(Freq) f1, f2!
@@ -65,9 +98,7 @@ int JcOffsetDB::FreqBand_Old(const uint8_t& tx_or_rx, const double& freq_mhz, co
 		" >= " << freq_mhz << ")";
 	if (GetSqlVal(ss.str().c_str(), f1, f2))
 		return JCOFFSET_ERROR;
-#ifdef JC_SQL_DEBUG
-	std::cout << "freq Range: " << f1 << ", " << f2 << std::endl;
-#endif
+
 	//查找f1,f2对应的index
 	ss.str("");
 	ss << "select A,B from (select [ID] A from [" << stable << "] where " + scolomn +
@@ -75,9 +106,7 @@ int JcOffsetDB::FreqBand_Old(const uint8_t& tx_or_rx, const double& freq_mhz, co
 		"=" << f2 << ")";
 	if (GetSqlVal(ss.str().c_str(), index1, index2))
 		return JCOFFSET_ERROR;
-#ifdef JC_SQL_DEBUG
-	std::cout << "freq_index Range: " << f1_index << ", " << f2_index << std::endl;
-#endif
+
 	return 0;
 }
 
@@ -88,7 +117,7 @@ int JcOffsetDB::FreqHeader(const char& tx_or_rx, const char* band, double* freq,
 	if (m_offset_mode == continuous_offset_mode)
 	{
 		double f_start, f_stop;
-		int s = FreqBand(tx_or_rx, band, f_start, f_stop);
+		int s = FreqBand_continuous(tx_or_rx, band, f_start, f_stop);
 		if (s == JCOFFSET_ERROR)
 			return s;
 
@@ -118,21 +147,13 @@ int JcOffsetDB::FreqHeader(const char& tx_or_rx, const char* band, double* freq,
 			if (sqlite3_step(pstmt) == SQLITE_ROW) 
 			{
 				double val = sqlite3_column_double(pstmt, 0);
-				if (val != 0)
-					*(freq + i) = val;
-				else
+				if (val <= 0)
 					break;
-#ifdef JC_SQL_DEBUG
-				std::cout << val << "/";
-#endif
+				*(freq + i) = val;
 			}
 			else
 				break;
 		}
-#ifdef JC_SQL_DEBUG
-		std::cout << "\n";
-		std::cout << "Num:" << i << std::endl;
-#endif
 		sqlite3_finalize(pstmt);
 	}
 
@@ -151,7 +172,7 @@ double JcOffsetDB::OffsetTx(const char* band, const char& dut, const char& coup,
 	//新增POI获取频率区间
 	if (m_offset_mode == continuous_offset_mode) {
 		double f_start, f_stop;
-		int s = FreqBand(OFFSET_TX, band, f_start, f_stop);
+		int s = FreqBand_continuous(OFFSET_TX, band, f_start, f_stop);
 		if (s == JCOFFSET_ERROR) 
 			return s;
 
@@ -166,7 +187,7 @@ double JcOffsetDB::OffsetTx(const char* band, const char& dut, const char& coup,
 	}
 	else 
 	{
-		FreqBand_Old(OFFSET_TX, freq_mhz, band, freq1, freq2, f1, f2);
+		FreqBand_discontinuous(OFFSET_TX, freq_mhz, band, freq1, freq2, f1, f2);
 	}
 
 	//double freq1 = f1_temp;
@@ -179,7 +200,7 @@ double JcOffsetDB::OffsetTx(const char* band, const char& dut, const char& coup,
 	//选择校准数据表 EGSM900, 选择列 Power
 	//get(TX) tx1, tx2!
 	//查询tx_now的所在区间
-	std::string stable = "JC_TX_OFFSET_ALL";
+	std::string stable = m_tx_offset_table;//"JC_TX_OFFSET_ALL";
 	//设置复合主键Port
 	std::string sport = std::string(band) + sSuffix;
 	//设置复合主键Dsp
@@ -246,7 +267,7 @@ double JcOffsetDB::OffsetRx(const char* band, const char& dut, const double& fre
 	//新增POI获取频率区间
 	if (m_offset_mode == continuous_offset_mode) {
 		double f_start, f_stop;
-		int s = FreqBand(OFFSET_RX, band, f_start, f_stop);
+		int s = FreqBand_continuous(OFFSET_RX, band, f_start, f_stop);
 		if (s == JCOFFSET_ERROR) 
 			return s;
 
@@ -260,7 +281,7 @@ double JcOffsetDB::OffsetRx(const char* band, const char& dut, const double& fre
 	}
 	else
 	{
-		FreqBand_Old(OFFSET_RX, freq_now, band, freq1, freq2, f1, f2);
+		FreqBand_discontinuous(OFFSET_RX, freq_now, band, freq1, freq2, f1, f2);
 	}
 
 	//double freq1 = f1_temp;
@@ -272,7 +293,7 @@ double JcOffsetDB::OffsetRx(const char* band, const char& dut, const double& fre
 	double y2 = 0;
 	//设置复合主键Port
 	std::string sport = std::string(band) + sSuffix;
-	std::string stable = "JC_RX_OFFSET_ALL";
+	std::string stable = m_rx_offset_table;// "JC_RX_OFFSET_ALL";
 	//get y1, y2!
 	//查询表中2个点的值(tx1,f1),(tx1,f2)
 	ss.str("");
@@ -303,8 +324,6 @@ double JcOffsetDB::OffsetVco(const char* band, const char& dut) {
 	if (sqlite3_step(pStmt) == SQLITE_ROW) {
 		val = sqlite3_column_double(pStmt, 0);
 	}
-	else
-		val = JCOFFSET_ERROR;
 	sqlite3_finalize(pStmt);
 	return val;
 }
@@ -319,8 +338,8 @@ int JcOffsetDB::Store_v2(const char& tx_or_rx,
 	std::string sSuffix = dut == 0 ? "_A" : "_B";
 	if (tx_or_rx == OFFSET_TX)
 		sSuffix += (coup == 0 ? "_TX1" : "_TX2");
-
-	std::string stable = tx_or_rx == OFFSET_TX ? "JC_TX_OFFSET_ALL" : "JC_RX_OFFSET_ALL";
+											  //"JC_TX_OFFSET_ALL" : "JC_RX_OFFSET_ALL";
+	std::string stable = tx_or_rx == OFFSET_TX ? m_tx_offset_table : m_rx_offset_table;
 	//设置复合主键Port
 	std::string sport = std::string(band) + sSuffix;
 	//设置复合主键Dsp
@@ -417,4 +436,27 @@ int JcOffsetDB::GetSqlVal(const char* strsql, double& a1, double& a2){
 		r = JCOFFSET_ERROR;
 	sqlite3_finalize(pStmt);
 	return r;
+}
+
+bool JcOffsetDB::IsExist(const char* table) {
+	//std::string sql_drop = "DROP TABLE JC_BAND2_INFO";
+	//判断表JC_BAND2_INFO是否存在
+	char sql[128] = { 0 };
+	sprintf_s(sql, "select count(*) as c from Sqlite_master  where type = 'table' and name = '%s'", table);
+	int n = 0;
+	sqlite3_stmt* pstmt = NULL;
+	sqlite3_prepare(m_pConn, sql, -1, &pstmt, NULL);
+	if (sqlite3_step(pstmt) == SQLITE_ROW){
+		n = sqlite3_column_int(pstmt, 0);
+	}
+	return (n > 0);
+}
+
+bool JcOffsetDB::ExecSql(const char* sql) {
+	sqlite3_stmt* pstmt;
+	sqlite3_prepare(m_pConn, sql, -1, &pstmt, NULL);
+	int resulte = sqlite3_step(pstmt);
+	sqlite3_finalize(pstmt);
+
+	return (resulte == SQLITE_DONE);
 }

@@ -113,9 +113,18 @@ void Test_dll(){
 	//jcSetSwitch(0, 0, 0, 1);
 
 	hwSetIsExtBand(FALSE);
+	double tx_freq, rx_freq;
 	if (setMeasBand(8) < 0) {
-		printf("set band error!\n");
+		tx_freq = 729;
+		rx_freq = 698;
+		printf("This is HW_BAND!\n");
 	}
+	else {
+		tx_freq = 926;
+		rx_freq = 880;
+		printf("This is POI_BAND!\n");
+	}
+
 	//setDutPort(0);
 	//setTxPower(43, 43, 0.5, 0.5);
 	//hwSetTxFreqs(1942, 1990, "mhz");
@@ -132,11 +141,11 @@ void Test_dll(){
 		std::cout << i << "-Tx-Num: " << n << std::endl;
 	}
 	double val = 0;
-	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_REAL, 930.5, 43);
+	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_REAL, tx_freq, 43);
 	std::cout << "tx_offset_real = " << val << std::endl;
-	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_DSP, 925, 43);
+	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_DSP, tx_freq, 43);
 	std::cout << "tx_offset_dsp = " << val << std::endl;
-	s = getOffsetRx(val, 0, JC_DUTPORT_A, 881.2);
+	s = getOffsetRx(val, 0, JC_DUTPORT_A, rx_freq);
 	std::cout << "rx_offset = " << val << std::endl;
 	s = getOffsetVco(val, 0, JC_DUTPORT_A);
 	std::cout << "vco_offset = " << val << std::endl;
