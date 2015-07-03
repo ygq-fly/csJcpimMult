@@ -81,6 +81,7 @@ public:
 	bool DbConnect(const char* addr);
 	//初始化数据库，创建表
 	void DbInit(uint8_t mode);
+	int GetBandCount(const char* band_mode);
 	int GetBandInfo(const char* prefix, char* band_info);
 	//查找连续点序列的频段
 	int FreqBand_continuous(const uint8_t& tx_or_rx, const char* band, double& f_start, double& f_stop);

@@ -198,6 +198,7 @@ private:
 		, now_tx_smooth_threasold(SMOOTH_TX_THREASOLD)
 		, now_tx_smooth_accuracy(SMOOTH_TX_ACCURACY)
 		, now_mode(MODE_HUAWEI)//isUseTransType(false)
+		, now_num_band(7)
 		, isUseExtBand(true)
 		, strErrorInfo("Not")
 		, viDefaultRM(VI_NULL)
@@ -246,21 +247,29 @@ private:
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
 
-		std::string bandfreq_path = Util::wstring_to_utf8(_startPath + L"\\JcBandFreq.ini");
-		now_num_band = now_mode == MODE_POI ? 12 : 7;
-
 		isAllConn = false;
 	}
 
 	~JcPimObject() {}
 
 public:
-	//初始化,首先需数据库连接成功
-	void InitBandSet(){
+	//连接数据库，初始化参数
+	bool InitBandSet(){
+		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
+		bool b = offset.DbConnect(sPath.c_str());
+		if (b == false) {
+			Util::logged(L"fnSetInit: file error(JcOffset.db)");
+			return false;
+		}
 		//数据库初始化
 		offset.DbInit(now_mode);
 
 		int ret = 0;
+		if (now_mode == MODE_POI)
+			now_num_band = offset.GetBandCount("poi");
+		else if (now_mode == MODE_HUAWEI)
+			now_num_band = offset.GetBandCount("hw");
+		
 		for (int i = 0; i < now_num_band; i++)
 		{
 			std::string band_row;
@@ -283,7 +292,7 @@ public:
 			std::vector<std::string> band_items = Util::split(band_row, ',');
 			if (ret < 0 || band_items.size() < 11) {
 				Util::logged("fnInitBandSet: band's info error!");
-				return;
+				return false;
 			}
 
 			JcBandModule bm;
@@ -308,6 +317,7 @@ public:
 
 			now_mode_bandset.push_back(bm);
 		}
+		return true;
 	}
 	//vi_attribute
 	void JcSetViAttribute(ViSession vi){

@@ -37,6 +37,18 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	}
 }
 
+int JcOffsetDB::GetBandCount(const char* band_mode) {
+	char sql[128] = { 0 };
+	sprintf_s(sql, "select count(*) as c from JC_BAND2_INFO  where prefix like '%s%%'", band_mode);
+	int n = 0;
+	sqlite3_stmt* pstmt = NULL;
+	sqlite3_prepare(m_pConn, sql, -1, &pstmt, NULL);
+	if (sqlite3_step(pstmt) == SQLITE_ROW){
+		n = sqlite3_column_int(pstmt, 0);
+	}
+	return n;
+}
+
 int JcOffsetDB::GetBandInfo(const char* prefix, char* band_info) {
 
 	char sql[1024] = { 0 };

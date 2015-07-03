@@ -37,6 +37,7 @@
 //	1, 新增rf1,rf2,pim参数模块
 //	2, 支持POI模式
 //  3，升级最新switch
+//	4, 可配置频段和面板映射
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -76,7 +77,6 @@
 
 //初始化
 int fnSetInit(const JC_ADDRESS cDeviceAddr) {
-	bool isSqlConn = false;
 	//加载pim对象
 	if (NULL != __pobj) {
 
@@ -95,17 +95,7 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 			__pobj->vaddr.push_back("1");
 
 		//开始连接数据库
-#ifdef WIN32
-		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
-		isSqlConn = __pobj->offset.DbConnect(sPath.c_str());
-		if (isSqlConn) 
-			__pobj->InitBandSet();			
-		else 
-			Util::logged(L"fnSetInit: file error(JcOffset.db)");
-#else
-		//isconn = __pobj->offset.Dbconnect("D:\\Sync_ProJects\\Jointcom\\JcPimMultiBandV2\\Debug\\JcOffset.db");
-#endif
-
+		bool isSqlConn = __pobj->InitBandSet();
 		//开始连接
 		std::string strConnMsg = "";
 		ViStatus s = viOpenDefaultRM(&__pobj->viDefaultRM);
@@ -1039,6 +1029,18 @@ JcBool JcGetChannelEnable(int channel_num) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Rx 校准API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void  JcGetOffsetBandInfo(int band_index, char* band_info){
+	if (NULL == __pobj) return;
+	
+	char prefix[64] = { 0 };
+	if (__pobj->now_mode == MODE_POI)
+		sprintf_s(prefix, "poi%d", band_index);
+	else
+		sprintf_s(prefix, "hw%d",band_index);
+
+	__pobj->offset.GetBandInfo(prefix, band_info);
+}
 
 //获取Rx校准
 JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
