@@ -424,7 +424,7 @@ int fnSetTxOn(JcBool bOn, JcInt8 byCarrier){
 
 //获取互调结果
 int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UNIT cUnits) {
-	//pim->freq_khz = __pobj->GetPimFreq();
+	pim->freq_khz = __pobj->GetPimFreq();
 	//获取pim模块内部校准
 	double rxoff;
 	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, pim->freq_khz / 1000);
@@ -434,6 +434,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	//获取互调,返回数据
 	dPimResult = JcGetAna(pim->freq_khz, false);
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
+
 	if (dPimResult == JC_STATUS_ERROR){
 		Util::logged(L"fnGetImResult: Spectrum read error!");
 		__pobj->strErrorInfo = "Spectrum read error!\r\n";

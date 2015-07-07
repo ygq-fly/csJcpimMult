@@ -457,6 +457,10 @@ public:
 		else
 			dFreq = dF1 * ord1 + dF2 * ord2;
 
+		//Util::logged("f1=%lf,f2=%lf,order=%d, low=%d, less=%d, ord1=%d, ord2=%d",
+		//	dF1 / 1000, dF2 / 1000,
+		//	(int)pim->im_order, (int)pim->im_low, (int)pim->im_less,
+		//	ord1, ord2);
 		return abs(dFreq);
 	}
 
