@@ -235,12 +235,12 @@
 "5Ctfd21tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,fdd21tx1), Tx1swich3(Testmdfdd21, nc1)    \n"\
 "6Cuw21tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,fdd21tx1), Tx1swich3(Testmdfdd21 , no2)    \n"\
 "7Cmdcstx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , nc1)  \n"\
-"8Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , no2)  \n"\
+"8Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
 "9null=\n"\
 "10Cmtdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, nc1),Antmodeswich6(Testmdtdd23,nc1)      \n"\
 "11Cttdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, no2), Antmodeswich5(Testmdtdd23,nc1)      \n"\
 "12null=\n"\
-"13Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , no2)  \n"\
+"13Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
 "14null=\n"\
 "15Cmtdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, nc1),Antmodeswich6(Testmdtdd23,nc1)      \n"\
 "16Cttdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, no2), Antmodeswich5(Testmdtdd23,nc1)      \n"\
