@@ -229,3 +229,42 @@ std::vector<std::string> Util::split(const std::string str, const char sc){
 	return ret;
 }
 
+void Util::showcldebug(const char* fmt, ...) {
+	static HANDLE hcl = NULL;
+	if (hcl == NULL) {
+		AllocConsole();
+		hcl = GetStdHandle(STD_OUTPUT_HANDLE);
+	}
+
+	if (std::string(fmt)== "") {
+		COORD coordScreen = { 0, 0 };    /* here's where we'll home the
+										 cursor */
+		BOOL bSuccess;
+		DWORD cCharsWritten;
+		CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
+		DWORD dwConSize;                 /* number of character cells in
+										 the current buffer */
+		bSuccess = GetConsoleScreenBufferInfo(hcl, &csbi);
+		dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+		bSuccess = FillConsoleOutputCharacter(hcl, (TCHAR) ' ',
+			dwConSize, coordScreen, &cCharsWritten);
+		bSuccess = GetConsoleScreenBufferInfo(hcl, &csbi);
+		bSuccess = FillConsoleOutputAttribute(hcl, csbi.wAttributes,
+			dwConSize, coordScreen, &cCharsWritten);
+		bSuccess = SetConsoleCursorPosition(hcl, coordScreen);
+	}
+	else 
+	{
+		char cInfo[256] = { 0 };
+		va_list ap;
+		va_start(ap, fmt);
+		vsprintf_s(cInfo, fmt, ap);
+		va_end(ap);
+
+		DWORD dwWritten = 0;
+		WriteConsoleA(hcl, cInfo, strlen(cInfo), &dwWritten, NULL);
+		//WriteConsoleA(hcl, "\n", strlen("\n"), &dwWritten, NULL);
+	}
+
+	//FreeConsole();
+}

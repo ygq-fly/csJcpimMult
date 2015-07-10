@@ -31,6 +31,7 @@ namespace Util {
 	std::wstring utf8_to_wstring(const std::string& str);
 	std::string wstring_to_utf8(const std::wstring& str);
 	std::vector<std::string> split(const std::string str, const char sc);
+	void showcldebug(const char* fmt, ...);
 }
 
 #endif //_SAN_JCCOMMONAPI_H

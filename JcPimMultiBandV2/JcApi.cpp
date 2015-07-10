@@ -204,6 +204,7 @@ int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx){
 
 //请先设置 HwSetMeasBand
 int fnSetDutPort(JcInt8 byPort) {
+	__pobj->WriteClDebug("",true);
 	if (byPort > 2) return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	rf1->dd = 0;
 	rf2->dd = 0;
@@ -402,6 +403,12 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	//设置中心频率
 	//pim->freq_khz = __pobj->GetPimFreq();
 	//__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
+	char cLog[256] = { 0 };
+	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\nP1 = %lf, P2 = %lf\r\noffset1 = %lf, offset2 = %lf\r\n",
+		rf1->freq_khz / 1000, rf1->freq_khz / 1000, 
+		rf1->offset_int + rf1->pow_dbm, rf2->offset_int + rf2->pow_dbm,
+		rf1->offset_ext, rf2->offset_ext);
+	__pobj->WriteClDebug(cLog);
 
 	return JC_STATUS_SUCCESS;
 }
@@ -616,6 +623,7 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 
 //检测功放稳定度(必须功放开启后检测) return dd
 JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
+	JC_STATUS ret = JC_STATUS_SUCCESS;
 	//tx显示值
 	double tx_dsp = 0;
 	//tx偏差值
@@ -637,17 +645,15 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		else
 			return JC_STATUS_ERROR_SET_BOSH_USE_TX1TX2;
 		//log
-		strLog += "   dd: " + std::to_string(dd) + "\r\n";
-		strLog += "   No.: " + std::to_string(i) + "\r\n";
+		strLog += "   No.: " + std::to_string(i+1) + "\r\n";
 		strLog += "   tx_dsp: " + std::to_string(tx_dsp) + "\r\n";
-		strLog += "   tx_deviate: " + std::to_string(tx_deviate) + "\r\n";
 		//未检测功率时
 		if (tx_dsp <= 33)
 		{
 			__pobj->strErrorInfo = "   PowerSmooth: No find Power!\r\n";
-			strLog += __pobj->strErrorInfo;
-			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
-			return JC_STATUS_ERROR_NO_FIND_POWER;
+			strLog += "   (tx_dsp <= 33)\r\n";
+			ret =  JC_STATUS_ERROR_NO_FIND_POWER;
+			break;
 		}
 		//超出范围
 		if (tx_deviate > __pobj->now_tx_smooth_threasold || tx_deviate < (__pobj->now_tx_smooth_threasold * -1)) 
@@ -657,14 +663,14 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 			//检测错误后，关闭功放
 			//FnSetTxOn(false, byCarrier);		
 			__pobj->strErrorInfo = "   PowerSmooth: Power's Smooth out Allowable Range\r\n";
-			strLog += __pobj->strErrorInfo;
-			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
-			return JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
+			strLog += "   (tx_dsp out range)\r\n";
+			ret = JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
+			break;
 		}
 		else 
 		{
 			if (tx_deviate >= (__pobj->now_tx_smooth_accuracy * -1) && tx_deviate <= __pobj->now_tx_smooth_accuracy)
-				return JC_STATUS_SUCCESS;
+				break;
 
 			if (i == 0)
 				dd += tx_deviate * 0.9;
@@ -672,27 +678,28 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 				dd += (tx_deviate * 0.6);
 
 			double sig_val = 0;
-			if (byCarrier == JC_CARRIER_TX1) 
-			{
+			JcBool b = FALSE;
+			if (byCarrier == JC_CARRIER_TX1) {
 				rf1->dd = dd;
 				sig_val = rf1->pow_dbm + rf1->offset_ext + rf1->offset_int + dd;
-				JcBool b = JcSetSig(JC_CARRIER_TX1, rf1->freq_khz, sig_val);
-				if (FALSE == b)
-					return -10000;
+				b = JcSetSig(JC_CARRIER_TX1, rf1->freq_khz, sig_val);
 			}
-			else if (byCarrier == JC_CARRIER_TX2) 
-			{
+			else if (byCarrier == JC_CARRIER_TX2) {
 				rf2->dd = dd;
 				sig_val = rf2->pow_dbm + rf2->offset_ext + rf2->offset_int + dd;
-				JcBool b = JcSetSig(JC_CARRIER_TX2, rf2->freq_khz, sig_val);
-				if (FALSE == b)
-					return -10000;
+				b = JcSetSig(JC_CARRIER_TX2, rf2->freq_khz, sig_val);			
 			}
-			strLog += "   sig_val: " + std::to_string(sig_val) + "\r\n";
+			if (b == FALSE){
+				ret = -10000;
+				strLog += "   tx_set: sig set error\r\n";
+				break;
+			}
+			strLog += "   tx_set: " + std::to_string(sig_val) + "\r\n";
 			Util::setSleep(200);
 		}
 	}
-	return JC_STATUS_SUCCESS;
+	__pobj->WriteClDebug(strLog);
+	return ret;
 }
 
 
@@ -1031,8 +1038,15 @@ JcBool JcGetChannelEnable(int channel_num) {
 //Rx 校准API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void  JcGetOffsetBandInfo(int band_index, char* band_info){
-	if (NULL == __pobj) return;
+//add 15-7-10
+JC_STATUS JcSetOffsetTxIncremental(JcInt8 byInternalBand, JcInt8 byDutPort, JcInt8 coup, double Incremental) {
+	std::string strBand = __pobj->GetBandString(byInternalBand);
+	__pobj->offset.DbSetTxIncremental(strBand.c_str(), byDutPort, coup, Incremental);
+	return 0;
+}
+
+JC_STATUS JcGetOffsetBandInfo(int band_index, char* band_info){
+	if (NULL == __pobj) return JC_STATUS_ERROR;
 	
 	char prefix[64] = { 0 };
 	if (__pobj->now_mode == MODE_POI)
@@ -1040,7 +1054,7 @@ void  JcGetOffsetBandInfo(int band_index, char* band_info){
 	else
 		sprintf_s(prefix, "hw%d",band_index);
 
-	__pobj->offset.GetBandInfo(prefix, band_info);
+	return __pobj->offset.GetBandInfo(prefix, band_info);
 }
 
 //获取Rx校准

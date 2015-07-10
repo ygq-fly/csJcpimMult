@@ -36,7 +36,7 @@ static std::wstring _startPath = [](){
 	//char cbuff[512] = { 0 };
 	//Util::getMyPath(cbuff, 256, "JcPimMultiBandV2.dll");
 	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
-	_debug_enable = GetPrivateProfileIntW(L"Settings", L"debug", 0, wsPath_ini.c_str());
+	_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
 
 	return std::wstring(wcBuff);
 }();
@@ -317,6 +317,7 @@ public:
 
 			now_mode_bandset.push_back(bm);
 		}
+
 		return true;
 	}
 	//vi_attribute
@@ -438,6 +439,9 @@ public:
 			dF1 = rf2->freq_khz;
 			dF2 = rf1->freq_khz;
 		}
+		//例外:2F1/2F2
+		if (pim->im_order == 0)
+			return 2 * dF1;
 		//设置阶数
 		int ord1, ord2;
 		//正数阶
@@ -472,6 +476,14 @@ public:
 		std::wstring log_path = wstrLogPath + L"log_" + wstrLogFlag;
 		//暂时关闭！
 		//Util::logging(log_path.c_str(), strLog.c_str());
+	}
+
+	void WriteClDebug(std::string strLog, bool isCls = false) {
+		if (_debug_enable == 0)
+			return;
+		if (isCls)
+			Util::showcldebug("");
+		Util::showcldebug(strLog.c_str());
 	}
 
 	//Sigleton model

@@ -71,7 +71,7 @@ void Test_dll(){
 	pSetOffsetVco setOffsetVco = (pSetOffsetVco)GetProcAddress(hinst, "JcSetOffsetVco");
 
 	pGetDllVersion getDllVersion = (pGetDllVersion)GetProcAddress(hinst, "JcGetDllVersion");
-
+	pJcSetOffsetTxIncremental jcSetOffsetTxIncremental = (pJcSetOffsetTxIncremental)GetProcAddress(hinst, "JcSetOffsetTxIncremental");
 	int a = test(3, 5);
     printf("a = %d\n", a);
     testcb([](double offset_freq, double Offset_val){
@@ -141,6 +141,7 @@ void Test_dll(){
 		std::cout << i << "-Tx-Num: " << n << std::endl;
 	}
 	double val = 0;
+	s = jcSetOffsetTxIncremental(0, JC_DUTPORT_A, JC_COUP_TX1, 0);
 	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_REAL, tx_freq, 43);
 	std::cout << "tx_offset_real = " << val << std::endl;
 	s = jcGetOffsetTx(val, 0, JC_DUTPORT_A, JC_COUP_TX2, JC_OFFSET_DSP, tx_freq, 43);

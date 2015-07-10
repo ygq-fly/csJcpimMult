@@ -37,6 +37,27 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	}
 }
 
+void JcOffsetDB::DbSetTxIncremental(const char* band, const char& dut, const char& coup, double incremental) {
+	double freq[256] = { 0 };
+	int num = FreqHeader(OFFSET_TX, band, freq, 256);
+	
+	std::string sSuffix = dut == 0 ? "_A" : "_B";
+	sSuffix += (coup == 0 ? "_TX1" : "_TX2");
+
+	for (int i = 1; i <= num; i++) {
+		char sql[128] = { 0 };
+		sprintf_s(sql, "update %s set [%d] = [%d] + (%lf) where Port = '%s%s' and DSP = 0",
+			m_tx_offset_table.c_str(), i, i, incremental, band, sSuffix.c_str());
+		if (ExecSql(sql) == false)
+			break;
+		memset(sql, 0, 128);
+		sprintf_s(sql, "update %s set [%d] = [%d] - (%lf) where Port = '%s%s' and DSP = 1",
+			m_tx_offset_table.c_str(), i, i, incremental, band, sSuffix.c_str());
+		if (ExecSql(sql) == false)
+			break;
+	}
+}
+
 int JcOffsetDB::GetBandCount(const char* band_mode) {
 	char sql[128] = { 0 };
 	sprintf_s(sql, "select count(*) as c from JC_BAND2_INFO  where prefix like '%s%%'", band_mode);

@@ -170,7 +170,8 @@ JC_API JcBool JcGetChannelEnable(int channel_num);
 /////////////////////////////////////////////////////////////////////////////////////////////
 //OFFSET-API
 /////////////////////////////////////////////////////////////////////////////////////////////
-JC_API void  JcGetOffsetBandInfo(int band_index, char* band_info);
+JC_API JC_STATUS JcSetOffsetTxIncremental(JcInt8 byInternalBand, JcInt8 byDutPort, JcInt8 coup, double Incremental);
+JC_API JC_STATUS JcGetOffsetBandInfo(int band_index, char* band_info);
 JC_API JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 							   JcInt8 byInternalBand, JcInt8 byDutPort,
 							   double freq_mhz);
