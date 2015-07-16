@@ -106,6 +106,6 @@ typedef int(*pGetDllVersion)(int&, int&, int&, int&);
 typedef void(*ptestcb)(Callback_Get_RX_Offset_Point);
 
 //void JcSetOffsetTxIncremental(JcInt8 byInternalBand, JcInt8 byDutPort, JcInt8 coup, double Incremental)
-typedef int(*pJcSetOffsetTxIncremental)(char, char, char, double);
+typedef int(*pJcSetOffsetTxIncremental)(char, char, char, char, double);
 
 #endif //JCPIMMULTIBANDV2_TESTDEMO_H

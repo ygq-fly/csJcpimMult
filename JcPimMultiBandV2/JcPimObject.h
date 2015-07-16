@@ -28,6 +28,7 @@
 
 //static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
+static int _tx_delay = 400;
 
 //dll加载初始化地址
 static std::wstring _startPath = [](){
@@ -37,6 +38,9 @@ static std::wstring _startPath = [](){
 	//Util::getMyPath(cbuff, 256, "JcPimMultiBandV2.dll");
 	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
 	_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
+	_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 400, wsPath_ini.c_str());
+	//防止tx_delay小于200
+	_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
 
 	return std::wstring(wcBuff);
 }();

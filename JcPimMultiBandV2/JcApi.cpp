@@ -405,7 +405,7 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	//__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
 	char cLog[256] = { 0 };
 	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\nP1 = %lf, P2 = %lf\r\noffset1 = %lf, offset2 = %lf\r\n",
-		rf1->freq_khz / 1000, rf1->freq_khz / 1000, 
+		rf1->freq_khz / 1000, rf2->freq_khz / 1000, 
 		rf1->offset_int + rf1->pow_dbm, rf2->offset_int + rf2->pow_dbm,
 		rf1->offset_ext, rf2->offset_ext);
 	__pobj->WriteClDebug(cLog);
@@ -532,7 +532,7 @@ void HwSetBandEnable(int iBand, JcBool isEnable) {
 JcBool HwSetCoup(JcInt8 byCoup) {
 	//int iSwitch = __pobj->now_band * 2 + __pobj->now_dut_port;
 	JcBool r = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, byCoup);
-	Util::setSleep(250);
+	Util::setSleep(300);
 	if (FALSE == r) 
 		Util::logged(L"HwSetCoup: set Coup fail! (Coup-%d)", (int)byCoup);		
 	
@@ -633,7 +633,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 	//adjust
 	for (int i = 0; i < 4; i++){
 		if (i == 0)
-			Util::setSleep(100);
+			Util::setSleep(_tx_delay);
 		if (byCarrier == JC_CARRIER_TX1) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
 			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;	
@@ -1039,10 +1039,10 @@ JcBool JcGetChannelEnable(int channel_num) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //add 15-7-10
-JC_STATUS JcSetOffsetTxIncremental(JcInt8 byInternalBand, JcInt8 byDutPort, JcInt8 coup, double Incremental) {
+JC_STATUS JcSetOffsetTxIncremental(JcInt8 byInternalBand, JcInt8 byDutPort, JcInt8 coup, JcInt8 real_or_dsp, double Incremental) {
 	std::string strBand = __pobj->GetBandString(byInternalBand);
-	__pobj->offset.DbSetTxIncremental(strBand.c_str(), byDutPort, coup, Incremental);
-	return 0;
+	bool b = __pobj->offset.DbSetTxIncremental(strBand.c_str(), byDutPort, coup, real_or_dsp, Incremental);
+	return (b ? 0 : -10000);
 }
 
 JC_STATUS JcGetOffsetBandInfo(int band_index, char* band_info){
@@ -1310,12 +1310,12 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		//存储校准数据
 		int s = __pobj->offset.Store_v2(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_REAL, des_p_dbm, off_real, freq_num);
 		if (s) {
-			__pobj->strErrorInfo = "TxOffset: Tx1's data save error!\r\n";
+			__pobj->strErrorInfo = "TxOffset: Tx_Real data save error!\r\n";
 			return JC_STATUS_ERROR;
 		}
 		s = __pobj->offset.Store_v2(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_DSP, des_p_dbm, off_dsp, freq_num);
 		if (s) {
-			__pobj->strErrorInfo = "TxOffset: Tx2's data save error!\r\n";
+			__pobj->strErrorInfo = "TxOffset: Tx_Dsp data save error!\r\n";
 			return JC_STATUS_ERROR;
 		}
 		//----------------------------------------------------------------------------------------------

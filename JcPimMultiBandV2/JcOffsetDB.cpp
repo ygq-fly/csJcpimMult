@@ -1,4 +1,5 @@
 #include "JcOffsetDB.h"
+#include "MyUtil\JcCommonAPI.h"
 
 //校准步进1M
 #define OFFSET_STEP 1
@@ -37,7 +38,8 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	}
 }
 
-void JcOffsetDB::DbSetTxIncremental(const char* band, const char& dut, const char& coup, double incremental) {
+bool JcOffsetDB::DbSetTxIncremental(const char* band, const char& dut, const char& coup, const char& real_or_dsp, double incremental) {
+	bool ret = true;
 	double freq[256] = { 0 };
 	int num = FreqHeader(OFFSET_TX, band, freq, 256);
 	
@@ -46,16 +48,23 @@ void JcOffsetDB::DbSetTxIncremental(const char* band, const char& dut, const cha
 
 	for (int i = 1; i <= num; i++) {
 		char sql[128] = { 0 };
-		sprintf_s(sql, "update %s set [%d] = [%d] + (%lf) where Port = '%s%s' and DSP = 0",
-			m_tx_offset_table.c_str(), i, i, incremental, band, sSuffix.c_str());
-		if (ExecSql(sql) == false)
+		sprintf_s(sql, "update %s set [%d] = [%d] + (%lf) where Port = '%s%s' and Dsp = '%d'",
+			m_tx_offset_table.c_str(), i, i, incremental, band, sSuffix.c_str(), (int)real_or_dsp);
+		if (ExecSql(sql) == false) {
+			ret = false;
 			break;
-		memset(sql, 0, 128);
-		sprintf_s(sql, "update %s set [%d] = [%d] - (%lf) where Port = '%s%s' and DSP = 1",
-			m_tx_offset_table.c_str(), i, i, incremental, band, sSuffix.c_str());
-		if (ExecSql(sql) == false)
-			break;
+		}
+
+		//memset(sql, 0, 128);
+		//sprintf_s(sql, "update %s set [%d] = [%d] - (%lf) where Port = '%s%s' and DSP = 1",
+		//	m_tx_offset_table.c_str(), i, i, incremental, band, sSuffix.c_str());
+		//if (ExecSql(sql) == false) {
+		//	ret = false;
+		//	break;
+		//}
+
 	}
+	return ret;
 }
 
 int JcOffsetDB::GetBandCount(const char* band_mode) {
@@ -422,7 +431,10 @@ int JcOffsetDB::Store_v2(const char& tx_or_rx,
 	if (resulte == SQLITE_DONE)
 		return 0;
 	else
+	{
+		Util::logged("%s: %d\r\n%s", "Save Rx/Tx error", resulte, sql.c_str());
 		return JCOFFSET_ERROR;
+	}
 }
 
 //存储vco校准数据
@@ -440,7 +452,10 @@ int JcOffsetDB::Store_vco_single(const char* band, const char& dut, const double
 	if (resulte == SQLITE_DONE)
 		return 0;
 	else
+	{
+		Util::logged("%s: %d\r\n%s", "Save vco error", resulte, sql.c_str());
 		return JCOFFSET_ERROR;
+	}
 }
 
 //计算斜率
