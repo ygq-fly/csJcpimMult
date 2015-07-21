@@ -13,6 +13,8 @@
 #include "RohdeSchwarz/ClsAnaRsFspSerial.h"
 #include "RohdeSchwarz/ClsSigRsSMxSerial.h"
 
+#include "Tektronix\ClsSigTekTSG4000.h"
+
 #include "JcOffsetDB.h"
 
 #include "stdafx.h"
@@ -321,7 +323,6 @@ public:
 
 			now_mode_bandset.push_back(bm);
 		}
-
 		return true;
 	}
 	//vi_attribute

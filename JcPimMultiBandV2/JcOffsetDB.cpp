@@ -76,6 +76,7 @@ int JcOffsetDB::GetBandCount(const char* band_mode) {
 	if (sqlite3_step(pstmt) == SQLITE_ROW){
 		n = sqlite3_column_int(pstmt, 0);
 	}
+	sqlite3_finalize(pstmt);
 	return n;
 }
 
@@ -403,7 +404,7 @@ int JcOffsetDB::Store_v2(const char& tx_or_rx,
 		for (int i = 1; i < num; ++i) {
 			ss_val << "," << val[i];
 		}
-		ss_val << ")";
+		ss_val << ")";	
 	}
 	else {
 		//RX列序号数组（从1开始计数）
@@ -420,19 +421,20 @@ int JcOffsetDB::Store_v2(const char& tx_or_rx,
 		}
 		ss_val << ")";
 	}
-
+	
 	//开始存储，按列名写入，注：未列入的列名默认值为0
-	std::string sql = "insert or replace into [" + stable + "] " + std::string(ss_freq.str()) + " values " + std::string(ss_val.str());
+	std::string sql = "insert or replace into [" + stable + "] " + ss_freq.str() + " values " + ss_val.str();	
 	sqlite3_stmt* pstmt;
-	sqlite3_prepare(m_pConn, sql.c_str(), -1, &pstmt, NULL);
-	int resulte = sqlite3_step(pstmt);
+	int result1 = sqlite3_prepare(m_pConn, sql.c_str(), -1, &pstmt, NULL);
+	int result2 = sqlite3_step(pstmt);
 	sqlite3_finalize(pstmt);
 
-	if (resulte == SQLITE_DONE)
+	if (result2 == SQLITE_DONE)
 		return 0;
 	else
 	{
-		Util::logged("%s: %d\r\n%s", "Save Rx/Tx error", resulte, sql.c_str());
+		Util::logging("==> Save Rx/Tx error: %d - %d\r\n%s\r\n", result1, result2, sql.c_str());
+		Util::logged("Save Rx/Tx error: %d - %d", result1, result2);
 		return JCOFFSET_ERROR;
 	}
 }
@@ -446,14 +448,15 @@ int JcOffsetDB::Store_vco_single(const char* band, const char& dut, const double
 	std::string sql = "insert or replace into JC_VCO_OFFSET_ALL (port,vco) values ('" + sColomn + "'," + std::to_string(val) + ")";
 	sqlite3_stmt* pstmt;
 	sqlite3_prepare(m_pConn, sql.c_str(), -1, &pstmt, NULL);
-	int resulte = sqlite3_step(pstmt);
+	int result = sqlite3_step(pstmt);
 	sqlite3_finalize(pstmt);
 
-	if (resulte == SQLITE_DONE)
+	if (result == SQLITE_DONE)
 		return 0;
 	else
 	{
-		Util::logged("%s: %d\r\n%s", "Save vco error", resulte, sql.c_str());
+		Util::logging("==> Save Vco error: %d\r\n%s\r\n", result, sql.c_str());
+		Util::logged("Save Vco error: %d", result);
 		return JCOFFSET_ERROR;
 	}
 }
@@ -497,6 +500,7 @@ bool JcOffsetDB::IsExist(const char* table) {
 	if (sqlite3_step(pstmt) == SQLITE_ROW){
 		n = sqlite3_column_int(pstmt, 0);
 	}
+	sqlite3_finalize(pstmt);
 	return (n > 0);
 }
 

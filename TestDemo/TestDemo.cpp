@@ -83,7 +83,7 @@ void Test_dll(){
     printf("%d, %d, %d, %d\n", v1,v2,v3,v4);
 	
 	//TCPIP0::192.168.1.3::5025::SOCKET
-	std::string addr_sig1 = "TCPIP0::192.168.1.3::5025::SOCKET";
+	std::string addr_sig1 = "TCPIP0::192.168.1.66::inst0::INSTR";
 
 	//TCPIP0::192.168.1.4::5025::SOCKET
 	std::string addr_sig2 = "TCPIP0::192.168.1.4::5025::SOCKET";

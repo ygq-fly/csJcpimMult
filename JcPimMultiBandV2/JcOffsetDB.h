@@ -61,9 +61,9 @@ public:
     JcOffsetDB()
 		: m_pConn(NULL)
 		, m_bConn(false)
-		, m_band_info_table("")
-		, m_tx_offset_table("")
-		, m_rx_offset_table("")
+		, m_band_info_table("JC_BAND2_INFO")
+		, m_tx_offset_table("JC_TX_OFFSET_ALL")
+		, m_rx_offset_table("JC_RX_OFFSET_ALL")
 		, m_offset_mode(discontinuous_offset_mode)
     {
         //char col_types[][10] = { "" ,"INTEGER", "FLOAT", "Text", "BLOB", "NULL"};

@@ -66,6 +66,7 @@
 //信号源标识
 #define INSTR_AG_MXG_SERIES 10
 #define INSTR_RS_SM_SERIES 11
+#define INSTR_TEK_TSG 12
 
 //频谱仪标识
 #define INSTR_AG_MXA_SERIES 20
@@ -734,6 +735,16 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 			}
 			else if (byDevice == SIGNAL2) {
 				__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>();
+				__pobj->sig2->InstrSession(vi, cIdn);
+			}
+		}
+		else if (index == INSTR_TEK_TSG) {
+			if (byDevice == SIGNAL1) {
+				__pobj->sig1 = std::make_shared<ClsSigTekTsg4000>();
+				__pobj->sig1->InstrSession(vi, cIdn);
+			}
+			else if (byDevice == SIGNAL2) {
+				__pobj->sig2 = std::make_shared<ClsSigTekTsg4000>();
 				__pobj->sig2->InstrSession(vi, cIdn);
 			}
 		}
@@ -1598,6 +1609,8 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;
+		else if (Util::strFind(strIdn, "TSG4"))
+			iDeviceIDN = INSTR_TEK_TSG;
 		else
 			Util::logged(L"JcGetIDN: The current device does not support! (%s)", Util::utf8_to_wstring(strIdn).c_str());
 	}

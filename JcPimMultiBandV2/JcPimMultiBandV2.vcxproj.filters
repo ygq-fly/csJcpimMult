@@ -25,6 +25,9 @@
     <Filter Include="RohdeSchwarz">
       <UniqueIdentifier>{442ab4b1-cb66-4102-8295-31c2a4c5a468}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tektronix">
+      <UniqueIdentifier>{104cb69f-f4d3-4f1d-b94d-9f523a68d340}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -138,6 +141,9 @@
     <ClInclude Include="Switch\switch_info_poi.h">
       <Filter>Switch</Filter>
     </ClInclude>
+    <ClInclude Include="Tektronix\ClsSigTekTSG4000.h">
+      <Filter>Tektronix</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -178,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="Switch\JcMatrixSwitch.cpp">
       <Filter>Switch</Filter>
+    </ClCompile>
+    <ClCompile Include="Tektronix\ClsSigTekTSG4000.cpp">
+      <Filter>Tektronix</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

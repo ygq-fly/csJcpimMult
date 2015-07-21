@@ -25,7 +25,7 @@ namespace Util {
 	void getNowTime(OUT std::string& strTime);
 	void logged(const wchar_t* fmt, ...);
 	void logged(const char* fmt, ...);
-	void logging(const wchar_t* log_name, const char* fmt, ...);//不满足张博需求,要重写
+	void logging(const char* fmt, ...);
 	void strTrim(std::string& str);
 	bool strFind(const std::string& str, const char* str_find);
 	std::wstring utf8_to_wstring(const std::string& str);

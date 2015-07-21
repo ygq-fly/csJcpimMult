@@ -122,7 +122,7 @@ void Util::logged(const wchar_t* fmt, ...) {
 }
 
 void Util::logged(const char* fmt, ...) {
-	char cInfo[256] = { 0 };
+	char cInfo[2048] = { 0 };
 	va_list ap;
 	va_start(ap, fmt);
     vsprintf_s(cInfo, fmt, ap);
@@ -130,27 +130,14 @@ void Util::logged(const char* fmt, ...) {
 	MessageBoxA(GetForegroundWindow(), cInfo, "Tips", MB_TOPMOST);
 }
 
-void Util::logging(const wchar_t* log_file, const char *fmt, ...) {
+void Util::logging(const char *fmt, ...) {
     static int file_no = 1;
     static FILE* pFile = NULL;
     if(NULL == pFile) {
-		wchar_t log_name[1024];
-        //char log_name[1024];
-        //_snprintf_s(log_name, 1024, "%s_%d", log_file, file_no);
-		//fopen_s(&pFile, log_name, "a");
-		//使用wchar_t
-		swprintf_s(log_name, L"%s_%d", log_file, file_no);
-#ifdef _MSC_VER
-		_wfopen_s(&pFile, log_name, L"a");
-#else
-        pFile = _wfopen(log_name, L"a");
-#endif
-		//不需要隐身了
-		//if(TRUE != SetFileAttributesW(log_name, FILE_ATTRIBUTE_HIDDEN)) {
-		//	//return;
-		//}
-
-        if (NULL == pFile)
+		char log_name[64] = { 0 };
+		sprintf_s(log_name, "LOG\\log_%d.txt", file_no);
+		errno_t err = fopen_s(&pFile, log_name, "a");
+        if (err != 0)
             return;
     }
 
@@ -255,7 +242,7 @@ void Util::showcldebug(const char* fmt, ...) {
 	}
 	else 
 	{
-		char cInfo[256] = { 0 };
+		char cInfo[1024] = { 0 };
 		va_list ap;
 		va_start(ap, fmt);
 		vsprintf_s(cInfo, fmt, ap);
