@@ -14,7 +14,6 @@ bool ClsSigTekTsg4000::InstrConnect(const char* c_addr){
 	if (isconn) {
 		AgWrite("*RST\n");
 		InstrOpenPow(false);
-		//("ROSC:SOUR EXT\n");
 	}
     return isconn;
 }
@@ -24,8 +23,6 @@ void ClsSigTekTsg4000::InstrSession(unsigned long viConnectedSession, const char
 
 	AgWrite("*RST\n");
 	InstrOpenPow(false);
-	//AgWrite("ROSC:SOUR EXT\n");
-	
 }
 
 bool ClsSigTekTsg4000::InstrWrite(const char* c_cmd) {
@@ -96,6 +93,14 @@ bool ClsSigTekTsg4000::InstrPowStatus() const {
 
 bool ClsSigTekTsg4000::InstrGetReferenceStatus() {
 
+	char buf[16] = { 0 };
+	if (AgWriteAndRead("TIMB?\n", buf) < 0) {
+		return false;
+	}
+	std::string temp(buf);
+	if (std::string::npos != temp.find("3")){
+		return false;
+	}
     return true;
 }
 

@@ -14,6 +14,7 @@
 
 #define JCOFFSET_ERROR -10000
 #define OFFSET_TX 0
+//#define OFFSET_TX2 2
 #define OFFSET_RX 1
 #define OFFSET_REAL 0
 #define OFFSET_DSP 1
