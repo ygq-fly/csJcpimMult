@@ -1,10 +1,10 @@
 #ifndef _CLS_INSTRRSNRT_HPP_
 #define _CLS_INSTRRSNRT_HPP_
 
-#include "../ClsInstrAgilent.hpp"
+#include "../ClsVisa.hpp"
 #include "../IfSensor.hpp"
 
-class ClsSenRsNrt :public ClsInstrAgilent, Implements_ IfSensor
+class ClsSenRsNrt :public ClsVisa, Implements_ IfSensor
 {
 #define VERROR -10000
 #define eNULL 0
@@ -12,7 +12,7 @@ public:
 	ClsSenRsNrt()
 		:_freq_now(eNULL),
 		_isAver(false),
-		ClsInstrAgilent()
+		ClsVisa()
 	{}
 
 	~ClsSenRsNrt() {}

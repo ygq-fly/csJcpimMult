@@ -85,7 +85,7 @@
     <ClInclude Include="3rdParty\sqlite3.h" />
     <ClInclude Include="3rdParty\visa.h" />
     <ClInclude Include="3rdParty\visatype.h" />
-    <ClInclude Include="ClsInstrAgilent.hpp" />
+    <ClInclude Include="ClsVisa.hpp" />
     <ClInclude Include="ClsVnaAgE5062A.hpp" />
     <ClInclude Include="ClsAnaAgN9020A.hpp" />
     <ClInclude Include="ClsSigAgN5181A.hpp" />

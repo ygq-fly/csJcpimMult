@@ -1,17 +1,17 @@
 #ifndef _CLS_INSTRU2000A_HPP_
 #define _CLS_INSTRU2000A_HPP_
 
-#include "ClsInstrAgilent.hpp"
+#include "ClsVisa.hpp"
 #include "IfSensor.hpp"
 
-class ClsSenAgU2000A :public ClsInstrAgilent, Implements_ IfSensor
+class ClsSenAgU2000A :public ClsVisa, Implements_ IfSensor
 {
 #define VERROR -10000
 #define eNULL 0
 public:
 	ClsSenAgU2000A() 
 		:_freq_now(eNULL),
-		ClsInstrAgilent()
+		ClsVisa()
 	{}
 
 	~ClsSenAgU2000A() {}

@@ -69,9 +69,6 @@
     <ClInclude Include="ClsSenAgU2000A.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClsInstrAgilent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ClsVnaAgE5062A.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -152,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="RohdeSchwarz\ClsInstrRohdeSchwarz.h">
       <Filter>RohdeSchwarz</Filter>
+    </ClInclude>
+    <ClInclude Include="ClsVisa.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

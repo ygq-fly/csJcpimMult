@@ -4,10 +4,10 @@
 #include "stdafx.h"
 #include "MyUtil/JcCommonAPI.h"
 
-class ClsInstrAgilent
+class ClsVisa
 {
 public:
-	ClsInstrAgilent()
+	ClsVisa()
 		:_viStatus(VI_NULL),
 		_viDefaultRM(VI_NULL),
 		_viSession(VI_NULL),
@@ -16,7 +16,7 @@ public:
 		_strIDN("")
 	{}
 
-	~ClsInstrAgilent() {}
+	~ClsVisa() {}
 
 public:
 	//开始连接

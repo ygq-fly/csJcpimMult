@@ -18,10 +18,10 @@
 //#include "SignalAnalyzer.hpp"
 
 #include "../IfAnalyzer.hpp"
-#include "../ClsInstrAgilent.hpp"
+#include "../ClsVisa.hpp"
 
 
-class ClsAnaRsFspSerial : public IfAnalyzer, public ClsInstrAgilent
+class ClsAnaRsFspSerial : public IfAnalyzer, public ClsVisa
 {
 public:
 #define PRESET_PARAMETER_TOTAL      3

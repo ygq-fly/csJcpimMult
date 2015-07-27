@@ -2,10 +2,10 @@
 #define _CLS_AGE5062A_HPP_
 
 //#include <Windows.h>
-#include "ClsInstrAgilent.hpp"
+#include "ClsVisa.hpp"
 #include "IfVna.hpp"
 
-class ClsVnaAgE5062A : public ClsInstrAgilent, Implements_ IfVna
+class ClsVnaAgE5062A : public ClsVisa, Implements_ IfVna
 {
 public:
 	enum  Sparam
@@ -18,7 +18,7 @@ public:
 public:
 	ClsVnaAgE5062A() 
 		:_isCmdSucc(false),
-		ClsInstrAgilent()
+		ClsVisa()
 	{}
 
 	~ClsVnaAgE5062A(){}

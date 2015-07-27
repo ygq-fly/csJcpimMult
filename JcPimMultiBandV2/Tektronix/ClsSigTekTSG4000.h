@@ -2,11 +2,11 @@
 #ifndef CLS_SIG_TEK_TSG4000_H
 #define CLS_SIG_TEK_TSG4000_H
 
-#include "../ClsInstrAgilent.hpp"
+#include "../ClsVisa.hpp"
 #include "../IfSignalSource.hpp"
 
 
-class ClsSigTekTsg4000 : public ClsInstrAgilent, Implements_ IfSignalSource
+class ClsSigTekTsg4000 : public ClsVisa, Implements_ IfSignalSource
 {
 #define AG_POW_OPEN true
 #define AG_POW_CLOSE false
@@ -17,7 +17,7 @@ public:
         _freq_now(0),
         _pow_now(0),
         _sourTunnel(1),
-        ClsInstrAgilent()
+		ClsVisa()
     {}
 
 	~ClsSigTekTsg4000() {}

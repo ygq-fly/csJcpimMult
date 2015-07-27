@@ -6,10 +6,10 @@
 #ifndef _CLS_AGN5181A_HPP_
 #define _CLS_AGN5181A_HPP_
 
-#include "ClsInstrAgilent.hpp"
+#include "ClsVisa.hpp"
 #include "IfSignalSource.hpp"
 
-class ClsSigAgN5181A: public ClsInstrAgilent, Implements_ IfSignalSource
+class ClsSigAgN5181A : public ClsVisa, Implements_ IfSignalSource
 {
 #define AG_POW_OPEN true
 #define AG_POW_CLOSE false
@@ -19,7 +19,7 @@ public:
 		_isCmdSucc(false),
 		_freq_now(0),
 		_pow_now(0),
-		ClsInstrAgilent()
+		ClsVisa()
 	{}
 
 	~ClsSigAgN5181A() {}

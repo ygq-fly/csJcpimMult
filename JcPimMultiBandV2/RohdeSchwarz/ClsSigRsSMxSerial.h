@@ -3,11 +3,11 @@
 #define CLS_SIG_RS_SMX_SERIAL_H
 
 
-#include "../ClsInstrAgilent.hpp"
+#include "../ClsVisa.hpp"
 #include "../IfSignalSource.hpp"
 
 
-class ClsSigRsSMxSerial : public ClsInstrAgilent, Implements_ IfSignalSource
+class ClsSigRsSMxSerial : public ClsVisa, Implements_ IfSignalSource
 {
 #define AG_POW_OPEN true
 #define AG_POW_CLOSE false
@@ -18,7 +18,7 @@ public:
         _freq_now(0),
         _pow_now(0),
         _sourTunnel(1),
-        ClsInstrAgilent()
+		ClsVisa()
     {}
 
     ~ClsSigRsSMxSerial() {}

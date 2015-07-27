@@ -1,12 +1,12 @@
 #ifndef _CLS_AGN9020A_HPP_
 #define _CLS_AGN9020A_HPP_
 
-#include "ClsInstrAgilent.hpp"
+#include "ClsVisa.hpp"
 #include "IfAnalyzer.hpp"
 
 #define eNULL 0
 
-class ClsAnaAgN9020A: public ClsInstrAgilent, Implements_ IfAnalyzer
+class ClsAnaAgN9020A : public ClsVisa, Implements_ IfAnalyzer
 {
 public:
 	enum eParam
@@ -26,7 +26,7 @@ public:
 	ClsAnaAgN9020A()
 		:_isCmdSucc(false),
 		_freq_now(eNULL),
-		ClsInstrAgilent()
+		ClsVisa()
 	{}
 
 	~ClsAnaAgN9020A() {
