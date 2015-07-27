@@ -5,17 +5,16 @@
 #include "ClsSigAgN5181A.hpp"
 #include "ClsAnaAgN9020A.hpp"
 #include "ClsSenAgU2000A.hpp"
-#include "ClsJcSwitch.h"
 
-#include "ClsSenRsNrpz.hpp"
-#include "ClsSenRsNrt.hpp"
-
+#include "RohdeSchwarz/ClsSenRsNrpz.hpp"
+#include "RohdeSchwarz/ClsSenRsNrt.hpp"
 #include "RohdeSchwarz/ClsAnaRsFspSerial.h"
 #include "RohdeSchwarz/ClsSigRsSMxSerial.h"
 
 #include "Tektronix\ClsSigTekTSG4000.h"
 
 #include "JcOffsetDB.h"
+#include "Switch/ClsJcSwitch.h"
 
 #include "stdafx.h"
 

@@ -28,6 +28,12 @@
     <Filter Include="Tektronix">
       <UniqueIdentifier>{104cb69f-f4d3-4f1d-b94d-9f523a68d340}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DBConnect">
+      <UniqueIdentifier>{7795f23d-7a24-46c2-8aa7-5a8533fbb5b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JcAPI">
+      <UniqueIdentifier>{20563535-2f26-4e7e-8986-43c952359bc7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -72,22 +78,7 @@
     <ClInclude Include="IfSwitch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JcApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClsInstrRohdeSchwarz.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClsSenRsNrt.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClsSenRsNrpz.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClsJcSwitch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdParty\visatype.h">
@@ -104,9 +95,6 @@
     </ClInclude>
     <ClInclude Include="3rdParty\NrpControl2.h">
       <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="JcPimObject.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyUtil\JcCommonAPI.h">
       <Filter>MyUtil</Filter>
@@ -126,9 +114,6 @@
     <ClInclude Include="Switch\JcMatrixSwitch.h">
       <Filter>Switch</Filter>
     </ClInclude>
-    <ClInclude Include="JcOffsetDB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Switch\com_io_ctl.h">
       <Filter>Switch</Filter>
     </ClInclude>
@@ -144,6 +129,30 @@
     <ClInclude Include="Tektronix\ClsSigTekTSG4000.h">
       <Filter>Tektronix</Filter>
     </ClInclude>
+    <ClInclude Include="JcOffsetDB.h">
+      <Filter>DBConnect</Filter>
+    </ClInclude>
+    <ClInclude Include="JcDbConnect.h">
+      <Filter>DBConnect</Filter>
+    </ClInclude>
+    <ClInclude Include="JcApi.h">
+      <Filter>JcAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="JcPimObject.h">
+      <Filter>JcAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="RohdeSchwarz\ClsSenRsNrpz.hpp">
+      <Filter>RohdeSchwarz</Filter>
+    </ClInclude>
+    <ClInclude Include="RohdeSchwarz\ClsSenRsNrt.hpp">
+      <Filter>RohdeSchwarz</Filter>
+    </ClInclude>
+    <ClInclude Include="Switch\ClsJcSwitch.h">
+      <Filter>Switch</Filter>
+    </ClInclude>
+    <ClInclude Include="RohdeSchwarz\ClsInstrRohdeSchwarz.h">
+      <Filter>RohdeSchwarz</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -151,12 +160,6 @@
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JcApi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClsJcSwitch.cpp">
-      <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdParty\sqlite3.c">
       <Filter>3rdParty</Filter>
@@ -173,9 +176,6 @@
     <ClCompile Include="RohdeSchwarz\ClsSigRsSMxSerial.cpp">
       <Filter>RohdeSchwarz</Filter>
     </ClCompile>
-    <ClCompile Include="JcOffsetDB.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="Switch\com_io_ctl.cpp">
       <Filter>Switch</Filter>
     </ClCompile>
@@ -187,6 +187,15 @@
     </ClCompile>
     <ClCompile Include="Tektronix\ClsSigTekTSG4000.cpp">
       <Filter>Tektronix</Filter>
+    </ClCompile>
+    <ClCompile Include="JcOffsetDB.cpp">
+      <Filter>DBConnect</Filter>
+    </ClCompile>
+    <ClCompile Include="JcApi.cpp">
+      <Filter>JcAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="Switch\ClsJcSwitch.cpp">
+      <Filter>Switch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
