@@ -98,10 +98,9 @@ bool ClsSigTekTsg4000::InstrGetReferenceStatus() {
 		return false;
 	}
 	std::string temp(buf);
-	if (std::string::npos != temp.find("3")){
-		return false;
-	}
-    return true;
+	int rs = atoi(buf);
+
+	return (rs == 3) ;
 }
 
 bool ClsSigTekTsg4000::InstrInit()

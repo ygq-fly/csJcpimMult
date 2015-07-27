@@ -125,6 +125,7 @@ void Test_dll(){
 		printf("This is POI_BAND!\n");
 	}
 
+
 	//setDutPort(0);
 	//setTxPower(43, 43, 0.5, 0.5);
 	//hwSetTxFreqs(1942, 1990, "mhz");
