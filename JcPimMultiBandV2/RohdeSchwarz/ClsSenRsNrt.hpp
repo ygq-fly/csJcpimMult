@@ -1,7 +1,7 @@
 #ifndef _CLS_INSTRRSNRT_HPP_
 #define _CLS_INSTRRSNRT_HPP_
 
-#include "ClsInstrAgilent.hpp"
+#include "../ClsInstrAgilent.hpp"
 #include "../IfSensor.hpp"
 
 class ClsSenRsNrt :public ClsInstrAgilent, Implements_ IfSensor

@@ -1,8 +1,7 @@
 #ifndef _CLS_ROHDESCHWARZ_HPP_
 #define _CLS_ROHDESCHWARZ_HPP_
 
-#include "stdafx.h"
-#include "MyUtil/JcCommonAPI.h"
+#include "../stdafx.h"
 
 class ClsInstrRohdeSchwarz
 {
