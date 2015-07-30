@@ -39,6 +39,10 @@
 //  3，升级最新switch
 //	4, 可配置频段和面板映射
 //
+//v1.10 (build 288)
+//  1, struct change
+//  2, 支持TEK 仪表
+//  3, table change
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -802,11 +806,17 @@ JcBool JcConnSen(JC_ADDRESS cAddr) {
 			return FALSE;
 		isConn = !s;
 	}
-	//RS仪表连接
+	//尝试RS仪表连接
 	else {
-		//int index = INSTR_RS_NRPZ_SERIES;
 		__pobj->sen = std::make_shared<ClsSenRsNrpz>();
 		isConn = __pobj->sen->InstrConnect(cAddr);
+		//尝试tek仪表连接
+		if (!isConn) {
+			__pobj->sen.reset();
+			__pobj->sen = NULL;
+			__pobj->sen = std::make_shared<ClsSenTekPsm>();
+			isConn = __pobj->sen->InstrConnect(cAddr);
+		}
 	}
 
 	__pobj->device_status[SENSOR] = isConn;

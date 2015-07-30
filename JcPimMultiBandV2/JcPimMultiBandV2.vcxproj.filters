@@ -153,6 +153,9 @@
     <ClInclude Include="ClsVisa.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Tektronix\ClsSenTekPsm.hpp">
+      <Filter>Tektronix</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

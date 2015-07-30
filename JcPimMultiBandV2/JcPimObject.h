@@ -12,6 +12,7 @@
 #include "RohdeSchwarz/ClsSigRsSMxSerial.h"
 
 #include "Tektronix\ClsSigTekTSG4000.h"
+#include "Tektronix\ClsSenTekPsm.hpp"
 
 #include "JcOffsetDB.h"
 #include "Switch/ClsJcSwitch.h"

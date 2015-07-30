@@ -117,6 +117,7 @@
     <ClInclude Include="Switch\switch_info_poi.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ClsSenAgU2000A.hpp" />
+    <ClInclude Include="Tektronix\ClsSenTekPsm.hpp" />
     <ClInclude Include="Tektronix\ClsSigTekTSG4000.h" />
   </ItemGroup>
   <ItemGroup>
