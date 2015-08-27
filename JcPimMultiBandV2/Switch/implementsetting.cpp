@@ -631,6 +631,9 @@ namespace ns_com_io_ctl
 
 					if (wrResult == false)continue;
 
+					vector<string>hostInfo = split(ip, ":");
+					if (hostInfo.size() > 2)if (hostInfo[2] == "0")break;
+
 					for (int j = 0; j < sizeof(txBuf); j++)
 					{
 						if (rxBuf[j] != txBuf[j])

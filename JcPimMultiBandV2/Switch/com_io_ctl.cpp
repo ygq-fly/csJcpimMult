@@ -57,6 +57,14 @@ namespace ns_com_io_ctl{
 		vector<string>hostInfo = split(host,":");
 		string ip = hostInfo[0];
 		int port = atoi(hostInfo[1].c_str());
+		
+		if (hostInfo.size() > 2)
+		{
+			if (hostInfo[2] == "0")
+			{				
+				return true;
+			}
+		}
 
 		SOCKET hSocket=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 
@@ -115,6 +123,15 @@ namespace ns_com_io_ctl{
 	{
 		if (__maskIO)return true;
 
+		vector<string>hostInfo = split(host, ":");
+		if (hostInfo.size() > 2)
+		{
+			if (hostInfo[2] == "0")
+			{
+				return true;
+			}
+		}
+
 		SOCKET hsocket = __socketClient[host];
 
 		//捕获FD_CLOSE事件没效果 
@@ -167,6 +184,15 @@ namespace ns_com_io_ctl{
 		//FD_CLR(hSocket, &fdwrite);
 
 		if (__maskIO)return true;
+
+		vector<string>hostInfo = split(host, ":");
+		if (hostInfo.size() > 2)
+		{
+			if (hostInfo[2] == "0")
+			{
+				return true;
+			}
+		}
 
 		bool result = false;
 
@@ -221,6 +247,15 @@ namespace ns_com_io_ctl{
 		//FD_CLR(hSocket, &fdread);
 
 		if (__maskIO)return true;
+
+		vector<string>hostInfo = split(host, ":");
+		if (hostInfo.size() > 2)
+		{
+			if (hostInfo[2] == "0")
+			{
+				return true;
+			}
+		}
 
 		bool result = false;
 
@@ -461,6 +496,14 @@ namespace ns_com_io_ctl{
 		string ip = hostInfo[0];
 		int port = atoi(hostInfo[1].c_str());
 
+		if (hostInfo.size() > 2)
+		{
+			if (hostInfo[2] == "0")
+			{
+				return true;
+			}
+		}
+
 		if (__conType == E_TCP)
 		{
 			unsigned long ul = 1;
@@ -536,6 +579,15 @@ namespace ns_com_io_ctl{
 	//异步连接等待中
 	bool com_io_ctl::IOConnectEnd(const string&host, int timeout)
 	{
+		vector<string>hostInfo = split(host, ":");
+		if (hostInfo.size() > 2)
+		{
+			if (hostInfo[2] == "0")
+			{
+				return true;
+			}
+		}
+
 		SOCKET hSocket = __socketClient[host];
 
 		if (__conType == E_TCP)
@@ -634,6 +686,15 @@ namespace ns_com_io_ctl{
 			itr != ipList.end();
 			itr++)
 		{	
+			vector<string>hostInfo = split(*itr, ":");
+			if (hostInfo.size() > 2)
+			{
+				if (hostInfo[2] == "0")
+				{
+					continue;
+				}
+			}
+
 			host = split(*itr, ":")[0];
 			host.append(":3003");
 			//连接

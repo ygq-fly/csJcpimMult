@@ -122,6 +122,7 @@ private:
 	std::string m_band_info_table;
 	std::string m_tx_offset_table;
 	std::string m_rx_offset_table;
+	std::string m_vco_offset_table;
 
 	//使用模式，关系到频段表的调用
 	uint8_t m_offset_mode;

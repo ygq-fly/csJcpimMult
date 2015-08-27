@@ -18,9 +18,9 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	m_band_info_table = "JC_BAND2_INFO";
 	m_tx_offset_table = "JC_TX_OFFSET_ALL";
 	m_rx_offset_table = "JC_RX_OFFSET_ALL";
+	m_vco_offset_table = "JC_VCO_OFFSET_ALL";
 
-	if (!IsExist(m_band_info_table.c_str()))
-	{
+	if (!IsExist(m_band_info_table.c_str())) {
 		std::string hw_sql_param[7] = huawei_sql_body;
 		std::string poi_sql_param[12] = poi_sql_body;
 		std::string hw_band_table_sql = sql_header + hw_sql_param[0];
@@ -35,6 +35,41 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 			ExecSql(hw_band_table_sql.c_str());
 			ExecSql(poi_band_table_sql.c_str());
 		}
+	}
+
+	if (!IsExist(m_tx_offset_table.c_str())) {
+		std::string table = "CREATE TABLE \"JC_TX_OFFSET_ALL\" ("
+								"\"Port\" text NOT NULL,"
+								"\"Dsp\" integer NOT NULL,"
+								"\"Power\" real NOT NULL DEFAULT(null),";
+		for (int i = 1; i <= 150; i++) {
+			char param[32] = { 0 };
+			sprintf_s(param, "\"%d\" real,", i);
+			table += std::string(param);
+		}
+		table += "PRIMARY KEY(\"Port\", \"Dsp\", \"Power\"))";
+		ExecSql(table.c_str());
+	}
+
+	if (!IsExist(m_rx_offset_table.c_str())) {
+		std::string table = "CREATE TABLE \"JC_RX_OFFSET_ALL\" ("
+								"\"Port\" text NOT NULL, ";
+
+		for (int i = 1; i <= 150; i++) {
+			char param[32] = { 0 };
+			sprintf_s(param, "\"%d\" real,", i);
+			table += std::string(param);
+		}
+		table += "PRIMARY KEY(\"Port\"))";
+		ExecSql(table.c_str());
+	}
+
+	if (!IsExist(m_vco_offset_table.c_str())) {
+		std::string table = "CREATE TABLE \"JC_VCO_OFFSET_ALL\" ("
+								"\"port\" text NOT NULL,"
+								"\"vco\" real,"
+								"PRIMARY KEY(\"port\"))";
+		ExecSql(table.c_str());
 	}
 }
 

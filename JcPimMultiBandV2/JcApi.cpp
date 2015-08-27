@@ -43,6 +43,12 @@
 //  1, struct change
 //  2, 支持TEK 仪表
 //  3, table change
+//(build 289)
+//  1, add-api HwSetImCoefficients
+//(build 290)
+//  1, 可配置关闭单独开关控制
+//(build 291)
+//  1, 缺失情况下自动生成数据库
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -245,6 +251,26 @@ int fnSetImOrder(JcInt8 byImOrder) {
 int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess) {
 	//设置当前测试互调阶数,默认3
 	pim->im_order = byImOrder;
+	pim->im_low = byImLow;
+	pim->im_less = byImLess;
+	if ((pim->im_order % 2) == 0) {
+		//正数阶
+		pim->im_coefficients1 = pim->im_order / 2;
+		pim->im_coefficients2 = pim->im_order / 2;
+	}
+	else{
+		//奇数阶
+		pim->im_coefficients1 = pim->im_order / 2 + 1;
+		pim->im_coefficients2 = pim->im_order / 2;
+	}
+
+	return 0;
+}
+
+int HwSetImCoefficients(JcInt8 byImCo1, JcInt8 byImCo2, JcInt8 byImLow, JcInt8 byImLess) {
+	pim->im_coefficients1 = byImCo1;
+	pim->im_coefficients2 = byImCo2;
+	pim->im_order = byImCo1 + byImCo2;
 	pim->im_low = byImLow;
 	pim->im_less = byImLess;
 
@@ -810,13 +836,13 @@ JcBool JcConnSen(JC_ADDRESS cAddr) {
 	else {
 		__pobj->sen = std::make_shared<ClsSenRsNrpz>();
 		isConn = __pobj->sen->InstrConnect(cAddr);
-		//尝试tek仪表连接
-		if (!isConn) {
-			__pobj->sen.reset();
-			__pobj->sen = NULL;
-			__pobj->sen = std::make_shared<ClsSenTekPsm>();
-			isConn = __pobj->sen->InstrConnect(cAddr);
-		}
+		////尝试tek仪表连接
+		//if (!isConn) {
+		//	__pobj->sen.reset();
+		//	__pobj->sen = NULL;
+		//	__pobj->sen = std::make_shared<ClsSenTekPsm>();
+		//	isConn = __pobj->sen->InstrConnect(cAddr);
+		//}
 	}
 
 	__pobj->device_status[SENSOR] = isConn;

@@ -164,7 +164,7 @@
 
 //函数指针类型
 typedef int (*pMartrixSwitchInit)(int,char*,int,int);
-typedef int(*pMartrixSwitchExcute)(int, int, int);
+typedef int (*pMartrixSwitchExcute)(int, int, int);
 typedef int (*pMartrixSwitchBoxExcute)(int, int, int, int);
 typedef int (*pMartrixSwitchDispose)();
 

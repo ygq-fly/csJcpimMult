@@ -28,8 +28,8 @@
 #define SUM_LESS       0
 #define SUM_ADD        1
 
-//static int _switch_enable[7] = { 1, 1, 1, 1, 1, 1, 1 };
 static int _debug_enable = 0;
+//功率调整延时
 static int _tx_delay = 400;
 
 //dll加载初始化地址
@@ -116,6 +116,8 @@ struct JcPimModule {
 		, im_less(SUM_LESS)
 		, im_order(3)
 		, imAvg(1)
+		, im_coefficients1(2)
+		, im_coefficients2(1)
 	{}
 	//pim当前频段(物理模块位置)
 	uint8_t band;
@@ -133,6 +135,9 @@ struct JcPimModule {
 	uint8_t im_order;
 	//pim接收平均次数
 	uint8_t imAvg;
+	//pim互调系数
+	uint8_t im_coefficients1;
+	uint8_t im_coefficients2;
 } *pim;
 
 //?????
@@ -447,24 +452,12 @@ public:
 		//例外:2F1/2F2
 		if (pim->im_order == 0)
 			return 2 * dF1;
-		//设置阶数
-		int ord1, ord2;
-		//正数阶
-		if ((pim->im_order % 2) == 0)
-		{
-			ord1 = pim->im_order / 2;
-			ord2 = pim->im_order / 2;
-		}
-		else//奇数阶
-		{
-			ord1 = pim->im_order / 2 + 1;
-			ord2 = pim->im_order / 2;
-		}
+
 		//设置算法
 		if (pim->im_less == SUM_LESS)
-			dFreq = dF1 * ord1 - dF2 * ord2;
+			dFreq = dF1 * pim->im_coefficients1 - dF2 * pim->im_coefficients2;
 		else
-			dFreq = dF1 * ord1 + dF2 * ord2;
+			dFreq = dF1 * pim->im_coefficients1 + dF2 * pim->im_coefficients2;
 
 		//Util::logged("f1=%lf,f2=%lf,order=%d, low=%d, less=%d, ord1=%d, ord2=%d",
 		//	dF1 / 1000, dF2 / 1000,

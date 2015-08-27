@@ -110,6 +110,7 @@ JIONTCOM_API int fnSetDutPort(JcInt8 byPort);
 //设置互调阶数
 JIONTCOM_API int fnSetImOrder(JcInt8 byImOrder);
 JIONTCOM_API int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess);
+JIONTCOM_API int HwSetImCoefficients(JcInt8 byImCo1, JcInt8 byImCo2, JcInt8 byImLow, JcInt8 byImLess);
 //设置平均次数
 JIONTCOM_API int fnSetImAvg(JcInt8 byAvgTime);
 //检测VCO
