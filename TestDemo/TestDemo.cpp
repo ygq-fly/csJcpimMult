@@ -83,20 +83,20 @@ void Test_dll(){
     printf("%d, %d, %d, %d\n", v1,v2,v3,v4);
 	
 	//TCPIP0::192.168.1.3::5025::SOCKET
-	std::string addr_sig1 = "TCPIP0::192.168.1.66::inst0::INSTR";
+	std::string addr_sig1 = "GPIB0::19::INSTR";
 
 	//TCPIP0::192.168.1.4::5025::SOCKET
-	std::string addr_sig2 = "TCPIP0::192.168.1.4::5025::SOCKET";
+	std::string addr_sig2 = "0";
 
 	//GPIB0::20::INSTR
 	//std::string addr_ana = "GPIB0::20::INSTR";
-	std::string addr_ana = "TCPIP0::192.168.1.5::inst0::INSTR";
+	std::string addr_ana = "0";
 
 	//USB::0x0aad::0x000c::102838
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
 	//USB0::0x0957::0x2B18::MY51050018::0::INSTR
 	std::string addr_sen = "0";
-	std::string addr_swh = "1";
+	std::string addr_swh = "0";
 	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen + "," + addr_swh;
 	bool isCont = true;
 	int s = setInit("0,0,0,0,0");

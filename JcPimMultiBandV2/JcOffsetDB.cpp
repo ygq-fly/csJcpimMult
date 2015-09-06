@@ -19,6 +19,7 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	m_tx_offset_table = "JC_TX_OFFSET_ALL";
 	m_rx_offset_table = "JC_RX_OFFSET_ALL";
 	m_vco_offset_table = "JC_VCO_OFFSET_ALL";
+	m_setting_table = "JC_SETTING_INFO";
 
 	if (!IsExist(m_band_info_table.c_str())) {
 		std::string hw_sql_param[7] = huawei_sql_body;
@@ -64,12 +65,27 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 		ExecSql(table.c_str());
 	}
 
-	if (!IsExist(m_vco_offset_table.c_str())) {
+	if (!IsExist("JC_VCO_OFFSET_ALL")) {
 		std::string table = "CREATE TABLE \"JC_VCO_OFFSET_ALL\" ("
 								"\"port\" text NOT NULL,"
 								"\"vco\" real,"
 								"PRIMARY KEY(\"port\"))";
 		ExecSql(table.c_str());
+	}
+
+	if (!IsExist("JC_SETTING_INFO")) {
+		std::string table = "CREATE TABLE \"JC_SETTING_INFO\" ("
+								"\"key\" text NOT NULL,"
+								"\"value\" text,"
+								"PRIMARY KEY(\"key\"))";
+		if (ExecSql(table.c_str())) {
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('version', '1.1')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('sn', '0000000000')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('license', '20151231')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('used_date', '20150101')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('expire_date', '0')");
+
+		}
 	}
 }
 

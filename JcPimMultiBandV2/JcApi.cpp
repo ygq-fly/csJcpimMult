@@ -49,6 +49,8 @@
 //  1, 可配置关闭单独开关控制
 //(build 291)
 //  1, 缺失情况下自动生成数据库
+//(build 293)
+//  1, 支持e系列信号源
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1633,7 +1635,9 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		//信号源
 		else if (Util::strFind(strIdn, "N5171A")  || Util::strFind(strIdn, "N5172A")  || 
 				 Util::strFind(strIdn, "N5181A")  || Util::strFind(strIdn, "N5182A")  || 
-				 Util::strFind(strIdn, "N5183A"))
+				 Util::strFind(strIdn, "N5183A")  ||
+				 Util::strFind(strIdn, "E4436")   || Util::strFind(strIdn, "E4437")  ||
+				 Util::strFind(strIdn, "E4438")) 
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
 		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") || 
 				 Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))

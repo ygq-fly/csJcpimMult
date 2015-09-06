@@ -28,14 +28,17 @@ public:
 	bool InstrConnect(const char* c_addr){
 		//return AgConnect(c_addr);
 		bool isconn = AgConnect(c_addr);
-		if (isconn)
+		if (isconn) {
 			AgWrite("*RST\n");
+			InstrOpenMod(false);
+		}
 		return isconn;
 	}
 
 	void InstrSession(unsigned long viConnectedSession, const char* cIdn) {
 		AgSession(viConnectedSession, cIdn);
 		AgWrite("*RST\n");
+		InstrOpenMod(false);
 	}
 
 	bool InstrWrite(const char* c_cmd) {
@@ -88,6 +91,15 @@ public:
 	bool InstrSetFreqPow(double freq_khz, double pow_dbm) {
 		_isCmdSucc = InstrSetFreq(freq_khz);
 		_isCmdSucc &= InstrSetPow(pow_dbm);
+		return _isCmdSucc;
+	}
+
+	bool InstrOpenMod(bool bOpen) {
+		if (bOpen)
+			_isCmdSucc = AgWrite("OUTP:MOD:STAT ON\n");
+		else
+			_isCmdSucc = AgWrite("OUTP:MOD:STAT OFF\n");
+
 		return _isCmdSucc;
 	}
 
