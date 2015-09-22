@@ -576,8 +576,7 @@ JcBool HwSetCoup(JcInt8 byCoup) {
 double HwGetCoup_Dsp(JcInt8 byCoup) {
 	double val = 0;
 	double tx_temp = 0;
-	if (byCoup == JC_COUP_TX1) 
-	{
+	if (byCoup == JC_COUP_TX1) {
 		//所有校准数据以mhz为单位，注意转换
 		int s = JcGetOffsetTx(val, rf1->band, rf1->dutport,
 							  byCoup, OFFSET_DSP,
@@ -585,8 +584,7 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 		if (s) return s;
 		tx_temp = rf1->pow_dbm + rf1->offset_ext;
 	}
-	else if (byCoup == JC_COUP_TX2) 
-	{
+	else if (byCoup == JC_COUP_TX2) {
 		//所有校准数据以mhz为单位，注意转换
 		int s = JcGetOffsetTx(val, rf2->band, rf2->dutport,
 							  byCoup, OFFSET_DSP,
@@ -596,12 +594,9 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 	}
 	//读取功率计
 	double sen = JcGetSen();
-	if (Util::strFind(__pobj->sen->InstrGetIdn(), "nrpz")) 
-	{
+	if (Util::strFind(__pobj->sen->InstrGetIdn(), "nrpz")) {
 		sen += val;
-	}
-	else 
-	{
+	} else {
 		sen += JcGetSen();
 		sen += JcGetSen();
 		//计算补偿
@@ -664,7 +659,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 	dd = 0;
 	std::string strLog = "start smooth-tx-" + std::to_string(byCarrier) + "\r\n";
 	//adjust
-	for (int i = 0; i < 4; i++){
+	for (int i = 0; i < 4; i++) {
 		if (i == 0)
 			Util::setSleep(_tx_delay);
 		if (byCarrier == JC_CARRIER_TX1) {
@@ -681,8 +676,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		strLog += "   No.: " + std::to_string(i+1) + "\r\n";
 		strLog += "   tx_dsp: " + std::to_string(tx_dsp) + "\r\n";
 		//未检测功率时
-		if (tx_dsp <= 33)
-		{
+		if (tx_dsp <= 33) {
 			__pobj->strErrorInfo = "   PowerSmooth: No find Power!\r\n";
 			strLog += "   (tx_dsp <= 33)\r\n";
 			ret =  JC_STATUS_ERROR_NO_FIND_POWER;
@@ -699,9 +693,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 			strLog += "   (tx_dsp out range)\r\n";
 			ret = JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
 			break;
-		}
-		else 
-		{
+		} else {
 			if (tx_deviate >= (__pobj->now_tx_smooth_accuracy * -1) && tx_deviate <= __pobj->now_tx_smooth_accuracy)
 				break;
 
@@ -722,7 +714,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 				sig_val = rf2->pow_dbm + rf2->offset_ext + rf2->offset_int + dd;
 				b = JcSetSig(JC_CARRIER_TX2, rf2->freq_khz, sig_val);			
 			}
-			if (b == FALSE){
+			if (b == FALSE) {
 				ret = -10000;
 				strLog += "   tx_set: sig set error\r\n";
 				break;
@@ -833,9 +825,8 @@ JcBool JcConnSen(JC_ADDRESS cAddr) {
 		else
 			return FALSE;
 		isConn = !s;
-	}
-	//尝试RS仪表连接
-	else {
+	} else {
+		//尝试RS仪表连接
 		__pobj->sen = std::make_shared<ClsSenRsNrpz>();
 		isConn = __pobj->sen->InstrConnect(cAddr);
 		////尝试tek仪表连接
@@ -1036,8 +1027,7 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 	//}
 	//查找检测通道标号
 	int coup = 0;
-	if (__pobj->now_mode == MODE_POI)
-	{
+	if (__pobj->now_mode == MODE_POI) {
 		int temp_iSwitchTx1 = iSwitchTx1;
 		int temp_iSwitchTx2 = iSwitchTx2;
 		if (iSwitchTx1 > 11 && iSwitchTx1 < 17)
@@ -1051,9 +1041,7 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 
 		coup = iSwitchCoup == JC_COUP_TX1 ? coup1 - 1 : coup2 - 1;
 		if (coup < 0) coup = -1;
-	}
-	else
-	{
+	} else {
 		//查找ID_HUAWEI检测通道标号
 		//这里的iSwitch和band不会配对
 		if (iSwitchTx1 % 2 == 0)
@@ -1111,8 +1099,7 @@ JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 						JcInt8 byInternalBand, JcInt8 byDutPort,
 						double freq_mhz){
 	//检查当前频段是否允许
-	if (__pobj->now_mode_bandset[byInternalBand].rx_enable == FALSE)
-	{
+	if (__pobj->now_mode_bandset[byInternalBand].rx_enable == FALSE) {
 		__pobj->strErrorInfo = "GetRxOffset: rx channel can not used";
 		return JC_STATUS_ERROR;
 	}
@@ -1122,7 +1109,6 @@ JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 	//计算校准数据点
 	offset_val = __pobj->offset.OffsetRx(sband.c_str(), byDutPort, freq_mhz);
 	if (offset_val == JC_STATUS_ERROR) {
-
 		__pobj->strErrorInfo = "GetRxOffset: Read error!\r\n";
 		return JC_STATUS_ERROR_GET_RX_OFFSET;
 	}
@@ -1144,8 +1130,7 @@ long JcGetOffsetRxNum(JcInt8 byInternalBand){
 JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 						double loss_db, Callback_Get_RX_Offset_Point pHandler) {
 	//检查当前接收频段是否允许
-	if (JcGetChannelEnable(JC_CARRIER_RX) == FALSE)
-	{
+	if (JcGetChannelEnable(JC_CARRIER_RX) == FALSE) {
 		__pobj->strErrorInfo = "RxOffset: rx channel can not used";
 		return JC_STATUS_ERROR;
 	}
@@ -1185,7 +1170,7 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		Util::setSleep(200);
 		//读取
 		double v = JcGetAna(Rxfreq[i] * 1000, false);
-		if (v == JC_STATUS_ERROR){
+		if (v == JC_STATUS_ERROR) {
 			//关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
 			__pobj->strErrorInfo = "Spectrum read error!\r\n";
@@ -1193,7 +1178,7 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		}
 		//计算规则: 目标值（OFFSET_PROTECT_RX） = 实际值（v） + 校准值 （off） +差损（loss_db）
 		off[i] = OFFSET_PROTECT_RX - v - loss_db;
-		if (off[i] > 10 || off[i] < -10){
+		if (off[i] > 10 || off[i] < -10) {
 			//错误，关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
 			//__pobj->ana->InstrSetAvg(2);
@@ -1236,8 +1221,7 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 	JcBool tx_enable = coup == JC_DUTPORT_A ? 
 		__pobj->now_mode_bandset[byInternalBand].tx1_enable : 
 		__pobj->now_mode_bandset[byInternalBand].tx2_enable;
-	if (tx_enable == FALSE)
-	{
+	if (tx_enable == FALSE) {
 		__pobj->strErrorInfo = "GetTxOffset: tx channel can not used, tx" + std::to_string(coup + 1);
 		return JC_STATUS_ERROR;
 	}
@@ -1252,7 +1236,7 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//计算校准数据点
 	offset_val = __pobj->offset.OffsetTx(sband.c_str(), byTempDutPort, coup, real_or_dsp, freq_mhz, tx_dbm);
-	if (offset_val == JC_STATUS_ERROR){
+	if (offset_val == JC_STATUS_ERROR) {
 		offset_val = 0;
 		__pobj->strErrorInfo = "TxOffset: Read data error!\r\n";
 		return JC_STATUS_ERROR;
@@ -1286,8 +1270,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	if (__pobj->ext_sen_index == 1){
 		//to do
 		//外部传感器使用
-	}
-	else {
+	} else {
 		//默认方式，需设置频谱
 		__pobj->ana->InstrTxOffsetSetting();
 		Util::setSleep(500);
@@ -1304,8 +1287,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 
 	//Band转换开关参数
 	int iswitch ;
-	if (__pobj->now_mode == MODE_POI)
-	{
+	if (__pobj->now_mode == MODE_POI) {
 		if (sband.find("td") == std::string::npos)
 			iswitch = byInternalBand;
 		else//查找TD模块特殊TX校准通道
@@ -1524,7 +1506,7 @@ JC_STATUS JcSetOffsetVco(JcInt8 byInternalBand, JcInt8 byDutport, double val) {
 	std::string sband = __pobj->GetBandString(byInternalBand);
 
 	int s = __pobj->offset.Store_vco_single(sband.c_str(), byDutport, val);
-	if (s){
+	if (s) {
 		__pobj->strErrorInfo = "VCO_Offset: VCO's data save error!\r\n";
 		return JC_STATUS_ERROR;
 	}
@@ -1633,9 +1615,9 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		else if (Util::strFind(strIdn, "NRPZ"))
 			iDeviceIDN = INSTR_RS_NRPZ_SERIES;
 		//信号源
-		else if (Util::strFind(strIdn, "N5171A")  || Util::strFind(strIdn, "N5172A")  || 
-				 Util::strFind(strIdn, "N5181A")  || Util::strFind(strIdn, "N5182A")  || 
-				 Util::strFind(strIdn, "N5183A")  ||
+		else if (Util::strFind(strIdn, "N5171")  || Util::strFind(strIdn, "N5172")  || 
+				 Util::strFind(strIdn, "N5181")  || Util::strFind(strIdn, "N5182")  || 
+				 Util::strFind(strIdn, "N5183")  ||
 				 Util::strFind(strIdn, "E4436")   || Util::strFind(strIdn, "E4437")  ||
 				 Util::strFind(strIdn, "E4438")) 
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
@@ -1643,9 +1625,9 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 				 Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))
 			iDeviceIDN = INSTR_RS_SM_SERIES;
 		//频谱仪
-		else if (Util::strFind(strIdn, "N9000A")  || Util::strFind(strIdn, "N9010A")  || 
-				 Util::strFind(strIdn, "N9020A")  || Util::strFind(strIdn, "N9030A")  || 
-				 Util::strFind(strIdn, "N9038A"))
+		else if (Util::strFind(strIdn, "N9000")  || Util::strFind(strIdn, "N9010")  || 
+				 Util::strFind(strIdn, "N9020")  || Util::strFind(strIdn, "N9030")  || 
+				 Util::strFind(strIdn, "N9038"))
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;
