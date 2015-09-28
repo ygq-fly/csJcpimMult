@@ -43,6 +43,8 @@ typedef int(*pSetImAvg)(uint8_t);
 typedef int(*pSetDutPort)(uint8_t);
 //JIONTCOM_API int fnSetImOrder(BYTE_ byImOrder);
 typedef int(*pSetImOrder)(uint8_t);
+//int HwSetImCoefficients(JcInt8 byImCo1, JcInt8 byImCo2, JcInt8 byImLow, JcInt8 byImLess)
+typedef int(*pSetImCoefficients)(uint8_t, uint8_t, uint8_t, uint8_t);
 //JIONTCOM_API int fnCheckReceiveChannel(BYTE_ byBandIndex, BYTE_ byPort);
 typedef int(*pCheckReceiveChannel)(uint8_t, uint8_t);
 //JIONTCOM_API int fnCheckTwoSignalROSC();
@@ -53,6 +55,8 @@ typedef int(*pSetTxPower)(double, double, double, double);
 //JIONTCOM_API int fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const UNIT_ cUnits);
 typedef int(*pSetTxFreqs)(double, double, const char*);
 typedef int(*pHwSetTxFreqs)(double, double, const char*);
+//HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier)
+typedef int(*pHwGetSig_Smooth)(double&, uint8_t);
 //JIONTCOM_API int fnSetTxOn(BOOL_ bOn, BYTE_ byCarrier = 0);
 typedef int(*pSetTxOn)(BOOL, uint8_t);
 //JIONTCOM_API int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const UNIT_ cUnits);

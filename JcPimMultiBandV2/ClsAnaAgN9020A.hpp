@@ -78,6 +78,10 @@ public:
 		SetParam(eParam::VBW, 10);
 		SetParam(eParam::MARK_POS, eNULL);
 
+		//¿ªÊ¼Ô¤·Å
+		AgWrite(":POW:GAIN ON\n");
+		AgWrite(":POW:GAIN:BAND LOW\n");
+
 		InstrSetAvg(0);
 		//InstrClosgAvg();
 	}

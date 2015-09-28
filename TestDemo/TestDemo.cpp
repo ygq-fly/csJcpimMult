@@ -45,11 +45,13 @@ void Test_dll(){
 	pSetImAvg setImAvg = (pSetImAvg)GetProcAddress(hinst, "fnSetImAvg");
 	pSetDutPort setDutPort = (pSetDutPort)GetProcAddress(hinst, "fnSetDutPort");
 	pSetImOrder setImOrder = (pSetImOrder)GetProcAddress(hinst, "fnSetImOrder");
+	pSetImCoefficients hwSetImCoefficients = (pSetImCoefficients)GetProcAddress(hinst, "HwSetImCoefficients");
 	pCheckReceiveChannel checkReceiveChannel = (pCheckReceiveChannel)GetProcAddress(hinst, "fnCheckReceiveChannel");
 	pCheckTwoSignalROSC checkTwoSignalROSC = (pCheckTwoSignalROSC)GetProcAddress(hinst, "fnCheckTwoSignalROSC");
 	pSetTxPower setTxPower = (pSetTxPower)GetProcAddress(hinst, "fnSetTxPower");
 	pSetTxFreqs setTxFreqs = (pSetTxFreqs)GetProcAddress(hinst, "fnSetTxFreqs");
 	pHwSetTxFreqs hwSetTxFreqs = (pHwSetTxFreqs)GetProcAddress(hinst, "HwSetTxFreqs");
+	pHwGetSig_Smooth hwGetSig_Smooth = (pHwGetSig_Smooth)GetProcAddress(hinst, "HwGetSig_Smooth");
 	pSetTxOn setTxOn = (pSetTxOn)GetProcAddress(hinst, "fnSetTxOn");
 	pGetImResult getImResult = (pGetImResult)GetProcAddress(hinst, "fnGetImResult");
 	pGetSpectrumType getSpectrumType = (pGetSpectrumType)GetProcAddress(hinst, "fnGetSpectrumType");
@@ -83,14 +85,14 @@ void Test_dll(){
     printf("%d, %d, %d, %d\n", v1,v2,v3,v4);
 	
 	//TCPIP0::192.168.1.3::5025::SOCKET
-	std::string addr_sig1 = "GPIB0::19::INSTR";
+	std::string addr_sig1 = "TCPIP0::192.168.1.3::5025::SOCKET";
 
 	//TCPIP0::192.168.1.4::5025::SOCKET
-	std::string addr_sig2 = "0";
+	std::string addr_sig2 = "TCPIP0::192.168.1.4::5025::SOCKET";
 
 	//GPIB0::20::INSTR
 	//std::string addr_ana = "GPIB0::20::INSTR";
-	std::string addr_ana = "0";
+	std::string addr_ana = "TCPIP0::192.168.1.5::5025::SOCKET";
 
 	//USB::0x0aad::0x000c::102838
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
@@ -111,7 +113,6 @@ void Test_dll(){
 	}
 	
 	//jcSetSwitch(0, 0, 0, 1);
-
 	hwSetIsExtBand(FALSE);
 	double tx_freq, rx_freq;
 	if (setMeasBand(8) < 0) {
@@ -125,10 +126,14 @@ void Test_dll(){
 		printf("This is POI_BAND!\n");
 	}
 
-
-	//setDutPort(0);
+	//hwSetImCoefficients(0, 2, 0, 0);
+	//setMeasBand(2);
 	//setTxPower(43, 43, 0.5, 0.5);
-	//hwSetTxFreqs(1942, 1990, "mhz");
+	//hwSetTxFreqs(930, 960, "mhz");
+	//setTxOn(true, 0);
+	//double dd = 0;
+	//int n =hwGetSig_Smooth(dd, 1);
+
 	//double pim_freq, pim_val;
 	//getImResult(pim_freq, pim_val, "mhz");
 	

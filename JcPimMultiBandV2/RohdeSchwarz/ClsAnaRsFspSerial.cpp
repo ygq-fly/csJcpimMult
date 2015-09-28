@@ -67,6 +67,8 @@ void ClsAnaRsFspSerial::InstrInit()
 	//aglient的支持！
 	//以下条命令必须执行
 	AgWrite("INIT:CONT OFF\n");
+	//开始预放
+	AgWrite("INP:GAIN:STAT ON\n");
 	//------------------------write by san-------------------
 }
 

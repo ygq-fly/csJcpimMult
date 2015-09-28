@@ -255,6 +255,10 @@ int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess) {
 	pim->im_order = byImOrder;
 	pim->im_low = byImLow;
 	pim->im_less = byImLess;
+	//排除直接小于1阶，默认3阶
+	if (pim->im_order <= 1)
+		pim->im_order = 3;
+
 	if ((pim->im_order % 2) == 0) {
 		//正数阶
 		pim->im_coefficients1 = pim->im_order / 2;
@@ -459,6 +463,14 @@ int fnSetTxOn(JcBool bOn, JcInt8 byCarrier){
 	else if (byCarrier == JC_CARRIER_TX2)
 		isSucc = __pobj->sig2->InstrOpenPow(isOn);
 
+	//当阶数为0 时关闭功放
+	if (pim->im_coefficients1 <= 0) {
+		__pobj->sig1->InstrOpenPow(false);
+	}
+	if (pim->im_coefficients2 <= 0) {
+		__pobj->sig2->InstrOpenPow(false);
+	}
+
 	return (isSucc ? 0 : JC_STATUS_ERROR_SET_TX_ONOFF_FAIL);
 }
 
@@ -574,6 +586,12 @@ JcBool HwSetCoup(JcInt8 byCoup) {
 
 //读取当前功放功率值(tx1或tx2)
 double HwGetCoup_Dsp(JcInt8 byCoup) {
+	//阶数为0 时，不检测
+	if (pim->im_coefficients1 == 0 && byCoup == JC_COUP_TX1)
+		return 0;
+	if (pim->im_coefficients2 == 0 && byCoup == JC_COUP_TX2)
+		return 0;
+
 	double val = 0;
 	double tx_temp = 0;
 	if (byCoup == JC_COUP_TX1) {
@@ -651,6 +669,16 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 
 //检测功放稳定度(必须功放开启后检测) return dd
 JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
+	//阶数为0 时，不调整
+	if (pim->im_coefficients1 == 0 && byCarrier == JC_CARRIER_TX1) {
+		dd = 0;
+		return JC_STATUS_SUCCESS;
+	}
+	if (pim->im_coefficients2 == 0 && byCarrier == JC_CARRIER_TX2) {
+		dd = 0;
+		return JC_STATUS_SUCCESS;
+	}
+
 	JC_STATUS ret = JC_STATUS_SUCCESS;
 	//tx显示值
 	double tx_dsp = 0;
