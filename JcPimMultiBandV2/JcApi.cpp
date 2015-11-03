@@ -51,6 +51,8 @@
 //  1, 缺失情况下自动生成数据库
 //(build 293)
 //  1, 支持e系列信号源
+//(build 297)
+//  修复296的传输模式开关错误
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -227,7 +229,7 @@ int fnSetDutPort(JcInt8 byPort) {
 	pim->dutport = byPort;
 
 	//Band转换开关参数 , byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
-	if (__pobj->now_mode == MODE_HUAWEI) {
+	if (__pobj->now_mode != MODE_POI) {
 		rf1->switch_port = rf1->band * 2 + rf1->dutport;
 		rf2->switch_port = rf2->band * 2 + rf2->dutport;
 		pim->switch_port = pim->band * 2 + pim->dutport;
@@ -1049,10 +1051,6 @@ double JcGetAna(double freq_khz, bool isMax){
 //};
 JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCoup) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
-	//if (false == __pobj->device_status[4]) {
-	//	__pobj->strErrorInfo = "Switch: All not connected\r\n";
-	//	return false;
-	//}
 	//查找检测通道标号
 	int coup = 0;
 	if (__pobj->now_mode == MODE_POI) {
@@ -1312,6 +1310,8 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 
 	double off_real[256] = { 0 };
 	double off_dsp[256] = { 0 };
+
+	//Util::logged("loss_db: %lf", loss_db);
 
 	//Band转换开关参数
 	int iswitch ;

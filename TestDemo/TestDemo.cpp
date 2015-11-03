@@ -127,7 +127,8 @@ void Test_dll(){
 	}
 
 	//hwSetImCoefficients(0, 2, 0, 0);
-	//setMeasBand(2);
+	//setMeasBand(6);
+	//setDutPort(1);
 	//setTxPower(43, 43, 0.5, 0.5);
 	//hwSetTxFreqs(930, 960, "mhz");
 	//setTxOn(true, 0);
