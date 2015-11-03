@@ -206,9 +206,9 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	static const int    sweep_time      [PRESET_PARAMETER_TOTAL] = {  1,    0,       0    };
 
 	static const int    freq_aver       [PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
-	static const int    disp_rlev       [PRESET_PARAMETER_TOTAL] = { -60,  -60,      20   };
+	static const int    disp_rlev       [PRESET_PARAMETER_TOTAL] = { -60,  -60,      10   };
 	static const double disp_rlev_offset[PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
-	static const int    input_att       [PRESET_PARAMETER_TOTAL] = {  0,    0,       30   };
+	static const int    input_att       [PRESET_PARAMETER_TOTAL] = {  0,    0,       40   };
 	
 
 	if (pp < 0 || pp >= PRESET_PARAMETER_TOTAL || pp_ == pp)
@@ -216,6 +216,7 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 
 	pp_ = pp;
 
+	InstrSetOffset(disp_rlev_offset[pp]);
 	InstrSetSpan(freq_span[pp]);
 	InstrSetVbw(freq_vbw[pp]);
 	InstrSetRbw(freq_rbw[pp]);
@@ -232,7 +233,6 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	//ref level需放最后执行！
 	//------------------------write by san-------------------
 	InstrSetRef(disp_rlev[pp]);
-	InstrSetOffset(disp_rlev_offset[pp]);
 
 	//以下条命令必须执行
 	AgWrite("INIT:CONT OFF\n");
@@ -255,19 +255,25 @@ bool ClsAnaRsFspSerial::CommonSet(char const *command, ...)
 
 //------------------------write by san-------------------
 void ClsAnaRsFspSerial::InstrPimSetting() {
+	//开始预放
+	AgWrite("INP:GAIN:STAT ON\n");
 	Preset(preset_parameter::preset_default);
 }
 
 void ClsAnaRsFspSerial::InstrVcoSetting() {
+	//开始预放
+	AgWrite("INP:GAIN:STAT ON\n");
 	Preset(preset_parameter::preset_mensuration);
 }
 
 void ClsAnaRsFspSerial::InstrTxOffsetSetting() {
+	//开始预放
+	AgWrite("INP:GAIN:STAT OFF\n");
 	Preset(preset_parameter::preset_calibration);
 }
 
 void ClsAnaRsFspSerial::InstrRxOffsetSetting() {
-	Preset(preset_parameter::preset_default);
+	InstrPimSetting();
 }
 //------------------------write by san-------------------
 

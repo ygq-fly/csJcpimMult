@@ -276,13 +276,14 @@ public:
 		offset.DbInit(now_mode);
 
 		int ret = 0;
+		//获取频段数量
 		if (now_mode == MODE_POI)
 			now_num_band = offset.GetBandCount("poi");
 		else if (now_mode == MODE_HUAWEI)
 			now_num_band = offset.GetBandCount("hw");
 		
 		for (int i = 0; i < now_num_band; i++)
-		{
+		{//获取单独频段信息
 			std::string band_row;
 			char prefix[64] = { 0 };
 			char band_info[1024] = { 0 };
@@ -305,7 +306,7 @@ public:
 				Util::logged("fnInitBandSet: band's info error!");
 				return false;
 			}
-
+			//初始化频段信息
 			JcBandModule bm;
 			bm.band_name = band_items[1];
 

@@ -164,6 +164,9 @@ public:
 	//“«∆˜≈‰÷√
 	void InstrPimSetting() {
 		InstrSetOffset(0);
+		//ø™ º‘§∑≈
+		AgWrite(":POW:GAIN ON\n");
+		AgWrite(":POW:GAIN:BAND LOW\n");
 		InstrSetRef(-60);
 		InstrClosgAvg();
 		InstrSetAtt(0);
@@ -175,6 +178,9 @@ public:
 	void InstrVcoSetting() {
 		//OFFSET÷√¡„
 		InstrSetOffset(0);
+		//ø™ º‘§∑≈
+		AgWrite(":POW:GAIN ON\n");
+		AgWrite(":POW:GAIN:BAND LOW\n");
 		//2015-5-5/vco: 15khz-100hz-100hz
 		InstrSetRbw(100);
 		InstrSetVbw(100);
@@ -186,9 +192,11 @@ public:
 	void InstrTxOffsetSetting() {
 		//OFFSET÷√¡„
 		InstrSetOffset(0);
+		//πÿ±’‘§∑¿
+		AgWrite(":POW:GAIN OFF\n");
 		InstrClosgAvg();
-		InstrSetRef(20);
-		InstrSetAtt(30);
+		InstrSetRef(10);
+		InstrSetAtt(40);
 		InstrSetOffset(0);
 		InstrSetRbw(100);
 		InstrSetVbw(100);

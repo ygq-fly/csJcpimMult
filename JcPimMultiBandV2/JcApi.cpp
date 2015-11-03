@@ -229,15 +229,15 @@ int fnSetDutPort(JcInt8 byPort) {
 	pim->dutport = byPort;
 
 	//Band转换开关参数 , byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
-	if (__pobj->now_mode != MODE_POI) {
-		rf1->switch_port = rf1->band * 2 + rf1->dutport;
-		rf2->switch_port = rf2->band * 2 + rf2->dutport;
-		pim->switch_port = pim->band * 2 + pim->dutport;
-	}
-	else {
+	if (__pobj->now_mode == MODE_POI) {
 		rf1->switch_port = rf1->band;
 		rf2->switch_port = rf2->band;
 		pim->switch_port = pim->band;
+	}
+	else {
+		rf1->switch_port = rf1->band * 2 + rf1->dutport;
+		rf2->switch_port = rf2->band * 2 + rf2->dutport;
+		pim->switch_port = pim->band * 2 + pim->dutport;
 	}
 
 	JcBool b = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, JC_COUP_TX2);
@@ -1056,12 +1056,14 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 	if (__pobj->now_mode == MODE_POI) {
 		int temp_iSwitchTx1 = iSwitchTx1;
 		int temp_iSwitchTx2 = iSwitchTx2;
+		//特殊频段处理(防止出现下面的频段同时出现)
 		if (iSwitchTx1 > 11 && iSwitchTx1 < 17)
 			temp_iSwitchTx1 -= 5;
 		if (iSwitchTx2 > 11 && iSwitchTx2 < 17)
 			temp_iSwitchTx2 -= 5;
 		//查找ID_POI检测通道标号
 		//这里的iSwitch和band相配对
+		//(配对信息在数据库中)
 		int coup1 = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
 		int coup2 = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
 
