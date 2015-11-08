@@ -172,9 +172,9 @@
 "\n"\
 ""
 #define IMPLEMENT_STRING_POI  "[ip]\n"\
-"namelist =Signalswich,Paspecumpwmt,Testmdcdmagsm,Testmdfdd18,Testmdfdd21,Testmdtdftda,Testmdtdd23\n"\
+"namelist =Signalswich,PaspecumpwmtP,Testmdcdmagsm,Testmdfdd18,Testmdfdd21,Testmdtdftda,Testmdtdd23\n"\
 "Signalswich       =192.168.1.81:4001\n"\
-"Paspecumpwmt      =192.168.1.82:4001\n"\
+"PaspecumpwmtP      =192.168.1.82:4001\n"\
 "Testmdcdmagsm     =192.168.1.91:4001\n"\
 "Testmdfdd18       =192.168.1.92:4001\n"\
 "Testmdfdd21       =192.168.1.92:4001\n"\
@@ -230,17 +230,17 @@
 "\n"\
 "1Cmgsmtx1= Signal1swich(Signalswich,PA1in1), Tx1swich3(Testmdcdmagsm , nc1)\n"\
 "2Cucdmatx1= Signal1swich(Signalswich,PA1in1), Tx1swich3(Testmdcdmagsm , no2)\n"\
-"3Ctfd18tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,fdd18tx1), Tx1swich3(Testmdfdd18, nc1)   \n"\
-"4Cufd18tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,fdd18tx1), Tx1swich3(Testmdfdd18, no2)\n"\
-"5Ctfd21tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,fdd21tx1), Tx1swich3(Testmdfdd21, nc1)    \n"\
-"6Cuw21tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,fdd21tx1), Tx1swich3(Testmdfdd21 , no2)    \n"\
-"7Cmdcstx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , nc1)  \n"\
-"8Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
+"3Ctfd18tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(PaspecumpwmtP,fdd18tx1), Tx1swich3(Testmdfdd18, nc1)   \n"\
+"4Cufd18tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(PaspecumpwmtP,fdd18tx1), Tx1swich3(Testmdfdd18, no2)\n"\
+"5Ctfd21tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(PaspecumpwmtP,fdd21tx1), Tx1swich3(Testmdfdd21, nc1)    \n"\
+"6Cuw21tx1= Signal1swich(Signalswich,PA2in1), PA2swich1(PaspecumpwmtP,fdd21tx1), Tx1swich3(Testmdfdd21 , no2)    \n"\
+"7Cmdcstx1= Signal1swich(Signalswich,PA2in1), PA2swich1(PaspecumpwmtP,tdftdatx1), Tx1swich3(Testmdtdftda , nc1)  \n"\
+"8Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(PaspecumpwmtP,tdftdatx1), Tx1swich3(Testmdtdftda , no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
 "9null=\n"\
 "10Cmtdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, nc1),Antmodeswich6(Testmdtdd23,nc1)      \n"\
 "11Cttdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, no2), Antmodeswich5(Testmdtdd23,nc1)      \n"\
 "12null=\n"\
-"13Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(Paspecumpwmt,tdftdatx1), Tx1swich3(Testmdtdftda , no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
+"13Cmtdftx1= Signal1swich(Signalswich,PA2in1), PA2swich1(PaspecumpwmtP,tdftdatx1), Tx1swich3(Testmdtdftda , no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
 "14null=\n"\
 "15Cmtdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, nc1),Antmodeswich6(Testmdtdd23,nc1)      \n"\
 "16Cttdetx1= Signal1swich(Signalswich,PA3in1), Tx1swich3(Testmdtdd23, no2), Antmodeswich5(Testmdtdd23,nc1)      \n"\
@@ -251,18 +251,18 @@
 "\n"\
 "1Cmgsmtx2= Signal2swich(Signalswich,PA1in2),  Tx2swich4(Testmdcdmagsm , nc1)   \n"\
 "2Cucdmatx2= Signal2swich(Signalswich,PA1in2), Tx2swich4(Testmdcdmagsm , no2)\n"\
-"3Ctfd18tx2= Signal2swich(Signalswich,PA2in2), PA2swich2(Paspecumpwmt,fdd18tx2), Tx2swich4(Testmdfdd18, nc1)    \n"\
-"4Cufd18tx2= Signal2swich(Signalswich,PA2in2), PA2swich2(Paspecumpwmt,fdd18tx2), Tx2swich4(Testmdfdd18, no2) \n"\
-"5Ctfd21tx2= Signal2swich(Signalswich,PA2in2), PA2swich2(Paspecumpwmt,fdd21tx2), Tx2swich4(Testmdfdd21, nc1)     \n"\
-"6Cuw21tx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(Paspecumpwmt,fdd21tx2), Tx2swich4(Testmdfdd21, no2)    \n"\
-"7Cmdcstx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(Paspecumpwmt,tdftdatx2),Tx2swich4(Testmdtdftda, nc1)   \n"\
-"8Cmtdftx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(Paspecumpwmt,tdftdatx2),Tx2swich4(Testmdtdftda, no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
-"9Cmtdatx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(Paspecumpwmt,tdftdatx3)                                 \n"\
+"3Ctfd18tx2= Signal2swich(Signalswich,PA2in2), PA2swich2(PaspecumpwmtP,fdd18tx2), Tx2swich4(Testmdfdd18, nc1)    \n"\
+"4Cufd18tx2= Signal2swich(Signalswich,PA2in2), PA2swich2(PaspecumpwmtP,fdd18tx2), Tx2swich4(Testmdfdd18, no2) \n"\
+"5Ctfd21tx2= Signal2swich(Signalswich,PA2in2), PA2swich2(PaspecumpwmtP,fdd21tx2), Tx2swich4(Testmdfdd21, nc1)     \n"\
+"6Cuw21tx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(PaspecumpwmtP,fdd21tx2), Tx2swich4(Testmdfdd21, no2)    \n"\
+"7Cmdcstx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(PaspecumpwmtP,tdftdatx2),Tx2swich4(Testmdtdftda, nc1)   \n"\
+"8Cmtdftx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(PaspecumpwmtP,tdftdatx2),Tx2swich4(Testmdtdftda, no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
+"9Cmtdatx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(PaspecumpwmtP,tdftdatx3)                                 \n"\
 "10Cmtdetx2= Signal2swich(Signalswich,PA3in2), Tx2swich4(Testmdtdd23, nc1),Antmodeswich6(Testmdtdd23,nc1)       \n"\
 "11null=\n"\
 "12Cutdetx2= Signal2swich(Signalswich,PA3in2), Tx2swich4(Testmdtdd23, no2)\n"\
-"13Cmtdftx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(Paspecumpwmt,tdftdatx2),Tx2swich4(Testmdtdftda, no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
-"14Cmtdatx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(Paspecumpwmt,tdftdatx3)                                 \n"\
+"13Cmtdftx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(PaspecumpwmtP,tdftdatx2),Tx2swich4(Testmdtdftda, no2), Antmodeswich5(Testmdtdftda,nc1)\n"\
+"14Cmtdatx2= Signal2swich(Signalswich,PA2in2),  PA2swich2(PaspecumpwmtP,tdftdatx3)                                 \n"\
 "15Cmtdetx2= Signal2swich(Signalswich,PA3in2), Tx2swich4(Testmdtdd23, nc1),Antmodeswich6(Testmdtdd23,nc1)       \n"\
 "16null=\n"\
 "17Cutdetx2= Signal2swich(Signalswich,PA3in2), Tx2swich4(Testmdtdd23, no2)\n"\
@@ -270,49 +270,49 @@
 "[actiondet]\n"\
 "namelist = Cdmagsmcp1,Cdmagsmcp2,fdd18cp1,fdd18cp2,fdd21cp1,fdd21cp2,tdftdacp1,tdftdacp2,tdftdacp3,tde23cp1,tde23cp2\n"\
 "\n"\
-"Cdmagsmcp1= Powermeterswich(Paspecumpwmt,cdmagsmpwmt), Couplerswich2(Testmdcdmagsm,nc1)\n"\
-"Cdmagsmcp2= Powermeterswich(Paspecumpwmt,cdmagsmpwmt), Couplerswich2(Testmdcdmagsm,no2)\n"\
+"Cdmagsmcp1= Powermeterswich(PaspecumpwmtP,cdmagsmpwmt), Couplerswich2(Testmdcdmagsm,nc1)\n"\
+"Cdmagsmcp2= Powermeterswich(PaspecumpwmtP,cdmagsmpwmt), Couplerswich2(Testmdcdmagsm,no2)\n"\
 "\n"\
-"fdd18cp1= Powermeterswich(Paspecumpwmt,fdd18pwmt), Couplerswich2(Testmdfdd18,nc1)\n"\
-"fdd18cp2= Powermeterswich(Paspecumpwmt,fdd18pwmt), Couplerswich2(Testmdfdd18,no2)\n"\
+"fdd18cp1= Powermeterswich(PaspecumpwmtP,fdd18pwmt), Couplerswich2(Testmdfdd18,nc1)\n"\
+"fdd18cp2= Powermeterswich(PaspecumpwmtP,fdd18pwmt), Couplerswich2(Testmdfdd18,no2)\n"\
 "\n"\
-"fdd21cp1= Powermeterswich(Paspecumpwmt,fdd21pwmt), Couplerswich2(Testmdfdd21,nc1)\n"\
-"fdd21cp2= Powermeterswich(Paspecumpwmt,fdd21pwmt), Couplerswich2(Testmdfdd21,no2)\n"\
+"fdd21cp1= Powermeterswich(PaspecumpwmtP,fdd21pwmt), Couplerswich2(Testmdfdd21,nc1)\n"\
+"fdd21cp2= Powermeterswich(PaspecumpwmtP,fdd21pwmt), Couplerswich2(Testmdfdd21,no2)\n"\
 "\n"\
-"tdftdacp1= Powermeterswich(Paspecumpwmt,tdftdapwmt), Couplerswich2(Testmdtdftda,nc1)\n"\
-"tdftdacp2= Powermeterswich(Paspecumpwmt,tdftdapwmt), Couplerswich2(Testmdtdftda,no2)\n"\
+"tdftdacp1= Powermeterswich(PaspecumpwmtP,tdftdapwmt), Couplerswich2(Testmdtdftda,nc1)\n"\
+"tdftdacp2= Powermeterswich(PaspecumpwmtP,tdftdapwmt), Couplerswich2(Testmdtdftda,no2)\n"\
 "\n"\
-"tdftdacp3= Powermeterswich(Paspecumpwmt,tdftdapwmt2)\n"\
+"tdftdacp3= Powermeterswich(PaspecumpwmtP,tdftdapwmt2)\n"\
 "\n"\
-"tde23cp1= Powermeterswich(Paspecumpwmt,tdd23pwmt), Couplerswich2(Testmdtdd23,nc1)\n"\
-"tde23cp2= Powermeterswich(Paspecumpwmt,tdd23pwmt), Couplerswich2(Testmdtdd23,no2)\n"\
+"tde23cp1= Powermeterswich(PaspecumpwmtP,tdd23pwmt), Couplerswich2(Testmdtdd23,nc1)\n"\
+"tde23cp2= Powermeterswich(PaspecumpwmtP,tdd23pwmt), Couplerswich2(Testmdtdd23,no2)\n"\
 "\n"\
 "[actionpim]\n"\
 "namelist = 1gsmpim,2cdmapim,3ctfd18pim,4cufd18pim,5ctfd21pim,6cuw21pim,7cmdcspim,8cmtdfpim,9null,10cmtde23pim,11cttde23pim,12null,13cmtdfpim,14null,15cmtde23pim,16cttde23pim,17null\n"\
 "\n"\
-"1gsmpim=  Spectrumswich(Paspecumpwmt,cdmagsmpim), Pimswich1(Testmdcdmagsm,nc1)\n"\
-"2cdmapim= Spectrumswich(Paspecumpwmt,cdmagsmpim), Pimswich1(Testmdcdmagsm,no2)\n"\
+"1gsmpim=  Spectrumswich(PaspecumpwmtP,cdmagsmpim), Pimswich1(Testmdcdmagsm,nc1)\n"\
+"2cdmapim= Spectrumswich(PaspecumpwmtP,cdmagsmpim), Pimswich1(Testmdcdmagsm,no2)\n"\
 "\n"\
-"3ctfd18pim= Spectrumswich(Paspecumpwmt,fdd18pim), Pimswich1(Testmdfdd18,nc1)\n"\
-"4cufd18pim= Spectrumswich(Paspecumpwmt,fdd18pim), Pimswich1(Testmdfdd18,no2)\n"\
+"3ctfd18pim= Spectrumswich(PaspecumpwmtP,fdd18pim), Pimswich1(Testmdfdd18,nc1)\n"\
+"4cufd18pim= Spectrumswich(PaspecumpwmtP,fdd18pim), Pimswich1(Testmdfdd18,no2)\n"\
 "\n"\
-"5ctfd21pim= Spectrumswich(Paspecumpwmt,fdd21pim), Pimswich1(Testmdfdd21,nc1)\n"\
-"6cuw21pim= Spectrumswich(Paspecumpwmt,fdd21pim), Pimswich1(Testmdfdd21,no2)\n"\
+"5ctfd21pim= Spectrumswich(PaspecumpwmtP,fdd21pim), Pimswich1(Testmdfdd21,nc1)\n"\
+"6cuw21pim= Spectrumswich(PaspecumpwmtP,fdd21pim), Pimswich1(Testmdfdd21,no2)\n"\
 "\n"\
-"7cmdcspim= Spectrumswich(Paspecumpwmt,tdftdapim), Pimswich1(Testmdtdftda,nc1)\n"\
-"8cmtdfpim= Spectrumswich(Paspecumpwmt,tdftdapim), Pimswich1(Testmdtdftda,no2),Antmodeswich5(Testmdtdftda,no2)\n"\
+"7cmdcspim= Spectrumswich(PaspecumpwmtP,tdftdapim), Pimswich1(Testmdtdftda,nc1)\n"\
+"8cmtdfpim= Spectrumswich(PaspecumpwmtP,tdftdapim), Pimswich1(Testmdtdftda,no2),Antmodeswich5(Testmdtdftda,no2)\n"\
 "\n"\
 "9null=\n"\
 "\n"\
-"10cmtde23pim= Spectrumswich(Paspecumpwmt,tdd23pim), Pimswich1(Testmdtdd23,nc1),Antmodeswich6(Testmdtdd23,no2)\n"\
-"11cttde23pim= Spectrumswich(Paspecumpwmt,tdd23pim), Pimswich1(Testmdtdd23,no2),Antmodeswich5(Testmdtdd23,no2)\n"\
+"10cmtde23pim= Spectrumswich(PaspecumpwmtP,tdd23pim), Pimswich1(Testmdtdd23,nc1),Antmodeswich6(Testmdtdd23,no2)\n"\
+"11cttde23pim= Spectrumswich(PaspecumpwmtP,tdd23pim), Pimswich1(Testmdtdd23,no2),Antmodeswich5(Testmdtdd23,no2)\n"\
 "12=null\n"\
-"13cmtdfpim= Spectrumswich(Paspecumpwmt,tdftdapim), Pimswich1(Testmdtdftda,no2),Antmodeswich5(Testmdtdftda,nc1)\n"\
+"13cmtdfpim= Spectrumswich(PaspecumpwmtP,tdftdapim), Pimswich1(Testmdtdftda,no2),Antmodeswich5(Testmdtdftda,nc1)\n"\
 "\n"\
 "14null=\n"\
 "\n"\
-"15cmtde23pim= Spectrumswich(Paspecumpwmt,tdd23pim), Pimswich1(Testmdtdd23,nc1),Antmodeswich6(Testmdtdd23,nc1)\n"\
-"16cttde23pim= Spectrumswich(Paspecumpwmt,tdd23pim), Pimswich1(Testmdtdd23,no2),Antmodeswich5(Testmdtdd23,nc1)\n"\
+"15cmtde23pim= Spectrumswich(PaspecumpwmtP,tdd23pim), Pimswich1(Testmdtdd23,nc1),Antmodeswich6(Testmdtdd23,nc1)\n"\
+"16cttde23pim= Spectrumswich(PaspecumpwmtP,tdd23pim), Pimswich1(Testmdtdd23,no2),Antmodeswich5(Testmdtdd23,nc1)\n"\
 "17=null\n"\
 "\n"\
 "\n"\

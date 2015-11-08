@@ -26,6 +26,7 @@
 #include "../stdafx.h"
 #include "switch_info_poi.h"
 #include "switch_info_huawei.h"
+#include "switch_info_hw_ext12.h"
 #include "implementsetting.h"
 
 namespace ns_com_io_ctl
@@ -162,6 +163,13 @@ namespace ns_com_io_ctl
 				ofio.write(fstr.c_str(), fstr.size());
 				fstr.assign(IMPLEMENT_STRING_POI);
 				ofimplt.write(fstr.c_str(), fstr.size());				
+				break;
+			//case ID_HUAWEI_EXT12:
+			case 3:
+				fstr.assign(IO_STRING_HW_EXT12);
+				ofio.write(fstr.c_str(), fstr.size());
+				fstr.assign(IMPLEMENT_STRING_HW_EXT12);
+				ofimplt.write(fstr.c_str(), fstr.size());
 				break;
 			default:break;
 		}		

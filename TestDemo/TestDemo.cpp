@@ -71,7 +71,7 @@ void Test_dll(){
 	pJcSetOffsetTx jcSetOffsetTx = (pJcSetOffsetTx)GetProcAddress(hinst, "JcSetOffsetTx");
 	pGetOffsetVco getOffsetVco = (pGetOffsetVco)GetProcAddress(hinst, "JcGetOffsetVco");
 	pSetOffsetVco setOffsetVco = (pSetOffsetVco)GetProcAddress(hinst, "JcSetOffsetVco");
-
+	pJcGetOffsetBandInfo jcGetOffsetBandInfo = (pJcGetOffsetBandInfo)GetProcAddress(hinst, "JcGetOffsetBandInfo");
 	pGetDllVersion getDllVersion = (pGetDllVersion)GetProcAddress(hinst, "JcGetDllVersion");
 	pJcSetOffsetTxIncremental jcSetOffsetTxIncremental = (pJcSetOffsetTxIncremental)GetProcAddress(hinst, "JcSetOffsetTxIncremental");
 	int a = test(3, 5);
@@ -123,9 +123,14 @@ void Test_dll(){
 	else {
 		tx_freq = 926;
 		rx_freq = 880;
-		printf("This is POI_BAND!\n");
+		printf("This is POI_BAND or NewPOI_BAND!\n");
 	}
-
+	for (int i = 1; i <= 7; i++)
+	{
+		char cBandInfo[1024] = { 0 };
+		jcGetOffsetBandInfo(i, cBandInfo);
+		printf("%s\n", cBandInfo);
+	}
 	//hwSetImCoefficients(0, 2, 0, 0);
 	//setMeasBand(6);
 	//setDutPort(1);

@@ -11,7 +11,7 @@ bool JcOffsetDB::DbConnect(const char* addr) {
 
 void JcOffsetDB::DbInit(uint8_t mode) {
 	//if (mode == MODE_POI)
-		m_offset_mode = continuous_offset_mode;
+	m_offset_mode = continuous_offset_mode;
 	//else
 	//	m_offset_mode = discontinuous_offset_mode;
 
@@ -21,28 +21,38 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	m_vco_offset_table = "JC_VCO_OFFSET_ALL";
 	m_setting_table = "JC_SETTING_INFO";
 
-	if (!IsExist(m_band_info_table.c_str())) {
-		std::string hw_sql_param[7] = huawei_sql_body;
-		std::string poi_sql_param[12] = poi_sql_body;
-		std::string hw_band_table_sql = sql_header + hw_sql_param[0];
-		for (int i = 1; i < 7; i++){
-			hw_band_table_sql += " union all select " + hw_sql_param[i];
-		}
-		std::string poi_band_table_sql = sql_header + poi_sql_param[0];
-		for (int i = 1; i < 12; i++){
-			poi_band_table_sql += " union all select " + poi_sql_param[i];
-		}
-		if (ExecSql(sql_table)) {
-			ExecSql(hw_band_table_sql.c_str());
-			ExecSql(poi_band_table_sql.c_str());
-		}
+	if (!IsExist(m_band_info_table.c_str()))
+		ExecSql(sql_table);
+
+	std::string hw_sql_param[7] = huawei_sql_body;
+	std::string poi_sql_param[12] = poi_sql_body;
+	std::string NewPoi_sql_param[12] = NewPoi_sql_body;
+
+	std::string hw_band_table_sql = sql_header + hw_sql_param[0];
+	for (int i = 1; i < 7; i++){
+		hw_band_table_sql += " union all select " + hw_sql_param[i];
 	}
+	std::string poi_band_table_sql = sql_header + poi_sql_param[0];
+	for (int i = 1; i < 12; i++){
+		poi_band_table_sql += " union all select " + poi_sql_param[i];
+	}
+	std::string NewPoi_band_table_sql = sql_header + NewPoi_sql_param[0];
+	for (int i = 1; i < 12; i++){
+		NewPoi_band_table_sql += " union all select " + NewPoi_sql_param[i];
+	}
+
+	if (GetBandCount("hw") == 0)
+		ExecSql(hw_band_table_sql.c_str());
+	if (GetBandCount("poi") == 0)
+		ExecSql(poi_band_table_sql.c_str());
+	if (GetBandCount("np") == 0)
+		ExecSql(NewPoi_band_table_sql.c_str());
 
 	if (!IsExist(m_tx_offset_table.c_str())) {
 		std::string table = "CREATE TABLE \"JC_TX_OFFSET_ALL\" ("
-								"\"Port\" text NOT NULL,"
-								"\"Dsp\" integer NOT NULL,"
-								"\"Power\" real NOT NULL DEFAULT(null),";
+			"\"Port\" text NOT NULL,"
+			"\"Dsp\" integer NOT NULL,"
+			"\"Power\" real NOT NULL DEFAULT(null),";
 		for (int i = 1; i <= 150; i++) {
 			char param[32] = { 0 };
 			sprintf_s(param, "\"%d\" real,", i);
@@ -54,7 +64,7 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 
 	if (!IsExist(m_rx_offset_table.c_str())) {
 		std::string table = "CREATE TABLE \"JC_RX_OFFSET_ALL\" ("
-								"\"Port\" text NOT NULL, ";
+			"\"Port\" text NOT NULL, ";
 
 		for (int i = 1; i <= 150; i++) {
 			char param[32] = { 0 };
@@ -67,17 +77,17 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 
 	if (!IsExist("JC_VCO_OFFSET_ALL")) {
 		std::string table = "CREATE TABLE \"JC_VCO_OFFSET_ALL\" ("
-								"\"port\" text NOT NULL,"
-								"\"vco\" real,"
-								"PRIMARY KEY(\"port\"))";
+			"\"port\" text NOT NULL,"
+			"\"vco\" real,"
+			"PRIMARY KEY(\"port\"))";
 		ExecSql(table.c_str());
 	}
 
 	if (!IsExist("JC_SETTING_INFO")) {
 		std::string table = "CREATE TABLE \"JC_SETTING_INFO\" ("
-								"\"key\" text NOT NULL,"
-								"\"value\" text,"
-								"PRIMARY KEY(\"key\"))";
+			"\"key\" text NOT NULL,"
+			"\"value\" text,"
+			"PRIMARY KEY(\"key\"))";
 		if (ExecSql(table.c_str())) {
 			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('version', '1.1')");
 			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('sn', '0000000000')");
@@ -145,7 +155,10 @@ int JcOffsetDB::GetBandInfo(const char* prefix, char* band_info) {
 		int n = sqlite3_column_count(pstmt);
 		for (int i = 0; i < n; i++) {
 			std::string temp = reinterpret_cast<const char*>(sqlite3_column_text(pstmt, i));
-			str_band_info += (temp + ",");
+			if (i == (n - 1))
+				str_band_info += temp;
+			else
+				str_band_info += (temp + ",");
 		}
 	} 
 	sqlite3_finalize(pstmt);

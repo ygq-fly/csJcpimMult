@@ -53,6 +53,9 @@
 //  1, 支持e系列信号源
 //(build 297)
 //  修复296的传输模式开关错误
+//(build 299)
+//  设置tx校准模式下，关闭预防
+//  其他模式下开始预放
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -219,14 +222,18 @@ int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx){
 
 //请先设置 HwSetMeasBand
 int fnSetDutPort(JcInt8 byPort) {
-	__pobj->WriteClDebug("",true);
-	if (byPort > 2) return JC_STATUS_ERROR_SET_SWITCH_FAIL;
+	return HwSetDutPort(byPort, byPort, byPort);
+}
+
+int HwSetDutPort(JcInt8 byPortTx1, JcInt8 byPortTx2, JcInt8 byPortRx) {
+	__pobj->WriteClDebug("", true);
+	if (byPortTx1 > 2 || byPortTx2 > 2) return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 	rf1->dd = 0;
 	rf2->dd = 0;
 	//__pobj->now_dut_port = byPort;
-	rf1->dutport = byPort;
-	rf2->dutport = byPort;
-	pim->dutport = byPort;
+	rf1->dutport = byPortTx1;
+	rf2->dutport = byPortTx2;
+	pim->dutport = byPortRx;
 
 	//Band转换开关参数 , byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
 	if (__pobj->now_mode == MODE_POI) {
@@ -1072,10 +1079,19 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 	} else {
 		//查找ID_HUAWEI检测通道标号
 		//这里的iSwitch和band不会配对
-		if (iSwitchTx1 % 2 == 0)
-			coup = iSwitchTx1 + iSwitchCoup;
-		else
-			coup = (iSwitchTx1 - 1) + iSwitchCoup;
+		if (iSwitchCoup == JC_COUP_TX1) 
+		{
+			if (iSwitchTx1 % 2 == 0)
+				coup = iSwitchTx1 + JC_COUP_TX1;
+			else
+				coup = (iSwitchTx1 - 1) + JC_COUP_TX1;
+		}
+		else {
+			if (iSwitchTx2 % 2 == 0)
+				coup = iSwitchTx2 + JC_COUP_TX2;
+			else
+				coup = (iSwitchTx2 - 1) + JC_COUP_TX2;
+		}
 	}
 
 	JcBool ret = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
@@ -1116,6 +1132,8 @@ JC_STATUS JcGetOffsetBandInfo(int band_index, char* band_info){
 	char prefix[64] = { 0 };
 	if (__pobj->now_mode == MODE_POI)
 		sprintf_s(prefix, "poi%d", band_index);
+	else if (__pobj->now_mode == MODE_NEWPOI)
+		sprintf_s(prefix, "np%d", band_index);
 	else
 		sprintf_s(prefix, "hw%d",band_index);
 

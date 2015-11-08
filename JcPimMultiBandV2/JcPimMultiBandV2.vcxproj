@@ -114,6 +114,7 @@
     <ClInclude Include="Switch\implementsetting.h" />
     <ClInclude Include="Switch\JcMatrixSwitch.h" />
     <ClInclude Include="Switch\switch_info_huawei.h" />
+    <ClInclude Include="Switch\switch_info_hw_ext12.h" />
     <ClInclude Include="Switch\switch_info_poi.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ClsSenAgU2000A.hpp" />

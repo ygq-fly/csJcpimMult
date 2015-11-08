@@ -107,6 +107,7 @@ JIONTCOM_API int fnSetMeasBand(JcInt8 byBandIndex);
 JIONTCOM_API int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx);
 //设置测试端口(请先设置频段后)
 JIONTCOM_API int fnSetDutPort(JcInt8 byPort);
+JIONTCOM_API int HwSetDutPort(JcInt8 byPortTx1, JcInt8 byPortTx2, JcInt8 byPortRx);
 //设置互调阶数
 JIONTCOM_API int fnSetImOrder(JcInt8 byImOrder);
 JIONTCOM_API int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess);

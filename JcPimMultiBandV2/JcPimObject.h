@@ -253,7 +253,7 @@ private:
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", SMOOTH_TX_ACCURACY, wsPath_ini.c_str());
 
 		//SET SETTINGS
-		now_mode = (iTransType < 0 || iTransType > 2) ? MODE_HUAWEI : iTransType;
+		now_mode = (iTransType < 0 || iTransType > 3) ? MODE_HUAWEI : iTransType;
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
@@ -276,29 +276,32 @@ public:
 		offset.DbInit(now_mode);
 
 		int ret = 0;
+		std::string now_band_prefix;
 		//获取频段数量
 		if (now_mode == MODE_POI)
+		{
 			now_num_band = offset.GetBandCount("poi");
-		else if (now_mode == MODE_HUAWEI)
+			now_band_prefix = "poi";
+		}
+		else if (now_mode == MODE_NEWPOI)
+		{
+			now_num_band = offset.GetBandCount("np");
+			now_band_prefix = "np";
+		}
+		else
+		{
 			now_num_band = offset.GetBandCount("hw");
+			now_band_prefix = "hw";
+		}
 		
 		for (int i = 0; i < now_num_band; i++)
 		{//获取单独频段信息
-			std::string band_row;
 			char prefix[64] = { 0 };
 			char band_info[1024] = { 0 };
-			if (now_mode == MODE_POI)
-			{
-				sprintf_s(prefix, "poi%d", i + 1);
-				ret = offset.GetBandInfo(prefix, band_info);
-				band_row = std::string(band_info);
-			}
-			else
-			{
-				sprintf_s(prefix, "hw%d", i + 1);
-				ret = offset.GetBandInfo(prefix, band_info);
-				band_row = std::string(band_info);
-			}
+			sprintf_s(prefix, "%s%d", now_band_prefix.c_str(), i + 1);
+			ret = offset.GetBandInfo(prefix, band_info);
+
+			std::string band_row = std::string(band_info);
 			Util::strTrim(band_row);
 			band_row.erase(std::remove(band_row.begin(), band_row.end(), '\''), band_row.end());
 			std::vector<std::string> band_items = Util::split(band_row, ',');

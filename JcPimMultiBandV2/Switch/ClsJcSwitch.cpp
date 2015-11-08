@@ -15,6 +15,8 @@ bool ClsJcSwitch::SwitchInit(int switch_work_type, int switch_conn_type) {
 	//设置工作模式
 	if (switch_work_type == MODE_POI)
 		_switch_work_type = ID_POI;
+	else if (switch_work_type == MODE_NEWPOI)
+		_switch_work_type = ID_HUAWEI_EXT12;
 	else
 		_switch_work_type = ID_HUAWEI;
 	//设置连接模式
