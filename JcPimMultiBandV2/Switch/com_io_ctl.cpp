@@ -223,7 +223,7 @@ namespace ns_com_io_ctl{
 
 		log(host + " IOWrite:send  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));		
 
-		if (!result)Message("MatrixSwitch::" + host + "::Write::Failed!");
+		//if (!result)Message("MatrixSwitch::" + host + "::Write::Failed!");
 
 		return result;
 	}
@@ -279,7 +279,7 @@ namespace ns_com_io_ctl{
 
 		log(host + " IORead:recv  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 
-		if (!result)Message("MatrixSwitch::" + host + "::Read::Failed!");
+		//if (!result)Message("MatrixSwitch::" + host + "::Read::Failed!");
 
 		__socketState[host] = result;
 

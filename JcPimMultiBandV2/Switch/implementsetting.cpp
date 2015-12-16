@@ -22,6 +22,8 @@
 			2、增加两个主开关的控制使能
 2015.5.4
 	将Connect中的功能禁用
+2015.11.25
+	修改连接失败提示处理（只上报第一次连接失败的模块）。
 *------------------------------------------------------------------------------*/
 #include "../stdafx.h"
 #include "switch_info_poi.h"
@@ -551,58 +553,63 @@ namespace ns_com_io_ctl
 	bool implementsetting::Excute(void)
 	{
 		if (!bLoadMap)
-		{			
-			Message("SWITCH::Excute failed::load map failed!");			
+		{
+			Message("SWITCH::Excute failed::load map failed!");
 			return false;
 		}
 
 		bool funcResult = true;
-		unsigned char txBuf[12] = { 0 }, rxBuf[12] = {0};
+		unsigned char txBuf[12] = { 0 }, rxBuf[12] = { 0 };
 		unsigned char checkValue = 0;
 		unsigned short *gpioBak = NULL;
 		string ip;
+		string ipFailed;
 		int replyCnt = 0; //尝试次数
-		map<string, bool>hostIPEnableList;
-		vector<string> actionQueue;
+		vector<string> actListOk;
+		map<string, bool> hostIPEnableList;
+		map<string, unsigned short*> actList;
 
-		txBuf[0]='W';
+		actList.clear();
+		actListOk.clear();
+
+		txBuf[0] = 'W';
 
 		//读入主机使能队列
-/*		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
-			itr != __hostCtrl.end();
-			itr++)
+		/*		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
+		itr != __hostCtrl.end();
+		itr++)
 		{
-			hostIPEnableList[itr->second.ip] = itr->second.enable;
-		}*/		
-
+		hostIPEnableList[itr->second.ip] = itr->second.enable;
+		}*/
+		//bak Temp
 		for (map<string, string>::iterator itr = __ipmap.begin();
 			itr != __ipmap.end();
 			itr++)
 		{
 			hostIPEnableList[itr->second] = true;
 		}
-
+		//Copy：__actionList
 		for (map<string, unsigned short*>::iterator actionIter = __actionList.begin();
 			actionIter != __actionList.end();
 			actionIter++)
 		{
 			if (!hostIPEnableList[actionIter->first])continue;
-			actionQueue.push_back(actionIter->first);
+			actList[actionIter->first] = actionIter->second;
 		}
-		
+
 		replyCnt = 0;
 
 		while (true)
-		{			
+		{
 			//下发开关指令队列
-			for (map<string, unsigned short*>::iterator actionIter = __actionList.begin();
-				actionIter != __actionList.end();
+			for (map<string, unsigned short*>::iterator actionIter = actList.begin();
+				actionIter != actList.end();
 				actionIter++)
 			{
 				ip = actionIter->first;
 				gpioBak = actionIter->second;
 
-				if (!hostIPEnableList[ip])continue;				
+				if (!hostIPEnableList[ip])continue;
 
 				checkValue = 0;
 				for (int i = 1, j = 0; i < 11; j++)
@@ -617,18 +624,9 @@ namespace ns_com_io_ctl
 
 				txBuf[11] = checkValue;
 
-#ifdef __DEBUG_PRINT
-				cout<<"<"<<ip<<">";
-				for(int i=0;i<12;i++)
-				{
-					cout<<uppercase<<hex<<static_cast<int>(txBuf[i])<<" ";
-				}
-				cout<<endl;
-#endif
-
 				bool wrResult = false;
 				int len = 12;
-
+				//写读模块
 				for (int i = 0; i < 1; i++)
 				{
 					funcResult = wrResult = IOWrite(ip, (char*)txBuf, sizeof(txBuf));
@@ -638,7 +636,7 @@ namespace ns_com_io_ctl
 					funcResult = wrResult = IORead(ip, (char*)rxBuf, &len);
 
 					if (wrResult == false)continue;
-
+					//判断模块使能位
 					vector<string>hostInfo = split(ip, ":");
 					if (hostInfo.size() > 2)if (hostInfo[2] == "0")break;
 
@@ -653,80 +651,64 @@ namespace ns_com_io_ctl
 					funcResult = wrResult;
 					if (wrResult == true)break;
 				}
-				
-				if (!funcResult)break;
-			}
 
-			//break;
-			if (replyCnt > 1 || funcResult)break;
-
-			replyCnt++;
-
-			//断开连接
-			for (vector<string>::iterator itr = actionQueue.begin();
-				itr != actionQueue.end();
-				itr++)
-			{
-				IODisConnect(*itr);
-			}
-
-			//复位
-			funcResult = IOResetWithList(actionQueue);			
-
-			//重连
-			for (vector<string>::iterator itr = actionQueue.begin();
-				itr != actionQueue.end();
-				itr++)
-			{
-				IOConnectBegin(*itr);
-			}
-
-			bool wait = true;
-			funcResult = true;
-			vector<string> errHost;
-
-			for (vector<string>::iterator itr = actionQueue.begin();
-				itr != actionQueue.end();
-				itr++)
-			{
-				if (!IOConnectEnd(*itr, wait ? 1000 : 100))
+				if (!funcResult)
 				{
-					errHost.push_back(*itr);
-					funcResult = false;
+					ipFailed = ip;
 					break;
 				}
-				wait = false;
-				//if (!funcResult)break;
-				//LoadModuleState(*itr);
+				else
+				{//组装成功的模块队列
+					actListOk.push_back(ip);
+				}
 			}
 
+			if (replyCnt > 1 || funcResult)break;
+			//将动作队列中成功的模块清除
+			for (vector<string>::iterator itr = actListOk.begin();
+				itr != actListOk.end();
+				itr++)
+			{
+				actList.erase(*itr);
+			}
+			actListOk.clear();
+			//自加序号
+			replyCnt++;
+			//断开连接
+			IODisConnect(ipFailed);
+			//复位
+			vector<string> retList;
+			retList.clear();
+			retList.push_back(ipFailed);
+			IOResetWithList(retList);
+			Delay(500);
+			//重连
+			IOConnectBegin(ipFailed);
+			funcResult = IOConnectEnd(ipFailed, 1000);
+
 			if (!funcResult)
-			{			
+			{
 				string info("<MatrixSwitch>:[");
 
-				for (vector<string>::iterator itr = errHost.begin();
-					itr != errHost.end();
-					itr++)
+				for (map<string, string>::iterator mtr = __ipmap.begin();
+					mtr != __ipmap.end();
+					mtr++)
 				{
-					for (map<string,string>::iterator mtr = __ipmap.begin();
-						mtr != __ipmap.end();
-						mtr++)
-					{
-						if (mtr->second == *itr)info.append(mtr->first + '@');
-					}
+					if (mtr->second == ipFailed)info.append(mtr->first + '@');
+				}
 
-					info.append(*itr+'/');
-				}	
-
-				info.append("]:<Failed>");
-
+				info.append(ipFailed + "]:<Failed>");
 				Message(info);
 
 				break;
 			}
+			else
+			{
+				replyCnt = 0;
+			}
 
 			Delay(500);
-		}									
+		}
 
 		return funcResult;
 	}
@@ -759,90 +741,6 @@ namespace ns_com_io_ctl
 	void implementsetting::SelChanDet(const string&chan)
 	{
 		SelChan(__ac_det->actionMap[chan]);
-	}
-	//执行命令
-	bool implementsetting::ExcuteCmd(const string&ip,const string&sw,int chan)
-	{
-		string str = __ioInfoMap[sw][chan-1];
-		vector<string>&gpioValueStr = split(str,",");
-		unsigned short *gpioBak = __ipGpioBak[ip];
-
-		for(int i =0;i<5;i++)
-		{
-			gpioBak[i]|=atol(gpioValueStr[i].c_str());
-		}
-
-		__actionList[ip] = gpioBak;
-
-		unsigned char txBuf[12] = {0};
-		unsigned char checkValue = 0;
-
-		txBuf[0]='W';
-		
-		for(int i =1,j=0;i<11;j++)
-		{
-			txBuf[i] = gpioBak[j]%256;
-			checkValue^=txBuf[i];
-			i++;
-			txBuf[i] = gpioBak[j]/256;
-			checkValue^=txBuf[i];
-			i++;
-		}
-
-		txBuf[11] = checkValue;
-
-	#ifdef __DEBUG_PRINT
-		cout<<sw<<"<"<<ip<<">"<<str<<endl;
-		unsigned short tmpItems;
-		for( int i=0;i<5;i++ )
-		{		
-			tmpItems = *(unsigned short*)&txBuf[i*2+1];
-			bitset<16> bs(tmpItems); 
-			cout<<hex<<tmpItems<<"-"<<bs<<" ";
-			if(i%4==0)cout<<endl;
-		}
-		//cout<<endl<<endl;	
-		for(int i=0;i<12;i++)
-		{
-			cout<<hex<<static_cast<int>(txBuf[i])<<" ";
-		}
-		cout<<endl;
-	#endif
-
-		bool funcResult = true;
-		bool wrResult=false;
-		int len = 12;
-		unsigned char rxBuf[12] = {0};
-
-		for(int i=0;i<3;i++)
-		{
-			wrResult = IOWrite(ip,(char*)txBuf,sizeof(txBuf));
-			if(wrResult == false)
-			{
-				funcResult = false;
-				break;
-			}
-			
-			IORead(ip,(char*)rxBuf,&len);	
-
-			if(len == sizeof(txBuf))
-			{
-				for(int j=0;j<sizeof(txBuf);j++)
-					if(rxBuf[j] != txBuf[j])
-						wrResult = false;
-			}
-			else
-				wrResult = false;
-
-			if(wrResult == true)
-				break;
-			else
-				funcResult =false;
-
-			//Delay(100);
-		}	
-
-		return funcResult;
 	}
 	//读入配置文件
 	string implementsetting::GetRowFromCfgFile(const string&section,const string&key,const string&defaultValue)

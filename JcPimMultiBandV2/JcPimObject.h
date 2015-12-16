@@ -488,6 +488,29 @@ public:
 		Util::showcldebug(strLog.c_str());
 	}
 
+	bool CheckAuthorization() {
+		bool result = false;
+		char DESkeys[] = "jointcom";
+		char UnDefine[] = "zjn934";
+		FILE * pFile;
+		char cAuthorFile[64] = "C:\\Key\\Key";
+		if (fopen_s(&pFile, cAuthorFile, "r") != 0)
+			return result;
+		char cAuthorValue[128] = { 0 };
+		size_t n = fread(cAuthorValue, sizeof(char), sizeof(cAuthorValue), pFile);
+		if (n > 0) {
+			//std::string strAuthorValue(cAuthorValue);
+			//Util::strTrim(strAuthorValue);
+			for (int i = 0; i < n; i++)
+            {
+				cAuthorValue[i] ^= UnDefine[i++ % (sizeof(UnDefine)-1)];
+            }
+			result = true;
+		}
+		fclose(pFile);
+		return result;
+	}
+
 	//Sigleton model
 private:
 	static JcPimObject* _singleton;

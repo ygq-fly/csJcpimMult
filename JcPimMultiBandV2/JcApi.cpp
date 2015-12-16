@@ -99,7 +99,7 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	if (NULL != __pobj) {
 
 		//建立模块
-		//__pobj->vna = std::make_shared<ClsVnaAgE5062A>();
+		//__pobj->CheckAuthorization();
 
 		//分配地址
 		std::istringstream iss(cDeviceAddr);
@@ -975,6 +975,7 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	//所有校准数据以mhz为单位，注意转换
 	int s = JcGetOffsetTx(internal_offset, byBand, byPort, coup, JC_OFFSET_REAL, freq_khz / 1000, pow_dbm);
 	if (s) {
+		//Util::logged("offset:%lf, band:%d, port:%d, coup:%d, freq:%lf, pow:%lf", internal_offset, (int)byBand, (int)byPort, (int)coup, freq_khz / 1000, pow_dbm);
 		__pobj->strErrorInfo = "SetTx" + std::to_string(byCarrier) + ": Read Offset's Data Error!\r\n";
 		//返回错误
 		return JC_STATUS_ERROR_GET_TX1_OFFSET - 1 + byCarrier;
