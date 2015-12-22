@@ -29,6 +29,7 @@
 #include <list>
 #include <map>
 #include <regex>
+#include <time.h>
 
 #include <Winsock2.h>
 #include <mswsock.h>

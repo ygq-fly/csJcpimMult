@@ -6,6 +6,7 @@
 
 //64M
 #define MAX_LOG_FILE_SIZE 0x4000000
+const char* charlist = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 int Util::getMyPath(wchar_t *w_path, uint16_t max, const wchar_t* module_name) {
     int ret = -1;
@@ -254,4 +255,92 @@ void Util::showcldebug(const char* fmt, ...) {
 	}
 
 	//FreeConsole();
+}
+
+int Util::decode64(const char* input, unsigned char* output)
+{
+	int i, j;
+	unsigned char k;
+	unsigned char temp[4];
+	for (i = 0, j = 0; input[i] != '\0'; i += 4)
+	{
+		memset(temp, 0xFF, sizeof(temp));
+		for (k = 0; k < 64; k++)
+		{
+			if (charlist[k] == input[i])
+				temp[0] = k;
+		}
+		for (k = 0; k < 64; k++)
+		{
+			if (charlist[k] == input[i + 1])
+				temp[1] = k;
+		}
+		for (k = 0; k < 64; k++)
+		{
+			if (charlist[k] == input[i + 2])
+				temp[2] = k;
+		}
+		for (k = 0; k < 64; k++)
+		{
+			if (charlist[k] == input[i + 3])
+				temp[3] = k;
+		}
+
+		output[j++] = ((unsigned char)(((unsigned char)(temp[0] << 2)) & 0xFC)) |
+			((unsigned char)((unsigned char)(temp[1] >> 4) & 0x03));
+		if (input[i + 2] == '=')
+			break;
+
+		output[j++] = ((unsigned char)(((unsigned char)(temp[1] << 4)) & 0xF0)) |
+			((unsigned char)((unsigned char)(temp[2] >> 2) & 0x0F));
+		if (input[i + 3] == '=')
+			break;
+
+		output[j++] = ((unsigned char)(((unsigned char)(temp[2] << 6)) & 0xF0)) |
+			((unsigned char)(temp[3] & 0x3F));
+	}
+	return j;
+}
+
+int Util::timecmp(const char* cTime1, const char cTime2) {
+	return 0;
+}
+
+int Util::encode64(const unsigned char* input, char* output, int input_length){
+	int i, j;
+	unsigned char current;
+
+	for (i = 0, j = 0; i < input_length; i += 3)
+	{
+		current = (input[i] >> 2);
+		current &= (unsigned char)0x3F;
+		output[j++] = charlist[(int)current];
+
+		current = ((unsigned char)(input[i] << 4)) & ((unsigned char)0x30);
+		if (i + 1 >= input_length)
+		{
+			output[j++] = charlist[(int)current];
+			output[j++] = '=';
+			output[j++] = '=';
+			break;
+		}
+		current |= ((unsigned char)(input[i + 1] >> 4)) & ((unsigned char)0x0F);
+		output[j++] = charlist[(int)current];
+
+		current = ((unsigned char)(input[i + 1] << 2)) & ((unsigned char)0x3C);
+		if (i + 2 >= input_length)
+		{
+			output[j++] = charlist[(int)current];
+			output[j++] = '=';
+			break;
+		}
+		current |= ((unsigned char)(input[i + 2] >> 6)) & ((unsigned char)0x03);
+		output[j++] = charlist[(int)current];
+
+		current = ((unsigned char)input[i + 2]) & ((unsigned char)0x3F);
+		output[j++] = charlist[(int)current];
+	}
+	output[j] = '\0';
+	return j;
+
 }

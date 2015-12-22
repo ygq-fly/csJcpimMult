@@ -99,7 +99,11 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	if (NULL != __pobj) {
 
 		//建立模块
-		//__pobj->CheckAuthorization();
+		if (__pobj->CheckAuthorization() == false) {
+			__pobj->strErrorInfo = "Authorize Fail: \n" + __pobj->strErrorInfo;
+			Util::logged(L"授权已到期！");
+			return JC_STATUS_NO_AUTORIZE;
+		}
 
 		//分配地址
 		std::istringstream iss(cDeviceAddr);

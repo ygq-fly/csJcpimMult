@@ -110,6 +110,8 @@ void Test_dll(){
 		char msg[512] = { 0 };
 		getError(msg, 512);
 		std::cout << msg << std::endl;
+		if (s == -10007)
+			return;
 	}
 	
 	//jcSetSwitch(0, 0, 0, 1);

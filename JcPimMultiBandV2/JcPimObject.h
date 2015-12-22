@@ -18,6 +18,7 @@
 #include "Switch/ClsJcSwitch.h"
 
 #include "stdafx.h"
+#include <WinCrypt.h>
 
 #define SMOOTH_VCO_THREASOLD 2
 #define SMOOTH_TX_THREASOLD 2
@@ -27,10 +28,14 @@
 #define SUM_HIGH	   1
 #define SUM_LESS       0
 #define SUM_ADD        1
+#define DES_SIZE	   1024	
 
 static int _debug_enable = 0;
 //功率调整延时
 static int _tx_delay = 400;
+static std::string _serial;
+const char DESkeys[] = "jointcom";
+const char DESiv[8] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
 
 //dll加载初始化地址
 static std::wstring _startPath = [](){
@@ -43,7 +48,9 @@ static std::wstring _startPath = [](){
 	_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 400, wsPath_ini.c_str());
 	//防止tx_delay小于200
 	_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
-
+	wchar_t wcSerial[1024] = { 0 };
+	GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
+	_serial = Util::wstring_to_utf8(std::wstring(wcSerial));
 	return std::wstring(wcBuff);
 }();
 
@@ -490,30 +497,133 @@ public:
 
 	bool CheckAuthorization() {
 		bool result = false;
-		char DESkeys[] = "jointcom";
-		char UnDefine[] = "zjn934";
-		FILE * pFile;
-		char cAuthorFile[64] = "C:\\Key\\Key";
-		if (fopen_s(&pFile, cAuthorFile, "r") != 0)
-			return result;
-		char cAuthorValue[128] = { 0 };
-		size_t n = fread(cAuthorValue, sizeof(char), sizeof(cAuthorValue), pFile);
-		if (n > 0) {
-			//std::string strAuthorValue(cAuthorValue);
-			//Util::strTrim(strAuthorValue);
-			for (int i = 0; i < n; i++)
-            {
-				cAuthorValue[i] ^= UnDefine[i++ % (sizeof(UnDefine)-1)];
-            }
-			result = true;
+		FILE * pFile = NULL;
+		char cAuthorFileName[1024] = { 0 };
+		Util::getMyPath(cAuthorFileName, 1024, "JcPimMultiBandV2.dll");
+		std::string strAuthorFileName(cAuthorFileName);
+		strAuthorFileName += "\\Key\\Key";
+		fopen_s(&pFile, strAuthorFileName.c_str(), "r");
+		if (!pFile)
+		{
+			strErrorInfo = "Authorize File no Find!\n";
+			return false;
 		}
+		char cAuthorValue[DES_SIZE] = { 0 };
+		size_t n = fread(cAuthorValue, sizeof(char), sizeof(cAuthorValue), pFile);
 		fclose(pFile);
+		pFile = NULL;
+		if (n > 0) 
+			GetXor(cAuthorValue, n);
+		else 
+			return false;
+		char cAuthorValueFromBase64[DES_SIZE] = { 0 };
+		unsigned long length = Util::decode64(cAuthorValue, (unsigned char*)cAuthorValueFromBase64);
+		CodeDes(true, cAuthorValueFromBase64, &length, DES_SIZE);
+		cAuthorValueFromBase64[length] = '\0';
+		std::vector<std::string> items = Util::split(std::string(cAuthorValueFromBase64), '#');
+		if (items.size() != 6)
+			return false;
+		std::string Dates = items[0];
+		std::string Datee = items[1];
+		std::string Type = items[2];
+		std::string Days = items[3];
+		std::string Day = items[4];
+		std::string Needcheck = items[5];
+		if (strcmp(Needcheck.c_str(), "1") == 0) {
+			std::transform(_serial.begin(), _serial.end(), _serial.begin(), ::tolower);
+			if (strcmp(Type.c_str(), _serial.c_str()) == 0) {
+				struct tm tm1 = { 0 };
+				sscanf_s(Dates.c_str(), "%d/%d/%d", &(tm1.tm_year), &(tm1.tm_mon), &(tm1.tm_mday));
+				tm1.tm_year -= 1900;
+				tm1.tm_mon--;
+				tm1.tm_isdst = -1;
+				time_t time1 = mktime(&tm1);
+				time_t time2 = time(NULL);
+				struct tm tm3 = { 0 };
+				sscanf_s(Datee.c_str(), "%d/%d/%d", &(tm3.tm_year), &(tm3.tm_mon), &(tm3.tm_mday));
+				tm3.tm_year -= 1900;
+				tm3.tm_mon--;
+				tm3.tm_isdst = -1;
+				time_t time3 = mktime(&tm3);
+				if (time1 != -1 && time2 != -1 && time3 != -1) {
+					if (time2 >= time1) {
+						if (time2 <= time3) {
+							int iDay = ceil((time2 - time1) / 84600.0);
+							if (atoi(Day.c_str()) <= iDay) {
+								std::string strAuthorValueToWrite = Dates + "#" + Datee + "#" + Type + "#" + Days + "#" + 
+									std::to_string(iDay) + "#" + Needcheck;
+								char cAuthorValueToWrite[DES_SIZE] = { 0 };
+								sprintf_s(cAuthorValueToWrite, "%s#%s#%s#%s#%d#%s", 
+									Dates.c_str(), Datee.c_str(), Type.c_str(), Days.c_str(), iDay, Needcheck.c_str());
+								unsigned long lengthToWrite = strlen(cAuthorValueToWrite);
+								CodeDes(false, cAuthorValueToWrite, &lengthToWrite, DES_SIZE);
+								char cAuthorValueToWriteToBase64[DES_SIZE] = { 0 };
+								int lengthToWriteToBase64 =  Util::encode64((unsigned char*)cAuthorValueToWrite, cAuthorValueToWriteToBase64, lengthToWrite);
+								GetXor(cAuthorValueToWriteToBase64, lengthToWriteToBase64);
+								if (fopen_s(&pFile, strAuthorFileName.c_str(), "w") != 0)
+									return false;
+								fwrite(cAuthorValueToWriteToBase64, sizeof(char), lengthToWriteToBase64, pFile);
+								fclose(pFile);
+								result = true;
+							} else 
+								strErrorInfo += "System Time is modified!\n";
+						}else
+							strErrorInfo += "System Time > Authorize time(" + Datee + ")!\n";
+					}else
+						strErrorInfo += "System Time < Factory time(" + Dates + ")!\n";
+				}else
+					strErrorInfo += "Authorize File Error!\n";
+			}else
+				strErrorInfo += "Authorize Serial Number Error!\n";
+		}
 		return result;
 	}
 
+	void GetXor(char* input, int length) {
+		char UnDefine[] = "zjn934";
+		for (int i = 0; i < length; i++)
+			input[i] ^= UnDefine[i++ % (sizeof(UnDefine) - 1)];
+	}
+
+	int CodeDes(bool isDecode, char* input, unsigned long* length, int max) {
+#ifdef _MSC_VER
+		//为了兼容c#，改用vc代码
+		HCRYPTPROV hProv = NULL;
+		HCRYPTKEY hSessionKey = NULL;
+		DWORD dwDataLen = 0;
+		KeyBlob blob;
+		blob.header.bType = PLAINTEXTKEYBLOB;
+		blob.header.bVersion = CUR_BLOB_VERSION;
+		blob.header.reserved = 0;
+		blob.header.aiKeyAlg = CALG_DES;
+		blob.cbKeySize = 8;
+		memcpy(blob.rgbKeyData, DESkeys, 8);
+		BYTE iv[9] = { 0 };
+		memcpy(iv, DESiv, 8);
+		CryptAcquireContext(&hProv, NULL, MS_DEF_PROV, PROV_RSA_FULL, 0);
+		CryptImportKey(hProv, (BYTE*)&blob, sizeof(blob), 0, 0, &hSessionKey);
+		CryptSetKeyParam(hSessionKey, KP_IV, (BYTE*)iv, 0);
+		BOOL ret = FALSE;
+		if (isDecode)
+			ret = CryptDecrypt(hSessionKey, NULL, TRUE, 0, (BYTE*)input, length);
+		else
+			ret = CryptEncrypt(hSessionKey, NULL, TRUE, 0, (BYTE*)input, length, max);
+		CryptDestroyKey(hSessionKey);
+		CryptReleaseContext(hProv, 0);
+#else
+		int ret = 0;
+#endif	
+		return ret;
+	}
 	//Sigleton model
 private:
 	static JcPimObject* _singleton;
+	typedef struct
+	{
+		BLOBHEADER header;
+		DWORD cbKeySize;
+		BYTE rgbKeyData[8];
+	}KeyBlob;
 
 public:
 	static JcPimObject* Instance(){
