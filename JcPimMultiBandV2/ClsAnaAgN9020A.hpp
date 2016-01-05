@@ -69,21 +69,22 @@ public:
 	//开始初始化
 	void InstrInit() {
 		AgWrite("*RST\n");
-
-		SetParam(eParam::SPAN, 500);
-		SetParam(eParam::CENTER, 637 * 1000);
-		SetParam(eParam::ATT, 0);
-		SetParam(eParam::REFLEVEL, -60);
-		SetParam(eParam::RBW, 10);
-		SetParam(eParam::VBW, 10);
+		//SetParam(eParam::SPAN, 500);
+		//SetParam(eParam::CENTER, 637 * 1000);
+		//SetParam(eParam::ATT, 0);
+		//SetParam(eParam::REFLEVEL, -60);
+		//SetParam(eParam::RBW, 10);
+		//SetParam(eParam::VBW, 10);
+		//SetParam(eParam::MARK_POS, eNULL);
+		////开始预放
+		//AgWrite(":POW:GAIN ON\n");
+		//AgWrite(":POW:GAIN:BAND LOW\n");
+		//InstrSetAvg(0);
+		////InstrClosgAvg();
+		InstrPimSetting();
 		SetParam(eParam::MARK_POS, eNULL);
-
-		//开始预放
-		AgWrite(":POW:GAIN ON\n");
-		AgWrite(":POW:GAIN:BAND LOW\n");
-
-		InstrSetAvg(0);
-		//InstrClosgAvg();
+		if (GetSpeIndex() == 0)
+			AgWrite("MARK1:PEAK\n");
 	}
 
 	//开始读取
@@ -170,9 +171,17 @@ public:
 		InstrSetRef(-60);
 		InstrClosgAvg();
 		InstrSetAtt(0);
-		InstrSetRbw(10);
-		InstrSetVbw(10);
-		InstrSetSpan(500);
+
+		if (GetSpeIndex() == 1) {
+			InstrSetRbw(10);
+			InstrSetVbw(10);
+			InstrSetSpan(500);
+		}
+		else {
+			InstrSetRbw(1000);
+			InstrSetVbw(1000);
+			InstrSetSpan(10 * 1000);
+		}
 	}
 	
 	void InstrVcoSetting() {
@@ -181,6 +190,8 @@ public:
 		//开始预放
 		AgWrite(":POW:GAIN ON\n");
 		AgWrite(":POW:GAIN:BAND LOW\n");
+
+		if (GetSpeIndex() == 1) {
 		//2015-5-5/vco: 15khz-100hz-100hz
 		InstrSetRbw(100);
 		InstrSetVbw(100);
@@ -188,19 +199,31 @@ public:
 		//InstrSetRbw(10 * 1000);
 		//InstrSetVbw(10 * 1000);
 		//InstrSetSpan(400 * 1000);
+		}
+		else {
+			InstrSetRbw(1000);
+			InstrSetVbw(1000);
+			InstrSetSpan(10 * 1000);
+		}
 	}
 	void InstrTxOffsetSetting() {
 		//OFFSET置零
 		InstrSetOffset(0);
 		//关闭预防
 		AgWrite(":POW:GAIN OFF\n");
-		InstrClosgAvg();
 		InstrSetRef(10);
+		InstrClosgAvg();
 		InstrSetAtt(40);
-		InstrSetOffset(0);
-		InstrSetRbw(100);
-		InstrSetVbw(100);
-		InstrSetSpan(1000);
+
+		if (GetSpeIndex() == 1) {
+			InstrSetRbw(100);
+			InstrSetVbw(100);
+			InstrSetSpan(1000);
+		} else {
+			InstrSetRbw(1000);
+			InstrSetVbw(1000);
+			InstrSetSpan(10*1000);
+		}
 	}
 	void InstrRxOffsetSetting() {
 		InstrPimSetting();
@@ -254,10 +277,18 @@ private:
 
 		return _isCmdSucc;
 	}
+
+	int GetSpeIndex() {
+		if (Util::strFind(_strIDN, "JCSPE"))
+			return 0;
+		else
+			return 1;
+	}
 	
 private:
 	bool _isCmdSucc;
 	double _freq_now;
+	
 };
 
 #endif

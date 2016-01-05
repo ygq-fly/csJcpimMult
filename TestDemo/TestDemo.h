@@ -113,5 +113,10 @@ typedef void(*ptestcb)(Callback_Get_RX_Offset_Point);
 typedef int(*pJcSetOffsetTxIncremental)(char, char, char, char, double);
 //JC_STATUS JcGetOffsetBandInfo(int band_index, char* band_info)
 typedef int(*pJcGetOffsetBandInfo)(int, char*);
+//JC_API JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte, JC_RETURN_VALUE resulte_sen,
+//	int coup,
+//	double des_p_dbm, double des_f_mhz,
+//	double loss_db);
+typedef int(*pJcSetOffsetTx_Single)(double&, double&, int, double, double, double);
 
 #endif //JCPIMMULTIBANDV2_TESTDEMO_H

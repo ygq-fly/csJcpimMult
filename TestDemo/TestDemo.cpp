@@ -74,8 +74,8 @@ void Test_dll(){
 	pJcGetOffsetBandInfo jcGetOffsetBandInfo = (pJcGetOffsetBandInfo)GetProcAddress(hinst, "JcGetOffsetBandInfo");
 	pGetDllVersion getDllVersion = (pGetDllVersion)GetProcAddress(hinst, "JcGetDllVersion");
 	pJcSetOffsetTxIncremental jcSetOffsetTxIncremental = (pJcSetOffsetTxIncremental)GetProcAddress(hinst, "JcSetOffsetTxIncremental");
-	int a = test(3, 5);
-    printf("a = %d\n", a);
+	pJcSetOffsetTx_Single jcSetOffsetTx_Single = (pJcSetOffsetTx_Single)GetProcAddress(hinst, "JcSetOffsetTx_Single");
+
     testcb([](double offset_freq, double Offset_val){
         printf("freq = %lf ; val = %lf\n", offset_freq, Offset_val);
     });

@@ -85,6 +85,7 @@
     <ClInclude Include="3rdParty\sqlite3.h" />
     <ClInclude Include="3rdParty\visa.h" />
     <ClInclude Include="3rdParty\visatype.h" />
+    <ClInclude Include="ClsTcpNet.h" />
     <ClInclude Include="ClsVisa.hpp" />
     <ClInclude Include="ClsVnaAgE5062A.hpp" />
     <ClInclude Include="ClsAnaAgN9020A.hpp" />
@@ -102,6 +103,7 @@
     <ClInclude Include="Interface.h" />
     <ClInclude Include="MyUtil\JcCommonAPI.h" />
     <ClInclude Include="MyUtil\JcException.hpp" />
+    <ClInclude Include="MyUtil\TcpClient.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RohdeSchwarz\ClsAnaRsFspSerial.h" />
     <ClInclude Include="RohdeSchwarz\ClsInstrRohdeSchwarz.h" />
@@ -128,6 +130,7 @@
     <ClCompile Include="JcApi.cpp" />
     <ClCompile Include="JcOffsetDB.cpp" />
     <ClCompile Include="MyUtil\JcCommonAPI.cpp" />
+    <ClCompile Include="MyUtil\TcpClient.cpp" />
     <ClCompile Include="RohdeSchwarz\ClsAnaRsFspSerial.cpp" />
     <ClCompile Include="RohdeSchwarz\ClsSigRsSMxSerial.cpp" />
     <ClCompile Include="stdafx.cpp" />

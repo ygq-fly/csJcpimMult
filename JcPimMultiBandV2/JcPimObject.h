@@ -502,14 +502,14 @@ public:
 		Util::getMyPath(cAuthorFileName, 1024, "JcPimMultiBandV2.dll");
 		std::string strAuthorFileName(cAuthorFileName);
 		strAuthorFileName += "\\Key\\Key";
-		fopen_s(&pFile, strAuthorFileName.c_str(), "r");
+		fopen_s(&pFile, strAuthorFileName.c_str(), "rb");
 		if (!pFile)
 		{
 			strErrorInfo = "Authorize File no Find!\n";
 			return false;
 		}
 		char cAuthorValue[DES_SIZE] = { 0 };
-		size_t n = fread(cAuthorValue, sizeof(char), sizeof(cAuthorValue), pFile);
+		size_t n = fread(cAuthorValue, sizeof *cAuthorValue, sizeof(cAuthorValue), pFile);
 		fclose(pFile);
 		pFile = NULL;
 		if (n > 0) 
@@ -560,7 +560,7 @@ public:
 								char cAuthorValueToWriteToBase64[DES_SIZE] = { 0 };
 								int lengthToWriteToBase64 =  Util::encode64((unsigned char*)cAuthorValueToWrite, cAuthorValueToWriteToBase64, lengthToWrite);
 								GetXor(cAuthorValueToWriteToBase64, lengthToWriteToBase64);
-								if (fopen_s(&pFile, strAuthorFileName.c_str(), "w") != 0)
+								if (fopen_s(&pFile, strAuthorFileName.c_str(), "wb") != 0)
 									return false;
 								fwrite(cAuthorValueToWriteToBase64, sizeof(char), lengthToWriteToBase64, pFile);
 								fclose(pFile);

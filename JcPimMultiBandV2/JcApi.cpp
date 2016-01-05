@@ -56,6 +56,10 @@
 //(build 299)
 //  设置tx校准模式下，关闭预防
 //  其他模式下开始预放
+//(build 306)
+//  添加authorize
+//build 307）
+//  support jcsig,jcspe
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -84,10 +88,12 @@
 #define INSTR_AG_MXG_SERIES 10
 #define INSTR_RS_SM_SERIES 11
 #define INSTR_TEK_TSG 12
+#define INSTR_JCSIG 13
 
 //频谱仪标识
 #define INSTR_AG_MXA_SERIES 20
 #define INSTR_RS_FS_SERIES 21
+#define INSTR_JCSPE 23
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //mian
@@ -782,7 +788,7 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 		char cIdn[128] = { 0 };
 		int index = JcGetIDN(vi, cIdn);
 		//安捷伦
-		if (index == INSTR_AG_MXG_SERIES){
+		if (index == INSTR_AG_MXG_SERIES || index == INSTR_JCSIG){
 			if (byDevice == SIGNAL1) {
 				__pobj->sig1 = std::make_shared<ClsSigAgN5181A>();
 				__pobj->sig1->InstrSession(vi, cIdn);
@@ -829,7 +835,7 @@ JcBool JcConnAna(JC_ADDRESS cAddr) {
 		char cIdn[128] = { 0 };
 		int index = JcGetIDN(vi, cIdn);
 		//安捷伦
-		if (index == INSTR_AG_MXA_SERIES) {
+		if (index == INSTR_AG_MXA_SERIES || INSTR_JCSPE) {
 			__pobj->ana = std::make_shared<ClsAnaAgN9020A>();
 			__pobj->ana->InstrSession(vi, cIdn);
 		}
@@ -1661,6 +1667,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		if (NULL != cIdn)
 			memcpy(cIdn, buf, retCount);
 		std::string strIdn((char*)buf);
+		//功率计
 		if      (Util::strFind(strIdn, "U2000A")  || Util::strFind(strIdn, "U2001A")  || Util::strFind(strIdn, "U2002A"))
 			iDeviceIDN = INSTR_AG_U2000_SERIES;
 		else if (Util::strFind(strIdn, "NRT"))
@@ -1672,11 +1679,15 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 				 Util::strFind(strIdn, "N5181")  || Util::strFind(strIdn, "N5182")  || 
 				 Util::strFind(strIdn, "N5183")  ||
 				 Util::strFind(strIdn, "E4436")   || Util::strFind(strIdn, "E4437")  ||
-				 Util::strFind(strIdn, "E4438")) 
+				 Util::strFind(strIdn, "E4438"))
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
-		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") || 
-				 Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))
+		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") ||
+			Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))
 			iDeviceIDN = INSTR_RS_SM_SERIES;
+		else if (Util::strFind(strIdn, "TSG4"))
+			iDeviceIDN = INSTR_TEK_TSG;
+		else if (Util::strFind(strIdn, "JCSIG"))
+			iDeviceIDN = INSTR_JCSIG;
 		//频谱仪
 		else if (Util::strFind(strIdn, "N9000")  || Util::strFind(strIdn, "N9010")  || 
 				 Util::strFind(strIdn, "N9020")  || Util::strFind(strIdn, "N9030")  || 
@@ -1684,8 +1695,9 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;
-		else if (Util::strFind(strIdn, "TSG4"))
-			iDeviceIDN = INSTR_TEK_TSG;
+		else if (Util::strFind(strIdn, "JCSPE"))
+			iDeviceIDN = INSTR_JCSPE;
+		//NONE
 		else
 			Util::logged(L"JcGetIDN: The current device does not support! (%s)", Util::utf8_to_wstring(strIdn).c_str());
 	}
