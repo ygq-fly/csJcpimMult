@@ -512,6 +512,10 @@ public:
 		size_t n = fread(cAuthorValue, sizeof *cAuthorValue, sizeof(cAuthorValue), pFile);
 		fclose(pFile);
 		pFile = NULL;
+		std::string strTemp(cAuthorValue);
+		Util::replaceinString(strTemp, "\r\n", "\n");
+		memcpy(cAuthorValue, strTemp.c_str(), strTemp.length());
+		cAuthorValue[strTemp.length()] = '\0';
 		if (n > 0) 
 			GetXor(cAuthorValue, n);
 		else 
@@ -533,14 +537,20 @@ public:
 			std::transform(_serial.begin(), _serial.end(), _serial.begin(), ::tolower);
 			if (strcmp(Type.c_str(), _serial.c_str()) == 0) {
 				struct tm tm1 = { 0 };
-				sscanf_s(Dates.c_str(), "%d/%d/%d", &(tm1.tm_year), &(tm1.tm_mon), &(tm1.tm_mday));
+				if (Util::strFind(Dates, "-"))
+					sscanf_s(Dates.c_str(), "%d-%d-%d", &(tm1.tm_year), &(tm1.tm_mon), &(tm1.tm_mday));
+				else
+					sscanf_s(Dates.c_str(), "%d/%d/%d", &(tm1.tm_year), &(tm1.tm_mon), &(tm1.tm_mday));
 				tm1.tm_year -= 1900;
 				tm1.tm_mon--;
 				tm1.tm_isdst = -1;
 				time_t time1 = mktime(&tm1);
 				time_t time2 = time(NULL);
 				struct tm tm3 = { 0 };
-				sscanf_s(Datee.c_str(), "%d/%d/%d", &(tm3.tm_year), &(tm3.tm_mon), &(tm3.tm_mday));
+				if (Util::strFind(Datee, "-"))
+					sscanf_s(Datee.c_str(), "%d-%d-%d", &(tm3.tm_year), &(tm3.tm_mon), &(tm3.tm_mday));
+				else
+					sscanf_s(Datee.c_str(), "%d/%d/%d", &(tm3.tm_year), &(tm3.tm_mon), &(tm3.tm_mday));
 				tm3.tm_year -= 1900;
 				tm3.tm_mon--;
 				tm3.tm_isdst = -1;
@@ -566,15 +576,15 @@ public:
 								fclose(pFile);
 								result = true;
 							} else 
-								strErrorInfo += "System Time is modified!\n";
+								strErrorInfo = "System Time is modified!\n";
 						}else
-							strErrorInfo += "System Time > Authorize time(" + Datee + ")!\n";
+							strErrorInfo = "System Time > Authorize time(" + Datee + ")!\n";
 					}else
-						strErrorInfo += "System Time < Factory time(" + Dates + ")!\n";
+						strErrorInfo = "System Time < Factory time(" + Dates + ")!\n";
 				}else
-					strErrorInfo += "Authorize File Error!\n";
+					strErrorInfo = "Authorize File Error!\n";
 			}else
-				strErrorInfo += "Authorize Serial Number Error!\n";
+				strErrorInfo = "Authorize Serial Number Error!\n";
 		}
 		return result;
 	}

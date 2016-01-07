@@ -89,8 +89,10 @@ public:
 
 	//设置频率功率
 	bool InstrSetFreqPow(double freq_khz, double pow_dbm) {
-		_isCmdSucc = InstrSetFreq(freq_khz);
-		_isCmdSucc &= InstrSetPow(pow_dbm);
+		//_isCmdSucc = InstrSetFreq(freq_khz);
+		//_isCmdSucc &= InstrSetPow(pow_dbm);
+		_isCmdSucc = InstrSetPow(pow_dbm);
+		_isCmdSucc &= InstrSetFreq(freq_khz);
 		return _isCmdSucc;
 	}
 

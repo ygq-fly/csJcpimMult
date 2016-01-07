@@ -26,6 +26,7 @@ namespace Util {
 	void logged(const wchar_t* fmt, ...);
 	void logged(const char* fmt, ...);
 	void logging(const char* fmt, ...);
+	int replaceinString(std::string& str, const std::string& str_from, const std::string& str_to);
 	void strTrim(std::string& str);
 	bool strFind(const std::string& str, const char* str_find);
 	std::wstring utf8_to_wstring(const std::string& str);

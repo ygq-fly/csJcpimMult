@@ -155,6 +155,14 @@ void Util::logging(const char *fmt, ...) {
     }
 }
 
+int Util::replaceinString(std::string& str, const std::string& str_from, const std::string& str_to) {
+	size_t start_pos = str.find(str_from);
+	if (start_pos == std::string::npos)
+		return -1;
+	str.replace(start_pos, str_from.length(), str_to);
+	return 0;
+}
+
 void Util::strTrim(std::string& str) {
 	str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
 }
