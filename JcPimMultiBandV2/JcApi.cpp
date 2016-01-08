@@ -64,6 +64,10 @@
 //  fix authorize bug
 //build 311）
 //  调换freq和pow顺序
+//build 312）
+//  fix authorize bug
+//build 313）
+//  change protect_rx
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -73,10 +77,7 @@
 
 #define __pobj JcPimObject::Instance()
 
-#define OFFSET_PROTECT_TX -10
-#define OFFSET_PROTECT_RX -90
 #define SIGNAL_SOURCE_MAX_POW 8
-
 #define OFFSET_TX_THREASOLD 0.05
 
 //#define JC_OFFSET_TX_SINGLE_DEBUG
@@ -392,8 +393,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	js = fnSetTxOn(true, JC_CARRIER_TX1TX2);
 	if (0 != js) return js;
 	//---------------------------------------------------------------------------------
-	//切换耦合器tx2开关
-	JcBool b = HwSetCoup(JC_COUP_TX2);
+	//切换耦合器tx2开关(保护多切一次)
+	JcBool b = HwSetCoup(JC_COUP_TX1);
+	b = HwSetCoup(JC_COUP_TX2);
 	if (FALSE == b) {
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
@@ -790,7 +792,7 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 	if (s == VI_SUCCESS) {
 		JcPimObject::Instance()->JcSetViAttribute(vi);
 		char cIdn[128] = { 0 };
-		int index = JcGetIDN(vi, cIdn);
+		int index = JcGetIDN(vi, cIdn);			
 		//安捷伦
 		if (index == INSTR_AG_MXG_SERIES || index == INSTR_JCSIG){
 			if (byDevice == SIGNAL1) {
@@ -801,6 +803,8 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 				__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
 				__pobj->sig2->InstrSession(vi, cIdn);
 			}
+			if (index == INSTR_JCSIG)
+				_protect_rx = OFFSET_JCPROTECT_RX;
 		}
 		//罗德斯瓦茨
 		else if (index == INSTR_RS_SM_SERIES) {
@@ -1209,7 +1213,10 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		std::to_string(byDutPort) + "\r\n";
 
 	//设置保护值
-	JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, OFFSET_PROTECT_RX);
+	//JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, OFFSET_PROTECT_RX);
+	JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, _protect_rx);
+	if (_protect_rx == OFFSET_JCPROTECT_RX)
+		__pobj->ana->InstrSetAtt(30);
 	//开启功放
 	fnSetTxOn(true, JC_CARRIER_TX1);
 	//VCO
@@ -1227,21 +1234,25 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	Util::setSleep(1000);
 	for (int i = 0; i < freq_num; ++i) {		
 		//设置
-		JcSetSig(JC_CARRIER_TX1, Rxfreq[i] * 1000, OFFSET_PROTECT_RX);
+		JcSetSig(JC_CARRIER_TX1, Rxfreq[i] * 1000, _protect_rx);
 		Util::setSleep(200);
 		//读取
 		double v = JcGetAna(Rxfreq[i] * 1000, false);
 		if (v == JC_STATUS_ERROR) {
 			//关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
+			if (_protect_rx == OFFSET_JCPROTECT_RX)
+				__pobj->ana->InstrSetAtt(0);
 			__pobj->strErrorInfo = "Spectrum read error!\r\n";
 			return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
 		}
 		//计算规则: 目标值（OFFSET_PROTECT_RX） = 实际值（v） + 校准值 （off） +差损（loss_db）
-		off[i] = OFFSET_PROTECT_RX - v - loss_db;
+		off[i] = _protect_rx - v - loss_db;
 		if (off[i] > 10 || off[i] < -10) {
 			//错误，关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
+			if (_protect_rx == OFFSET_JCPROTECT_RX)
+				__pobj->ana->InstrSetAtt(0);
 			//__pobj->ana->InstrSetAvg(2);
 			__pobj->strErrorInfo = "   RxOffset: No Find Power(-90)!\r\n";
 			strLog += __pobj->strErrorInfo;
@@ -1258,6 +1269,8 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	}
 	//关闭功放
 	fnSetTxOn(false, JC_CARRIER_TX1);
+	if (_protect_rx == OFFSET_JCPROTECT_RX)
+		__pobj->ana->InstrSetAtt(0);
 
 	JC_STATUS s = __pobj->offset.Store_v2(OFFSET_RX, sband.c_str(), byDutPort, 0, 0, 0, off, freq_num);
 	if (s) {

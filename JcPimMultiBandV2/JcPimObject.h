@@ -24,12 +24,17 @@
 #define SMOOTH_TX_THREASOLD 2
 #define SMOOTH_TX_ACCURACY 0.15
 
+#define OFFSET_PROTECT_TX -10
+#define OFFSET_PROTECT_RX -90
+#define OFFSET_JCPROTECT_RX -17
+
 #define SUM_LOW	       0
 #define SUM_HIGH	   1
 #define SUM_LESS       0
 #define SUM_ADD        1
 #define DES_SIZE	   1024	
 
+static int _protect_rx = OFFSET_PROTECT_RX;
 static int _debug_enable = 0;
 //功率调整延时
 static int _tx_delay = 400;
