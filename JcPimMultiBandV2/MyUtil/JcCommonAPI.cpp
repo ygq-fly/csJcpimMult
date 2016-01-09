@@ -155,12 +155,35 @@ void Util::logging(const char *fmt, ...) {
     }
 }
 
-int Util::replaceinString(std::string& str, const std::string& str_from, const std::string& str_to) {
-	size_t start_pos = str.find(str_from);
-	if (start_pos == std::string::npos)
-		return -1;
-	str.replace(start_pos, str_from.length(), str_to);
+int Util::replaceInString(std::string& str, const std::string& str_from, const std::string& str_to) {
+	size_t pos = 0;
+	while ((pos = str.find(str_from, pos)) != std::string::npos) {
+		if (str_to != "")
+			str.replace(pos, str_from.length(), str_to);
+		else
+			str.erase(pos, pos + str_from.length());
+		pos += str_to.length();
+	}
 	return 0;
+}
+
+int Util::replaceInArrary(char* str, int count, const char* from, const char* to) {
+	std::vector<std::string> vecTemp;
+	int len = 0;
+	while (len <= count) {
+		std::string temp(str+len);
+		len += (temp.length() + 1);
+		replaceInString(temp, from, to);
+		vecTemp.push_back(temp);
+	}
+	memset(str, 0x00, count);
+	len = 0;
+	for (int i = 0; i < vecTemp.size(); i++) {
+		memcpy(str + len, vecTemp[i].c_str(), vecTemp[i].length());
+		int n = vecTemp[i].length();
+		len += (vecTemp[i].length() + 1);
+	}
+	return len-1;
 }
 
 void Util::strTrim(std::string& str) {

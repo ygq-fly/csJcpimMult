@@ -68,6 +68,9 @@
 //  fix authorize bug
 //build 313）
 //  change protect_rx
+//build 315）
+//  fix authorize bug
+//  rechange protect_rx
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1215,8 +1218,8 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//设置保护值
 	//JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, OFFSET_PROTECT_RX);
 	JcSetSig(JC_CARRIER_TX1, Rxfreq[0] * 1000, _protect_rx);
-	if (_protect_rx == OFFSET_JCPROTECT_RX)
-		__pobj->ana->InstrSetAtt(30);
+	//if (_protect_rx == OFFSET_JCPROTECT_RX)
+	//	__pobj->ana->InstrSetAtt(30);
 	//开启功放
 	fnSetTxOn(true, JC_CARRIER_TX1);
 	//VCO
@@ -1241,8 +1244,6 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		if (v == JC_STATUS_ERROR) {
 			//关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
-			if (_protect_rx == OFFSET_JCPROTECT_RX)
-				__pobj->ana->InstrSetAtt(0);
 			__pobj->strErrorInfo = "Spectrum read error!\r\n";
 			return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
 		}
@@ -1251,8 +1252,6 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		if (off[i] > 10 || off[i] < -10) {
 			//错误，关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
-			if (_protect_rx == OFFSET_JCPROTECT_RX)
-				__pobj->ana->InstrSetAtt(0);
 			//__pobj->ana->InstrSetAvg(2);
 			__pobj->strErrorInfo = "   RxOffset: No Find Power(-90)!\r\n";
 			strLog += __pobj->strErrorInfo;
@@ -1269,8 +1268,8 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	}
 	//关闭功放
 	fnSetTxOn(false, JC_CARRIER_TX1);
-	if (_protect_rx == OFFSET_JCPROTECT_RX)
-		__pobj->ana->InstrSetAtt(0);
+	//if (_protect_rx == OFFSET_JCPROTECT_RX)
+	//	__pobj->ana->InstrSetAtt(0);
 
 	JC_STATUS s = __pobj->offset.Store_v2(OFFSET_RX, sband.c_str(), byDutPort, 0, 0, 0, off, freq_num);
 	if (s) {

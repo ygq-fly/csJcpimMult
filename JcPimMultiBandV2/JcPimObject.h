@@ -26,7 +26,7 @@
 
 #define OFFSET_PROTECT_TX -10
 #define OFFSET_PROTECT_RX -90
-#define OFFSET_JCPROTECT_RX -17
+#define OFFSET_JCPROTECT_RX -80
 
 #define SUM_LOW	       0
 #define SUM_HIGH	   1
@@ -415,8 +415,7 @@ public:
 			return byExtMeasBand;
 
 		uint8_t sband;
-		switch (byExtMeasBand)
-		{		
+		switch (byExtMeasBand) {		
 		case 0: sband =1 /*"DD800"*/; break;
 		case 1: sband =2 /*"EGSM900"*/; break;
 		case 2: sband =3 /*"DCS1800"*/; break;
@@ -517,10 +516,8 @@ public:
 		size_t n = fread(cAuthorValue, sizeof *cAuthorValue, sizeof(cAuthorValue), pFile);
 		fclose(pFile);
 		pFile = NULL;
-		std::string strTemp(cAuthorValue);
-		Util::replaceinString(strTemp, "\r\n", "\n");
-		memcpy(cAuthorValue, strTemp.c_str(), strTemp.length());
-		cAuthorValue[strTemp.length()] = '\0';
+		n = Util::replaceInArrary(cAuthorValue, n, "\r\n", "");
+		cAuthorValue[n] = '\0';
 		if (n > 0) 
 			GetXor(cAuthorValue, n);
 		else 
