@@ -178,6 +178,7 @@ public:
 	//开关切换后rf和pim工作模块将调用该信息
 	std::vector<JcBandModule> now_mode_bandset;
 	//band_number
+	std::string now_band_prefix;
 	int now_num_band;
 	int now_num_port;
 	//???????
@@ -265,7 +266,7 @@ private:
 		double tx_accuracy = Util::getIniDouble(L"Settings", L"tx_accuracy", SMOOTH_TX_ACCURACY, wsPath_ini.c_str());
 
 		//SET SETTINGS
-		now_mode = (iTransType < 0 || iTransType > 3) ? MODE_HUAWEI : iTransType;
+		now_mode = (iTransType < 0 || iTransType > 4) ? MODE_HUAWEI : iTransType;
 		now_vco_threasold = vco_limit <= 0 ? SMOOTH_VCO_THREASOLD : vco_limit;
 		now_tx_smooth_threasold = tx_smooth <= 0 ? SMOOTH_TX_THREASOLD : tx_smooth;
 		now_tx_smooth_accuracy = tx_accuracy <= 0 ? SMOOTH_TX_ACCURACY : tx_accuracy;
@@ -288,20 +289,21 @@ public:
 		offset.DbInit(now_mode);
 
 		int ret = 0;
-		std::string now_band_prefix;
+		
 		//获取频段数量
-		if (now_mode == MODE_POI)
-		{
+		if (now_mode == MODE_POI) {
 			now_num_band = offset.GetBandCount("poi");
 			now_band_prefix = "poi";
 		}
-		else if (now_mode == MODE_NEWPOI)
-		{
+		else if (now_mode == MODE_NEWPOI) {
 			now_num_band = offset.GetBandCount("np");
 			now_band_prefix = "np";
 		}
-		else
-		{
+		else if (now_mode == MODE_HUAWEIA) {
+			now_num_band = offset.GetBandCount("hwa");
+			now_band_prefix = "hwa";
+		}
+		else {
 			now_num_band = offset.GetBandCount("hw");
 			now_band_prefix = "hw";
 		}
@@ -520,15 +522,19 @@ public:
 		cAuthorValue[n] = '\0';
 		if (n > 0) 
 			GetXor(cAuthorValue, n);
-		else 
+		else {
+			strErrorInfo = "Authorize Read Error!\n";
 			return false;
+		}
 		char cAuthorValueFromBase64[DES_SIZE] = { 0 };
 		unsigned long length = Util::decode64(cAuthorValue, (unsigned char*)cAuthorValueFromBase64);
 		CodeDes(true, cAuthorValueFromBase64, &length, DES_SIZE);
 		cAuthorValueFromBase64[length] = '\0';
 		std::vector<std::string> items = Util::split(std::string(cAuthorValueFromBase64), '#');
-		if (items.size() != 6)
+		if (items.size() != 6) {
+			strErrorInfo = "Authorize Content Error!\n";
 			return false;
+		}
 		std::string Dates = items[0];
 		std::string Datee = items[1];
 		std::string Type = items[2];

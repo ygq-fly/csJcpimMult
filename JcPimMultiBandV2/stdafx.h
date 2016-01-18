@@ -59,7 +59,8 @@ enum
 	MODE_HUAWEI = 0,
 	MODE_TRANSMISSION = 1,
 	MODE_POI = 2,
-	MODE_NEWPOI = 3
+	MODE_NEWPOI = 3,
+	MODE_HUAWEIA = 4
 };
 
 // TODO: reference additional headers your program requires here

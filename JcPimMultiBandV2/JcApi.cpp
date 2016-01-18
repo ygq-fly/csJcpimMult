@@ -71,6 +71,8 @@
 //build 315）
 //  fix authorize bug
 //  rechange protect_rx
+//build 317）
+//  add new mode(hwa)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -113,11 +115,11 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	if (NULL != __pobj) {
 
 		//建立模块
-		if (__pobj->CheckAuthorization() == false) {
-			__pobj->strErrorInfo = "Authorize Fail: \n" + __pobj->strErrorInfo;
-			Util::logged(L"授权已到期！");
-			return JC_STATUS_NO_AUTORIZE;
-		}
+		//if (__pobj->CheckAuthorization() == false) {
+		//	__pobj->strErrorInfo = "Authorize Fail: \n" + __pobj->strErrorInfo;
+		//	Util::logged(L"授权已到期！");
+		//	return JC_STATUS_NO_AUTORIZE;
+		//}
 
 		//分配地址
 		std::istringstream iss(cDeviceAddr);
@@ -909,7 +911,19 @@ JcBool JcConnSwh() {
 JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	if (NULL == __pobj) return false;
 
-	double vco_freq_mhz = 1334 + 2 * bySwitchBand;
+	double vco_freq_mhz; 
+	if (__pobj->now_mode == MODE_POI)
+		vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_a;
+	else if (__pobj->now_mode == MODE_HUAWEI)
+		vco_freq_mhz = 1334 + 2 * bySwitchBand;
+	else {
+		if ((bySwitchBand % 2) == 0)
+			vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_a;
+		else
+			vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_b;
+	}
+	if (vco_freq_mhz == 0)
+		return false;
 	//__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
 	__pobj->ana->InstrVcoSetting();
 	Util::setSleep(100);
@@ -1152,13 +1166,7 @@ JC_STATUS JcGetOffsetBandInfo(int band_index, char* band_info){
 	if (NULL == __pobj) return JC_STATUS_ERROR;
 	
 	char prefix[64] = { 0 };
-	if (__pobj->now_mode == MODE_POI)
-		sprintf_s(prefix, "poi%d", band_index);
-	else if (__pobj->now_mode == MODE_NEWPOI)
-		sprintf_s(prefix, "np%d", band_index);
-	else
-		sprintf_s(prefix, "hw%d",band_index);
-
+	sprintf_s(prefix, "%s%d", __pobj->now_band_prefix.c_str(), band_index);
 	return __pobj->offset.GetBandInfo(prefix, band_info);
 }
 
@@ -1239,6 +1247,8 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		//设置
 		JcSetSig(JC_CARRIER_TX1, Rxfreq[i] * 1000, _protect_rx);
 		Util::setSleep(200);
+		if (_protect_rx == OFFSET_JCPROTECT_RX)
+			Util::setSleep(300);
 		//读取
 		double v = JcGetAna(Rxfreq[i] * 1000, false);
 		if (v == JC_STATUS_ERROR) {

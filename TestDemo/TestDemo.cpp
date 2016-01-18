@@ -120,7 +120,7 @@ void Test_dll(){
 	if (setMeasBand(8) < 0) {
 		tx_freq = 729;
 		rx_freq = 698;
-		printf("This is HW_BAND!\n");
+		printf("This is HW_BAND or HwA_BAND!!\n");
 	}
 	else {
 		tx_freq = 926;
