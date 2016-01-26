@@ -58,27 +58,29 @@
 //  其他模式下开始预放
 //(build 306)
 //  添加authorize
-//build 307）
+//(build 307）
 //  support jcsig,jcspe
-//build 310）
+//(build 310）
 //  fix authorize bug
-//build 311）
+//(build 311）
 //  调换freq和pow顺序
-//build 312）
+//(build 312）
 //  fix authorize bug
-//build 313）
+//(build 313）
 //  change protect_rx
-//build 315）
+//(build 315）
 //  fix authorize bug
 //  rechange protect_rx
-//build 317）
+//(build 317）
 //  add new mode(hwa)
-//build 318）
+//(build 318）
 //  supprot e4407, e4422
-//build 319）
+//(build 319）
 //  supprot u2004
-//build 320）
-//  升级华为7频为8频
+//(build 320）
+//  upgrade hw7tohw8
+//(buiut 321)
+//  fix bug GetExtBandToIntBand
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1107,7 +1109,7 @@ double JcGetAna(double freq_khz, bool isMax){
 JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCoup) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
 	//查找检测通道标号
-	int coup = 0;
+	int coup = -1;
 	if (__pobj->now_mode == MODE_POI) {
 		int temp_iSwitchTx1 = iSwitchTx1;
 		int temp_iSwitchTx2 = iSwitchTx2;

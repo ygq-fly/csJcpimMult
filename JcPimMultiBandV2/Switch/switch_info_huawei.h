@@ -8,6 +8,7 @@
 * @version	:v2.0
 * @date		:2015.3.1
 * @brief	:
+*				 2016.1.21 升级至8频
 *------------------------------------------------------------------------------*/
 
 #ifndef __SWITCH_CONFIG_HUAWEI_H__
@@ -27,6 +28,14 @@
 "1=0,0,0,0,1,\n"\
 "//3通道\n"\
 "2=0,512,0,0,0,\n"\
+"//4通道\n"\
+"3=0,256,0,0,0,\n"\
+"//5通道\n"\
+"4=0,32,0,0,0,\n"\
+"//6通道\n"\
+"5=0,16,0,0,0,\n"\
+"//7通道\n"\
+"6=0,8,0,0,0,\n"\
 "//\n"\
 "//开关2 SP6T 只用了1-3\n"\
 "[Signal2swich]\n"\
@@ -36,6 +45,14 @@
 "4=0,0,0,8,0,\n"\
 "//3通道\n"\
 "5=0,0,0,4,0,\n"\
+"//4通道\n"\
+"6=0,0,0,2,0,\n"\
+"//5通道\n"\
+"7=0,0,0,1,0,\n"\
+"//6通道\n"\
+"8=0,0,4096,0,0,\n"\
+"//7通道\n"\
+"9=0,0,2048,0,0,\n"\
 "//******************************************************\n"\
 "//开关3-8用在了开关矩阵2中\n"\
 "[Powermeterswich]\n"\
@@ -55,6 +72,12 @@
 "11=0,0,4096,0,0,\n"\
 "//7通道\n"\
 "12=0,0,2048,0,0,\n"\
+"//8通道\n"\
+"13=0,0,1024,0,0,\n"\
+"//9通道\n"\
+"14=32768,0,0,0,0,\n"\
+"//10通道\n"\
+"15=16384,0,0,0,0,\n"\
 "//\n"\
 "//开关4 SP10T 只用了1-7\n"\
 "[Spectrumswich]\n"\
@@ -72,6 +95,12 @@
 "18=0,16,0,0,0,\n"\
 "//7通道\n"\
 "19=0,8,0,0,0,\n"\
+"//8通道\n"\
+"20=0,0,0,128,0,\n"\
+"//9通道\n"\
+"21=0,0,0,64,0,\n"\
+"//10通道\n"\
+"22=0,0,0,32,0,\n"\
 "//\n"\
 "//开关5 SP3T 大功率\n"\
 "[PA1swich1]\n"\
@@ -136,7 +165,7 @@
 "\n"\
 ""
 #define IMPLEMENT_STRING_HUAWEI  "[ip]\n"\
-"namelist			=Signalswich,Paspecumpwmt,Testmdlte700,Testmddd800,Testmdgsm900,Testmddcs1800,Testmdpcs1900,Testmdwcdma2100,Testmdlte2600\n"\
+"namelist			=Signalswich,Paspecumpwmt,Testmdlte700,Testmddd800,Testmdgsm900,Testmddcs1800,Testmdpcs1900,Testmdwcdma2100,Testmdlte2600,TestmdGpp1500\n"\
 "Signalswich         =127.0.0.1:5000\n"\
 "Paspecumpwmt        =127.0.0.1:5001\n"\
 "Testmdlte700        =127.0.0.1:5002 \n"\
@@ -146,19 +175,22 @@
 "Testmdpcs1900       =127.0.0.1:5006\n"\
 "Testmdwcdma2100     =127.0.0.1:5007\n"\
 "Testmdlte2600       =127.0.0.1:5008\n"\
+"TestmdGpp1500      =127.0.0.1:5009\n"\
 "\n"\
 "[switch]\n"\
 "namelist	    =Signal1swich,Signal2swich,PA1swich1,PA1swich2,PA2swich1,PA2swich2,Spectrumswich,Powermeterswich,Couplerswich,Pimswich,Txoutswich\n"\
 "\n"\
-"Signal1swich        =PA1in1,PA2in1,PA3in1\n"\
+"Signal1swich        =PA1in1,PA2in1,PA3in1,PA4in1\n"\
 "PA1in1=1\n"\
 "PA2in1=2\n"\
 "PA3in1=3\n"\
+"PA4in1=4\n"\
 "\n"\
-"Signal2swich        =PA1in2,PA2in2,PA3in2\n"\
+"Signal2swich        =PA1in2,PA2in2,PA3in2,PA4in2\n"\
 "PA1in2=1\n"\
 "PA2in2=2\n"\
 "PA3in2=3\n"\
+"PA4in2=4\n"\
 "\n"\
 "PA1swich1           =MDlte700tx1,MDdd800tx1,MDgsm900tx1 \n"\
 "MDlte700tx1=1\n"\
@@ -180,7 +212,7 @@
 "MDpcs1900tx2=2\n"\
 "MDwcdma2100tx2=3 \n"\
 "\n"\
-"Spectrumswich       =MDlte700pim,MDdd800tpim,MDgsm900pim,MDdcs1800pim,MDpcs1900pim,MDwcdma2100pim,MDwcdma2600pim\n"\
+"Spectrumswich       =MDlte700pim,MDdd800tpim,MDgsm900pim,MDdcs1800pim,MDpcs1900pim,MDwcdma2100pim,MDwcdma2600pim,MD1500pim\n"\
 "MDlte700pim=1\n"\
 "MDdd800tpim=2\n"\
 "MDgsm900pim=3\n"\
@@ -188,8 +220,9 @@
 "MDpcs1900pim=5\n"\
 "MDwcdma2100pim=6\n"\
 "MDwcdma2600pim=7\n"\
+"MD1500pim=8\n"\
 "\n"\
-"Powermeterswich     =MDlte700pwmt,MDdd800tpwmt,MDgsm900pwmt,MDdcs1800pwmt,MDpcs1900pwmt,MDwcdma2100pwmt,MDwcdma2600pwmt\n"\
+"Powermeterswich     =MDlte700pwmt,MDdd800tpwmt,MDgsm900pwmt,MDdcs1800pwmt,MDpcs1900pwmt,MDwcdma2100pwmt,MDwcdma2600pwmt,MD1500ppwmt\n"\
 "MDlte700pwmt=1\n"\
 "MDdd800tpwmt=2\n"\
 "MDgsm900pwmt=3\n"\
@@ -197,146 +230,155 @@
 "MDpcs1900pwmt=5\n"\
 "MDwcdma2100pwmt=6\n"\
 "MDwcdma2600pwmt=7\n"\
+"MD1500ppwmt=8\n"\
 "\n"\
-"Couplerswich        =Powerdettx1,Powerdettx2 \n"\
-"Powerdettx1=1\n"\
-"Powerdettx2=2\n"\
-"\n"\
-"Pimswich            =Pimdetrxa,Pimdetrxb\n"\
-"Pimdetrxa=1\n"\
-"Pimdetrxb=2\n"\
-"\n"\
-"Txoutswich          =ANTA,ANTB\n"\
-"ANTA=1\n"\
-"ANTB=2\n"\
+"Couplerswich        =nc1,no2 \n"\
+"Pimswich            =nc1,no2\n"\
+"Txoutswich          =nc1,no2\n"\
+"nc1=1\n"\
+"no2=2\n"\
 "\n"\
 "[actiontx1]\n"\
-"namelist 	=lte700Atx1,Lte700Btx1,DD800Atx1,DD800Btx1,GSM900Atx1,GSM900Btx1,Dcs1800Atx1,Dcs1800Btx1,Pcs1900Atx1,Pcs1900Btx1,Wcdma2100Atx1,Wcdma2100Btx1,Lte2600Atx1,Lte2600Btx1\n"\
+"namelist 	=lte700Atx1,Lte700Btx1,DD800Atx1,DD800Btx1,GSM900Atx1,GSM900Btx1,Dcs1800Atx1,Dcs1800Btx1,Pcs1900Atx1,Pcs1900Btx1,Wcdma2100Atx1,Wcdma2100Btx1,Lte2600Atx1,Lte2600Btx1,Gpp1500Atx1,Gpp1500Btx1\n"\
 "\n"\
-"lte700Atx1 	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDlte700tx1),  Txoutswich(Testmdlte700 ,ANTA) \n"\
+"lte700Atx1 	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDlte700tx1),  Txoutswich(Testmdlte700 ,nc1) \n"\
 "\n"\
-"Lte700Btx1 	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDlte700tx1),  Txoutswich(Testmdlte700 ,ANTB) \n"\
+"Lte700Btx1 	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDlte700tx1),  Txoutswich(Testmdlte700 ,no2) \n"\
 "\n"\
-"DD800Atx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDdd800tx1),   Txoutswich(Testmddd800 ,ANTA) \n"\
+"DD800Atx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDdd800tx1),   Txoutswich(Testmddd800 ,nc1) \n"\
 "\n"\
-"DD800Btx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDdd800tx1),   Txoutswich(Testmddd800 ,ANTB) \n"\
+"DD800Btx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDdd800tx1),   Txoutswich(Testmddd800 ,no2) \n"\
 "\n"\
-"GSM900Atx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDgsm900tx1),  Txoutswich(Testmdgsm900 ,ANTA) \n"\
+"GSM900Atx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDgsm900tx1),  Txoutswich(Testmdgsm900 ,nc1) \n"\
 "\n"\
-"GSM900Btx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDgsm900tx1),  Txoutswich(Testmdgsm900 ,ANTB) \n"\
+"GSM900Btx1  	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDgsm900tx1),  Txoutswich(Testmdgsm900 ,no2) \n"\
 "\n"\
-"Dcs1800Atx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDdcs1800tx1), Txoutswich(Testmddcs1800 ,ANTA) \n"\
+"Dcs1800Atx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDdcs1800tx1), Txoutswich(Testmddcs1800 ,nc1) \n"\
 "\n"\
-"Dcs1800Btx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDdcs1800tx1), Txoutswich(Testmddcs1800 ,ANTB) \n"\
+"Dcs1800Btx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDdcs1800tx1), Txoutswich(Testmddcs1800 ,no2) \n"\
 "\n"\
-"Pcs1900Atx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDpcs1900tx1), Txoutswich(Testmdpcs1900 ,ANTA) \n"\
+"Pcs1900Atx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDpcs1900tx1), Txoutswich(Testmdpcs1900 ,nc1) \n"\
 "\n"\
-"Pcs1900Btx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDpcs1900tx1), Txoutswich(Testmdpcs1900  ,ANTB) \n"\
+"Pcs1900Btx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDpcs1900tx1), Txoutswich(Testmdpcs1900  ,no2) \n"\
 "\n"\
-"Wcdma2100Atx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDwcdma2100tx1), Txoutswich(Testmdwcdma2100 ,ANTA)\n"\
+"Wcdma2100Atx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDwcdma2100tx1), Txoutswich(Testmdwcdma2100 ,nc1)\n"\
 "\n"\
-"Wcdma2100Btx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDwcdma2100tx1), Txoutswich(Testmdwcdma2100 ,ANTB) \n"\
+"Wcdma2100Btx1 	= Signal1swich(Signalswich,PA2in1) ,PA2swich1(Paspecumpwmt,MDwcdma2100tx1), Txoutswich(Testmdwcdma2100 ,no2) \n"\
 "\n"\
-"Lte2600Atx1 	= Signal1swich(Signalswich,PA3in1) , Txoutswich(Testmdlte2600  ,ANTA) \n"\
+"Lte2600Atx1 	= Signal1swich(Signalswich,PA3in1) , Txoutswich(Testmdlte2600  ,nc1) \n"\
 "\n"\
-"Lte2600Btx1 	= Signal1swich(Signalswich,PA3in1) , Txoutswich(Testmdlte2600  ,ANTB) \n"\
+"Lte2600Btx1 	= Signal1swich(Signalswich,PA3in1) , Txoutswich(Testmdlte2600  ,no2) \n"\
 "\n"\
+"Gpp1500Atx1     = Signal1swich(Signalswich,PA4in1) , Txoutswich(TestmdGpp1500 ,nc1)\n"\
+"\n"\
+"Gpp1500Btx1     = Signal1swich(Signalswich,PA4in1) , Txoutswich(TestmdGpp1500 ,no2)\n"\
 "[actiontx2]\n"\
 "\n"\
-"namelist 	=lte700Atx2,Lte700Btx2,DD800Atx2,DD800Btx2,GSM900Atx2,GSM900Btx2,Dcs1800Atx2,Dcs1800Btx2,Pcs1900Atx2,Pcs1900Btx2,Wcdma2100Atx2,Wcdma2100Btx2,Lte2600Atx2,Lte2600Btx2\n"\
+"namelist 	=lte700Atx2,Lte700Btx2,DD800Atx2,DD800Btx2,GSM900Atx2,GSM900Btx2,Dcs1800Atx2,Dcs1800Btx2,Pcs1900Atx2,Pcs1900Btx2,Wcdma2100Atx2,Wcdma2100Btx2,Lte2600Atx2,Lte2600Btx2,Gpp1500Atx2,Gpp1500Btx2\n"\
 "\n"\
-"lte700Atx2 	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDlte700tx2), Txoutswich(Testmdlte700 ,ANTA) \n"\
+"lte700Atx2 	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDlte700tx2), Txoutswich(Testmdlte700 ,nc1) \n"\
 "\n"\
-"Lte700Btx2 	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDlte700tx2), Txoutswich(Testmdlte700 ,ANTB) \n"\
+"Lte700Btx2 	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDlte700tx2), Txoutswich(Testmdlte700 ,no2) \n"\
 "\n"\
-"DD800Atx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDdd800tx2), Txoutswich(Testmddd800 ,ANTA) \n"\
+"DD800Atx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDdd800tx2), Txoutswich(Testmddd800 ,nc1) \n"\
 "\n"\
-"DD800Btx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDdd800tx2), Txoutswich(Testmddd800 ,ANTB)\n"\
+"DD800Btx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDdd800tx2), Txoutswich(Testmddd800 ,no2)\n"\
 "\n"\
-"GSM900Atx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDgsm900tx2),Txoutswich(Testmdgsm900 ,ANTA) \n"\
+"GSM900Atx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDgsm900tx2),Txoutswich(Testmdgsm900 ,nc1) \n"\
 "\n"\
-"GSM900Btx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDgsm900tx2),Txoutswich(Testmdgsm900 ,ANTB) \n"\
+"GSM900Btx2  	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDgsm900tx2),Txoutswich(Testmdgsm900 ,no2) \n"\
 "\n"\
-"Dcs1800Atx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDdcs1800tx2),Txoutswich(Testmddcs1800 ,ANTA) \n"\
+"Dcs1800Atx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDdcs1800tx2),Txoutswich(Testmddcs1800 ,nc1) \n"\
 "\n"\
-"Dcs1800Btx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDdcs1800tx2),Txoutswich(Testmddcs1800 ,ANTB) \n"\
+"Dcs1800Btx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDdcs1800tx2),Txoutswich(Testmddcs1800 ,no2) \n"\
 "\n"\
-"Pcs1900Atx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDpcs1900tx2),Txoutswich(Testmdpcs1900  ,ANTA) \n"\
+"Pcs1900Atx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDpcs1900tx2),Txoutswich(Testmdpcs1900  ,nc1) \n"\
 "\n"\
-"Pcs1900Btx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDpcs1900tx2),Txoutswich(Testmdpcs1900  ,ANTB) \n"\
+"Pcs1900Btx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDpcs1900tx2),Txoutswich(Testmdpcs1900  ,no2) \n"\
 "\n"\
-"Wcdma2100Atx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDwcdma2100tx2), Txoutswich(Testmdwcdma2100 ,ANTA) \n"\
+"Wcdma2100Atx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDwcdma2100tx2), Txoutswich(Testmdwcdma2100 ,nc1) \n"\
 "\n"\
-"Wcdma2100Btx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDwcdma2100tx2), Txoutswich(Testmdwcdma2100 ,ANTB) \n"\
+"Wcdma2100Btx2 	= Signal2swich(Signalswich,PA2in2) ,PA2swich2(Paspecumpwmt,MDwcdma2100tx2), Txoutswich(Testmdwcdma2100 ,no2) \n"\
 "\n"\
-"Lte2600Atx2 	= Signal2swich(Signalswich,PA3in2) ,Txoutswich(Testmdlte2600  ,ANTA) \n"\
+"Lte2600Atx2 	= Signal2swich(Signalswich,PA3in2) ,Txoutswich(Testmdlte2600  ,nc1) \n"\
 "\n"\
-"Lte2600Btx2 	= Signal2swich(Signalswich,PA3in2) ,Txoutswich(Testmdlte2600  ,ANTB) \n"\
+"Lte2600Btx2 	= Signal2swich(Signalswich,PA3in2) ,Txoutswich(Testmdlte2600  ,no2) \n"\
 "\n"\
-"	\n"\
+"Gpp1500Atx2     = Signal2swich(Signalswich,PA4in2) , Txoutswich(TestmdGpp1500 ,nc1)\n"\
+"\n"\
+"Gpp1500Btx2    = Signal2swich(Signalswich,PA4in2) , Txoutswich(TestmdGpp1500 ,no2)\n"\
+"\n"\
+"\n"\
 "\n"\
 "[actionpim]\n"\
-"namelist 	=lte700Apim,Lte700Bpim,DD800Apim,DD800Bpim,GSM900Apim,GSM900Bpim,Dcs1800Apim,Dcs1800Bpim,Pcs1900Apim,Pcs1900Bpim,Wcdma2100Apim,Wcdma2100Bpim,Lte2600Apim,Lte2600Bpim\n"\
+"namelist 	=lte700Apim,Lte700Bpim,DD800Apim,DD800Bpim,GSM900Apim,GSM900Bpim,Dcs1800Apim,Dcs1800Bpim,Pcs1900Apim,Pcs1900Bpim,Wcdma2100Apim,Wcdma2100Bpim,Lte2600Apim,Lte2600Bpim,Gpp1500Apim,Gpp1500Bpim\n"\
 "\n"\
-"lte700Apim 	= Spectrumswich(Paspecumpwmt,MDlte700pim),Pimswich( Testmdlte700, Pimdetrxa)\n"\
+"lte700Apim 	= Spectrumswich(Paspecumpwmt,MDlte700pim),Pimswich( Testmdlte700, nc1)\n"\
 "\n"\
-"Lte700Bpim 	= Spectrumswich(Paspecumpwmt,MDlte700pim),Pimswich( Testmdlte700, Pimdetrxb)\n"\
+"Lte700Bpim 	= Spectrumswich(Paspecumpwmt,MDlte700pim),Pimswich( Testmdlte700, no2)\n"\
 "\n"\
-"DD800Apim  	= Spectrumswich(Paspecumpwmt,MDdd800tpim),Pimswich( Testmddd800, Pimdetrxa)\n"\
+"DD800Apim  	= Spectrumswich(Paspecumpwmt,MDdd800tpim),Pimswich( Testmddd800, nc1)\n"\
 "\n"\
-"DD800Bpim  	= Spectrumswich(Paspecumpwmt,MDdd800tpim),Pimswich( Testmddd800, Pimdetrxb)\n"\
+"DD800Bpim  	= Spectrumswich(Paspecumpwmt,MDdd800tpim),Pimswich( Testmddd800, no2)\n"\
 "\n"\
-"GSM900Apim  	= Spectrumswich(Paspecumpwmt,MDgsm900pim),Pimswich( Testmdgsm900, Pimdetrxa)\n"\
+"GSM900Apim  	= Spectrumswich(Paspecumpwmt,MDgsm900pim),Pimswich( Testmdgsm900, nc1)\n"\
 "\n"\
-"GSM900Bpim  	= Spectrumswich(Paspecumpwmt,MDgsm900pim),Pimswich( Testmdgsm900, Pimdetrxb)\n"\
+"GSM900Bpim  	= Spectrumswich(Paspecumpwmt,MDgsm900pim),Pimswich( Testmdgsm900, no2)\n"\
 "\n"\
-"Dcs1800Apim 	= Spectrumswich(Paspecumpwmt,MDdcs1800pim),Pimswich( Testmddcs1800 , Pimdetrxa)\n"\
+"Dcs1800Apim 	= Spectrumswich(Paspecumpwmt,MDdcs1800pim),Pimswich( Testmddcs1800 , nc1)\n"\
 "\n"\
-"Dcs1800Bpim 	= Spectrumswich(Paspecumpwmt,MDdcs1800pim),Pimswich( Testmddcs1800 , Pimdetrxb)\n"\
+"Dcs1800Bpim 	= Spectrumswich(Paspecumpwmt,MDdcs1800pim),Pimswich( Testmddcs1800 , no2)\n"\
 "\n"\
-"Pcs1900Apim 	= Spectrumswich(Paspecumpwmt,MDpcs1900pim),Pimswich( Testmdpcs1900  , Pimdetrxa)\n"\
+"Pcs1900Apim 	= Spectrumswich(Paspecumpwmt,MDpcs1900pim),Pimswich( Testmdpcs1900  , nc1)\n"\
 "\n"\
-"Pcs1900Bpim	= Spectrumswich(Paspecumpwmt,MDpcs1900pim),Pimswich( Testmdpcs1900  , Pimdetrxb)\n"\
+"Pcs1900Bpim	= Spectrumswich(Paspecumpwmt,MDpcs1900pim),Pimswich( Testmdpcs1900  , no2)\n"\
 "\n"\
-"Wcdma2100Apim 	= Spectrumswich(Paspecumpwmt,MDwcdma2100pim),Pimswich( Testmdwcdma2100 , Pimdetrxa)\n"\
+"Wcdma2100Apim 	= Spectrumswich(Paspecumpwmt,MDwcdma2100pim),Pimswich( Testmdwcdma2100 , nc1)\n"\
 "\n"\
-"Wcdma2100Bpim 	= Spectrumswich(Paspecumpwmt,MDwcdma2100pim),Pimswich( Testmdwcdma2100 , Pimdetrxb)\n"\
+"Wcdma2100Bpim 	= Spectrumswich(Paspecumpwmt,MDwcdma2100pim),Pimswich( Testmdwcdma2100 , no2)\n"\
 "\n"\
-"Lte2600Apim 	= Spectrumswich(Paspecumpwmt,MDwcdma2600pim),Pimswich( Testmdlte2600  , Pimdetrxa)\n"\
+"Lte2600Apim 	= Spectrumswich(Paspecumpwmt,MDwcdma2600pim),Pimswich( Testmdlte2600  , nc1)\n"\
 "\n"\
-"Lte2600Bpim 	= Spectrumswich(Paspecumpwmt,MDwcdma2600pim),Pimswich( Testmdlte2600  , Pimdetrxb)\n"\
+"Lte2600Bpim 	= Spectrumswich(Paspecumpwmt,MDwcdma2600pim),Pimswich( Testmdlte2600  , no2)\n"\
 "\n"\
+"Gpp1500Apim 	= Spectrumswich(Paspecumpwmt,MD1500pim),Pimswich(TestmdGpp1500, nc1)\n"\
+"\n"\
+"Gpp1500Bpim 	= Spectrumswich(Paspecumpwmt,MD1500pim),Pimswich(TestmdGpp1500, no2)\n"\
 "\n"\
 "[actiondet]\n"\
-"namelist 		=lte700tx1det,lte700tx2det,DD800tx1det,DD800tx2det,GSM900tx1det,GSM900tx2det,Dcs1800tx1det,Dcs1800tx2det,Pcs1900tx1det,Pcs1900tx2det,Wcdma2100tx1det,Wcdma2100tx2det,Lte2600tx1det,Lte2600tx2det\n"\
+"namelist 		=lte700tx1det,lte700tx2det,DD800tx1det,DD800tx2det,GSM900tx1det,GSM900tx2det,Dcs1800tx1det,Dcs1800tx2det,Pcs1900tx1det,Pcs1900tx2det,Wcdma2100tx1det,Wcdma2100tx2det,Lte2600tx1det,Lte2600tx2det,Gpp1500tx1det,Gpp1500tx2det\n"\
 "\n"\
-"lte700tx1det  	= Powermeterswich(Paspecumpwmt,MDlte700pwmt),    Couplerswich( Testmdlte700,Powerdettx1)\n"\
+"lte700tx1det  	= Powermeterswich(Paspecumpwmt,MDlte700pwmt),    Couplerswich( Testmdlte700,nc1)\n"\
 "\n"\
-"lte700tx2det  	= Powermeterswich(Paspecumpwmt,MDlte700pwmt),    Couplerswich( Testmdlte700,Powerdettx2)\n"\
+"lte700tx2det  	= Powermeterswich(Paspecumpwmt,MDlte700pwmt),    Couplerswich( Testmdlte700,no2)\n"\
 "\n"\
-"DD800tx1det   	= Powermeterswich(Paspecumpwmt,MDdd800tpwmt),    Couplerswich( Testmddd800,Powerdettx1)\n"\
+"DD800tx1det   	= Powermeterswich(Paspecumpwmt,MDdd800tpwmt),    Couplerswich( Testmddd800,nc1)\n"\
 "\n"\
-"DD800tx2det   	= Powermeterswich(Paspecumpwmt,MDdd800tpwmt),    Couplerswich( Testmddd800,Powerdettx2)\n"\
+"DD800tx2det   	= Powermeterswich(Paspecumpwmt,MDdd800tpwmt),    Couplerswich( Testmddd800,no2)\n"\
 "\n"\
-"GSM900tx1det  	= Powermeterswich(Paspecumpwmt,MDgsm900pwmt),    Couplerswich( Testmdgsm900,Powerdettx1)\n"\
+"GSM900tx1det  	= Powermeterswich(Paspecumpwmt,MDgsm900pwmt),    Couplerswich( Testmdgsm900,nc1)\n"\
 "\n"\
-"GSM900tx2det  	= Powermeterswich(Paspecumpwmt,MDgsm900pwmt),    Couplerswich( Testmdgsm900,Powerdettx2)\n"\
+"GSM900tx2det  	= Powermeterswich(Paspecumpwmt,MDgsm900pwmt),    Couplerswich( Testmdgsm900,no2)\n"\
 "\n"\
-"Dcs1800tx1det  	= Powermeterswich(Paspecumpwmt,MDdcs1800pwmt),   Couplerswich( Testmddcs1800,Powerdettx1)\n"\
+"Dcs1800tx1det  	= Powermeterswich(Paspecumpwmt,MDdcs1800pwmt),   Couplerswich( Testmddcs1800,nc1)\n"\
 "\n"\
-"Dcs1800tx2det  	= Powermeterswich(Paspecumpwmt,MDdcs1800pwmt),   Couplerswich( Testmddcs1800,Powerdettx2)\n"\
+"Dcs1800tx2det  	= Powermeterswich(Paspecumpwmt,MDdcs1800pwmt),   Couplerswich( Testmddcs1800,no2)\n"\
 "\n"\
-"Pcs1900tx1det  	= Powermeterswich(Paspecumpwmt,MDpcs1900pwmt),   Couplerswich( Testmdpcs1900,Powerdettx1)\n"\
+"Pcs1900tx1det  	= Powermeterswich(Paspecumpwmt,MDpcs1900pwmt),   Couplerswich( Testmdpcs1900,nc1)\n"\
 "\n"\
-"Pcs1900tx2det  	= Powermeterswich(Paspecumpwmt,MDpcs1900pwmt),   Couplerswich( Testmdpcs1900,Powerdettx2)\n"\
+"Pcs1900tx2det  	= Powermeterswich(Paspecumpwmt,MDpcs1900pwmt),   Couplerswich( Testmdpcs1900,no2)\n"\
 "\n"\
-"Wcdma2100tx1det	= Powermeterswich(Paspecumpwmt,MDwcdma2100pwmt), Couplerswich( Testmdwcdma2100,Powerdettx1)\n"\
+"Wcdma2100tx1det	= Powermeterswich(Paspecumpwmt,MDwcdma2100pwmt), Couplerswich( Testmdwcdma2100,nc1)\n"\
 "\n"\
-"Wcdma2100tx2det	= Powermeterswich(Paspecumpwmt,MDwcdma2100pwmt), Couplerswich( Testmdwcdma2100,Powerdettx2)\n"\
+"Wcdma2100tx2det	= Powermeterswich(Paspecumpwmt,MDwcdma2100pwmt), Couplerswich( Testmdwcdma2100,no2)\n"\
 "\n"\
-"Lte2600tx1det 	= Powermeterswich(Paspecumpwmt,MDwcdma2600pwmt), Couplerswich( Testmdlte2600,Powerdettx1)\n"\
+"Lte2600tx1det 	= Powermeterswich(Paspecumpwmt,MDwcdma2600pwmt), Couplerswich( Testmdlte2600,nc1)\n"\
 "\n"\
-"Lte2600tx2det 	= Powermeterswich(Paspecumpwmt,MDwcdma2600pwmt), Couplerswich( Testmdlte2600,Powerdettx2)\n"\
+"Lte2600tx2det 	= Powermeterswich(Paspecumpwmt,MDwcdma2600pwmt), Couplerswich( Testmdlte2600,no2)\n"\
+"\n"\
+"Gpp1500tx1det = Powermeterswich(Paspecumpwmt,MD1500ppwmt), Couplerswich(TestmdGpp1500,nc1)\n"\
+"\n"\
+"Gpp1500tx2det = Powermeterswich(Paspecumpwmt,MD1500ppwmt), Couplerswich(TestmdGpp1500,no2)\n"\
 ""
 
 #endif

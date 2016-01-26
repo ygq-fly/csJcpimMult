@@ -29,6 +29,7 @@
 #define ID_HUAWEI			(1)
 #define ID_POI				(2)
 #define ID_HUAWEI_EXT12    	(3)
+#define ID_HUAWEI_EXT8    	(4)
 //忽略通道设置字
 #define ID_CHAN_IGNORE		(-1)
 /**********************************************************/
@@ -48,6 +49,8 @@
 #define ID_CHAN_TX1_2100_2      (11)
 #define ID_CHAN_TX1_2600_1      (12)
 #define ID_CHAN_TX1_2600_2      (13)
+#define ID_CHAN_TX1_1500_1      (14)
+#define ID_CHAN_TX1_1500_2      (15)
 //TX2通道序号
 #define ID_CHAN_TX2_700_1		(0 )
 #define ID_CHAN_TX2_700_2       (1 )
@@ -63,6 +66,8 @@
 #define ID_CHAN_TX2_2100_2      (11)
 #define ID_CHAN_TX2_2600_1      (12)
 #define ID_CHAN_TX2_2600_2      (13)
+#define ID_CHAN_TX1_1500_1      (14)
+#define ID_CHAN_TX1_1500_2      (15)
 //PIM通道序号
 #define ID_CHAN_PIM_700_1		(0 )
 #define ID_CHAN_PIM_700_2       (1 )
@@ -78,6 +83,8 @@
 #define ID_CHAN_PIM_2100_2      (11)
 #define ID_CHAN_PIM_2600_1      (12)
 #define ID_CHAN_PIM_2600_2      (13)
+#define ID_CHAN_PIM_1500_1      (14)
+#define ID_CHAN_PIM_1500_2      (15)
 //DET通道序号
 #define ID_CHAN_DET_700_1		(0 )
 #define ID_CHAN_DET_700_2       (1 )
@@ -93,6 +100,8 @@
 #define ID_CHAN_DET_2100_2      (11)
 #define ID_CHAN_DET_2600_1      (12)
 #define ID_CHAN_DET_2600_2      (13)
+#define ID_CHAN_DET_1500_1      (14)
+#define ID_CHAN_DET_1500_2      (15)
 /**********************************************************/
 /*POI DEFINE*/
 #define ID_SW1_SDT3			(1)   //开关类型1 ：操作范围<1~3>
@@ -264,6 +273,76 @@
 #define ID_23couptx1oflte2600                     ( 22 )
 #define ID_24couptx2oflte2600                     	(23 )
 /**********************************************************/
+/*HUA WEI EXT8 DEFINE*/
+//TX1通道序号
+//1tx1to800aant1
+//2tx1to800aant2
+//3tx1to800bant1
+//4tx1to800bant2
+//5tx1to1900aant1
+//6tx1to1900aant2
+//7tx1to1900bant1
+//8tx1to1900bant2
+//9tx1to2600aant1
+//10tx1to2600aant2
+//11tx1to2600bant1
+//12tx1to2600bant2
+//13tx1to2600cant1
+//14tx1to2600cant2
+//15tx1to2600dant1
+//16tx1to2600dant2
+//TX2通道序号
+//1tx2to800aant1
+//2tx2to800aant2
+//3tx2to800bant1
+//4tx2to800bant2
+//5tx2to1900aant1
+//6tx2to1900aant2
+//7tx2to1900bant1
+//8tx2to1900bant2
+//9tx2to2600aant1
+//10tx2to2600aant2
+//11tx2to2600bant1
+//12tx2to2600bant2
+//13tx2to2600cant1
+//14tx2to2600cant2
+//15tx2to2600dant1
+//16tx2to2600dant2
+//PIM通道序号
+//1pimant1of800a
+//2pimant2of800a
+//3pimant1of800b
+//4pimant2of800b
+//5pimant1of1900a
+//6pimant2of1900a
+//7pimant1of1900b
+//8pimant2of1900b
+//9pimant1of2600a
+//10pimant2of2600a
+//11pimant1of2600b
+//12pimant2of2600b
+//13pimant1of2600c
+//14pimant2of2600c
+//15pimant1of2600d
+//16pimant2of2600d
+//DET通道序号
+//1couptx1of800a
+//2couptx2of800a
+//3couptx1of800b
+//4couptx2of800b
+//5couptx1of1900a
+//6couptx2of1900a
+//7couptx1of1900b
+//8couptx2of1900b
+//9couptx1oflte2600a
+//10couptx2oflte2600a
+//11couptx1oflte2600b
+//12couptx2oflte2600b
+//13couptx1oflte2600c
+//14couptx2oflte2600c
+//15couptx1oflte2600d
+//16couptx2oflte2600d
+/**********************************************************/
 //函数指针类型
 typedef int (*pMartrixSwitchInit)(int,char*,int,int);
 typedef int (*pMartrixSwitchExcute)(int, int, int);
@@ -302,9 +381,9 @@ extern int MartrixSwitchBoxExcute(int tx1, int tx2, int pim, int det);
 /*******************************************************************************
  *函数名称：MartrixSwitchExcute
  *函数功能：矩阵开关单开关操作
- *参数说明：int addr	——模块地址
- *			int swId	——开关类型序号
- *			int swIdx	——开关引脚序号
+ *参数说明：int addr	——模块地址			(1~n:只要模块支持相应的天关即可)
+ *			int swId	——开关类型序号	(ID_SW1_SDT3...)
+ *			int swIdx	——开关引脚序号	(1~n)
  *返回类型：参照错误返回代码
  */
 extern int MartrixSwitchExcute(int addr, int swId, int swIdx);

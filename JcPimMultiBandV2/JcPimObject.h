@@ -413,7 +413,7 @@ public:
 	//	_LTE700 = 6
 	//};
 	uint8_t GetExtBandToIntBand(const uint8_t& byExtMeasBand) {
-		if (now_mode == MODE_POI)
+		if (now_mode != MODE_HUAWEI && now_mode != MODE_TRANSMISSION)
 			return byExtMeasBand;
 
 		uint8_t sband;
@@ -426,7 +426,7 @@ public:
 		case 5: sband =6 /*"LTE2600"*/; break;
 		case 6: sband =0 /*"LTE700"*/; break;
 		case 7: sband =7 /*"Gpp1500"*/; break;
-		default: return 0 /*"LTE700"*/;
+		default: return byExtMeasBand /*"LTE700"*/;
 		}
 
 		return sband;

@@ -159,6 +159,9 @@
     <ClInclude Include="Switch\switch_info_hw_ext12.h">
       <Filter>Switch</Filter>
     </ClInclude>
+    <ClInclude Include="Switch\switch_info_hw_ext8.h">
+      <Filter>Switch</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
