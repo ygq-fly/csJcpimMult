@@ -127,7 +127,7 @@ void Test_dll(){
 		rx_freq = 880;
 		printf("This is POI_BAND or NewPOI_BAND!\n");
 	}
-	for (int i = 1; i <= 7; i++)
+	for (int i = 1; i <= 8; i++)
 	{
 		char cBandInfo[1024] = { 0 };
 		jcGetOffsetBandInfo(i, cBandInfo);

@@ -14,20 +14,32 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	m_offset_mode = continuous_offset_mode;
 	//else
 	//	m_offset_mode = discontinuous_offset_mode;
-
 	m_band_info_table = "JC_BAND2_INFO";
 	m_tx_offset_table = "JC_TX_OFFSET_ALL";
 	m_rx_offset_table = "JC_RX_OFFSET_ALL";
 	m_vco_offset_table = "JC_VCO_OFFSET_ALL";
-	m_setting_table = "JC_SETTING_INFO";
+
+	if (!IsExist("JC_SETTING_INFO")) {
+		std::string table = "CREATE TABLE \"JC_SETTING_INFO\" ("
+			"\"key\" text NOT NULL,"
+			"\"value\" text,"
+			"PRIMARY KEY(\"key\"))";
+		if (ExecSql(table.c_str())) {
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('version', '1.1')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('sn', '0000000000')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('license', '20151231')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('used_date', '20150101')");
+			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('expire_date', '0')");
+		}
+	}
 
 	if (!IsExist(m_band_info_table.c_str()))
 		ExecSql(sql_table);
 
-	std::string hw_sql_param[7] = huawei_sql_body;
+	std::string hw_sql_param[8] = huawei_sql_body;
 	std::string poi_sql_param[12] = poi_sql_body;
 	std::string NewPoi_sql_param[12] = NewPoi_sql_body;
-	std::string hwa_sql_param[8] = HuaweiA_sql_body;
+	std::string nhw_sql_param[8] = NewHuawei_sql_body;
 
 	std::string hw_band_table_sql = sql_header + hw_sql_param[0];
 	for (int i = 1; i < 7; i++){
@@ -41,9 +53,9 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	for (int i = 1; i < 12; i++){
 		NewPoi_band_table_sql += " union all select " + NewPoi_sql_param[i];
 	}
-	std::string HuaweiA_band_table_sql = sql_header + hwa_sql_param[0];
+	std::string HuaweiA_band_table_sql = sql_header + nhw_sql_param[0];
 	for (int i = 1; i < 8; i++){
-		HuaweiA_band_table_sql += " union all select " + hwa_sql_param[i];
+		HuaweiA_band_table_sql += " union all select " + nhw_sql_param[i];
 	}
 
 	if (GetBandCount("hw") == 0)
@@ -52,8 +64,23 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 		ExecSql(poi_band_table_sql.c_str());
 	if (GetBandCount("np") == 0)
 		ExecSql(NewPoi_band_table_sql.c_str());
-	if (GetBandCount("hwa") == 0)
+	if (GetBandCount("nhw") == 0)
 		ExecSql(HuaweiA_band_table_sql.c_str());
+
+	if (GetBandInfo("hw8", NULL) == -1) {
+		//printf("No find hw8!\n");
+		std::string strSql("insert into [JC_BAND2_INFO] (prefix,band,tx_start,tx_end,rx_start,rx_end,vco_a,vco_b,tx_enable,coup1,coup2) values (");
+		strSql += hw_sql_param[7];
+		strSql += ")";
+		ExecSql(strSql.c_str());
+	}
+
+	{
+		std::string version(VERSION_BAND);
+		char sql[128] = { 0 };
+		sprintf_s(sql, "update [JC_SETTING_INFO] set [value] = '%s' where [key] = 'version'", version.c_str());
+		ExecSql(sql);
+	}
 
 	if (!IsExist(m_tx_offset_table.c_str())) {
 		std::string table = "CREATE TABLE \"JC_TX_OFFSET_ALL\" ("
@@ -88,20 +115,6 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 			"\"vco\" real,"
 			"PRIMARY KEY(\"port\"))";
 		ExecSql(table.c_str());
-	}
-
-	if (!IsExist("JC_SETTING_INFO")) {
-		std::string table = "CREATE TABLE \"JC_SETTING_INFO\" ("
-			"\"key\" text NOT NULL,"
-			"\"value\" text,"
-			"PRIMARY KEY(\"key\"))";
-		if (ExecSql(table.c_str())) {
-			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('version', '1.1')");
-			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('sn', '0000000000')");
-			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('license', '20151231')");
-			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('used_date', '20150101')");
-			ExecSql("insert into [JC_SETTING_INFO] (key, value) values ('expire_date', '0')");
-		}
 	}
 }
 
@@ -171,7 +184,8 @@ int JcOffsetDB::GetBandInfo(const char* prefix, char* band_info) {
 	if (str_band_info == "")
 		return -1;
 
-	memcpy(band_info, str_band_info.c_str(), str_band_info.length());
+	if (band_info != NULL)
+		memcpy(band_info, str_band_info.c_str(), str_band_info.length());
 	return 0;
 }
 

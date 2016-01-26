@@ -73,6 +73,12 @@
 //  rechange protect_rx
 //build 317）
 //  add new mode(hwa)
+//build 318）
+//  supprot e4407, e4422
+//build 319）
+//  supprot u2004
+//build 320）
+//  升级华为7频为8频
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -914,8 +920,14 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	double vco_freq_mhz; 
 	if (__pobj->now_mode == MODE_POI)
 		vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_a;
-	else if (__pobj->now_mode == MODE_HUAWEI)
-		vco_freq_mhz = 1334 + 2 * bySwitchBand;
+	else if (__pobj->now_mode == MODE_HUAWEI) {
+		if (bySwitchBand == 14)
+			vco_freq_mhz = 1366;
+		else if (bySwitchBand == 15)
+			vco_freq_mhz = 1368;
+		else
+			vco_freq_mhz = 1334 + 2 * bySwitchBand;
+	}
 	else {
 		if ((bySwitchBand % 2) == 0)
 			vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_a;
@@ -1110,7 +1122,7 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 		int coup1 = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
 		int coup2 = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
 
-		coup = iSwitchCoup == JC_COUP_TX1 ? coup1 - 1 : coup2 - 1;
+		coup = iSwitchCoup == JC_COUP_TX1 ? coup1 : coup2;
 		if (coup < 0) coup = -1;
 	} else {
 		//查找ID_HUAWEI检测通道标号
@@ -1168,6 +1180,11 @@ JC_STATUS JcGetOffsetBandInfo(int band_index, char* band_info){
 	char prefix[64] = { 0 };
 	sprintf_s(prefix, "%s%d", __pobj->now_band_prefix.c_str(), band_index);
 	return __pobj->offset.GetBandInfo(prefix, band_info);
+}
+
+int JcGetOffsetBandCount() {
+	if (NULL == __pobj) return JC_STATUS_ERROR;
+	return __pobj->now_num_band;
 }
 
 //获取Rx校准
@@ -1694,7 +1711,8 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 			memcpy(cIdn, buf, retCount);
 		std::string strIdn((char*)buf);
 		//功率计
-		if      (Util::strFind(strIdn, "U2000A")  || Util::strFind(strIdn, "U2001A")  || Util::strFind(strIdn, "U2002A"))
+		if      (Util::strFind(strIdn, "U2000A")  || Util::strFind(strIdn, "U2001A")  || 
+				 Util::strFind(strIdn, "U2002A")  || Util::strFind(strIdn, "U2004"))
 			iDeviceIDN = INSTR_AG_U2000_SERIES;
 		else if (Util::strFind(strIdn, "NRT"))
 			iDeviceIDN = INSTR_RS_NRT_SERIES;
@@ -1704,8 +1722,9 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		else if (Util::strFind(strIdn, "N5171")  || Util::strFind(strIdn, "N5172")  || 
 				 Util::strFind(strIdn, "N5181")  || Util::strFind(strIdn, "N5182")  || 
 				 Util::strFind(strIdn, "N5183")  ||
-				 Util::strFind(strIdn, "E4436")   || Util::strFind(strIdn, "E4437")  ||
-				 Util::strFind(strIdn, "E4438"))
+				 Util::strFind(strIdn, "E4436")  || Util::strFind(strIdn, "E4437")  ||
+				 Util::strFind(strIdn, "E4438")  || 
+				 Util::strFind(strIdn, "E4422"))
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
 		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") ||
 			Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))
@@ -1717,7 +1736,8 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		//频谱仪
 		else if (Util::strFind(strIdn, "N9000")  || Util::strFind(strIdn, "N9010")  || 
 				 Util::strFind(strIdn, "N9020")  || Util::strFind(strIdn, "N9030")  || 
-				 Util::strFind(strIdn, "N9038"))
+				 Util::strFind(strIdn, "N9038")  ||
+				 Util::strFind(strIdn, "E4407"))
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;

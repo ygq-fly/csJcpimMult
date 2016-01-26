@@ -299,9 +299,9 @@ public:
 			now_num_band = offset.GetBandCount("np");
 			now_band_prefix = "np";
 		}
-		else if (now_mode == MODE_HUAWEIA) {
-			now_num_band = offset.GetBandCount("hwa");
-			now_band_prefix = "hwa";
+		else if (now_mode == MODE_NEWHUAWEI) {
+			now_num_band = offset.GetBandCount("nhw");
+			now_band_prefix = "nhw";
 		}
 		else {
 			now_num_band = offset.GetBandCount("hw");
@@ -341,8 +341,8 @@ public:
 			bm.tx1_enable = (channel_enable & 0x100) >> 8;
 			bm.tx2_enable = (channel_enable & 0x010) >> 4;
 			bm.rx_enable = channel_enable & 0x001;
-			bm.switch_coup1 = atoi(band_items[9].c_str());
-			bm.switch_coup2 = atoi(band_items[10].c_str());
+			bm.switch_coup1 = atoi(band_items[9].c_str()) -1;
+			bm.switch_coup2 = atoi(band_items[10].c_str()) -1;
 
 			now_mode_bandset.push_back(bm);
 		}
@@ -425,6 +425,7 @@ public:
 		case 4: sband =5 /*"WCDMA2100"*/; break;
 		case 5: sband =6 /*"LTE2600"*/; break;
 		case 6: sband =0 /*"LTE700"*/; break;
+		case 7: sband =7 /*"Gpp1500"*/; break;
 		default: return 0 /*"LTE700"*/;
 		}
 
