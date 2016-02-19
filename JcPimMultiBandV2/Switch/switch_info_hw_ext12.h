@@ -179,21 +179,21 @@
 "35=0,8,0,0,0,\n"\
 
 #define IMPLEMENT_STRING_HW_EXT12      "[ip]\n"\
-"Signalswich         =192.168.1.80\n"\
-"Paspecumpwmt       =192.168.1.81\n"\
-"PaspecumpwmtP       =192.168.1.90\n"\
-"Testmdlte700        =192.168.1.82\n"\
-"Testmddd800         =192.168.1.83\n"\
-"Testmdgsm900        =192.168.1.84\n"\
-"Testmddcs1800       =192.168.1.85\n"\
-"Testmdpcs1900       =192.168.1.86\n"\
-"Testmdwcdma2100     =192.168.1.87\n"\
-"Testmdlte2600       =192.168.1.88\n"\
-"Testmd4501          =192.168.1.71\n"\
-"Testmd4502          =192.168.1.72\n"\
-"Testmd700h          =192.168.1.73\n"\
-"Testmd700apt        =192.168.1.74\n"\
-"Testmd800cdma       =192.168.1.75\n"\
+"Signalswich         =127.0.0.1:5000\n"\
+"Paspecumpwmt       =127.0.0.1:5001\n"\
+"PaspecumpwmtP       =127.0.0.1:5002\n"\
+"Testmdlte700        =127.0.0.1:5003\n"\
+"Testmddd800         =127.0.0.1:5004\n"\
+"Testmdgsm900        =127.0.0.1:5005\n"\
+"Testmddcs1800       =127.0.0.1:5006\n"\
+"Testmdpcs1900       =127.0.0.1:5007\n"\
+"Testmdwcdma2100     =127.0.0.1:5008\n"\
+"Testmdlte2600       =127.0.0.1:5009\n"\
+"Testmd4501          =127.0.0.1:5010\n"\
+"Testmd4502          =127.0.0.1:5011\n"\
+"Testmd700h          =127.0.0.1:5012\n"\
+"Testmd700apt        =127.0.0.1:5013\n"\
+"Testmd800cdma       =127.0.0.1:5014\n"\
 "namelist=Signalswich,Paspecumpwmt,PaspecumpwmtP,Testmdlte700,Testmddd800,Testmdgsm900,Testmddcs1800,Testmdpcs1900,Testmdwcdma2100,Testmdlte2600,Testmd4501,Testmd4502,Testmd700h,Testmd700apt,Testmd800cdma\n"\
 "\n"\
 "[switch]\n"\

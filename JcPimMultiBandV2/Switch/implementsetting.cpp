@@ -26,6 +26,8 @@
 	修改连接失败提示处理（只上报第一次连接失败的模块）。
 2016.1.18
 	增加华为8频配置表。
+2016.1.26
+	兼容，当JcConfig.ini不存在模块时，会调用默认配置表中的模块测试本地地址
 *------------------------------------------------------------------------------*/
 #include "../stdafx.h"
 #include "switch_info_poi.h"
@@ -325,10 +327,10 @@ namespace ns_com_io_ctl
 			{
 				__ipmap[__ipNameList[i]] = strValue;
 			}
-			else
-			{
-				return false;
-			}
+			//else//兼容，当JcConfig.ini不存在模块时，会调用默认配置表中的模块测试本地地址
+			//{
+			//	return false;
+			//}
 			__ipGpioBak[ __ipmap[__ipNameList[i]]] = __ipGpioBakArray[i];
 		}
 		

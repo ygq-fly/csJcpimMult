@@ -165,7 +165,7 @@
 "\n"\
 ""
 #define IMPLEMENT_STRING_HUAWEI  "[ip]\n"\
-"namelist			=Signalswich,Paspecumpwmt,Testmdlte700,Testmddd800,Testmdgsm900,Testmddcs1800,Testmdpcs1900,Testmdwcdma2100,Testmdlte2600,TestmdGpp1500\n"\
+"namelist			=Signalswich,Paspecumpwmt,Testmdlte700,Testmddd800,Testmdgsm900,Testmddcs1800,Testmdpcs1900,Testmdwcdma2100,Testmdlte2600,Testmdpdc1500\n"\
 "Signalswich         =127.0.0.1:5000\n"\
 "Paspecumpwmt        =127.0.0.1:5001\n"\
 "Testmdlte700        =127.0.0.1:5002 \n"\
@@ -175,7 +175,7 @@
 "Testmdpcs1900       =127.0.0.1:5006\n"\
 "Testmdwcdma2100     =127.0.0.1:5007\n"\
 "Testmdlte2600       =127.0.0.1:5008\n"\
-"TestmdGpp1500      =127.0.0.1:5009\n"\
+"Testmdpdc1500      =127.0.0.1:5009\n"\
 "\n"\
 "[switch]\n"\
 "namelist	    =Signal1swich,Signal2swich,PA1swich1,PA1swich2,PA2swich1,PA2swich2,Spectrumswich,Powermeterswich,Couplerswich,Pimswich,Txoutswich\n"\
@@ -269,9 +269,9 @@
 "\n"\
 "Lte2600Btx1 	= Signal1swich(Signalswich,PA3in1) , Txoutswich(Testmdlte2600  ,no2) \n"\
 "\n"\
-"Gpp1500Atx1     = Signal1swich(Signalswich,PA4in1) , Txoutswich(TestmdGpp1500 ,nc1)\n"\
+"Gpp1500Atx1     = Signal1swich(Signalswich,PA4in1) , Txoutswich(Testmdpdc1500 ,nc1)\n"\
 "\n"\
-"Gpp1500Btx1     = Signal1swich(Signalswich,PA4in1) , Txoutswich(TestmdGpp1500 ,no2)\n"\
+"Gpp1500Btx1     = Signal1swich(Signalswich,PA4in1) , Txoutswich(Testmdpdc1500 ,no2)\n"\
 "[actiontx2]\n"\
 "\n"\
 "namelist 	=lte700Atx2,Lte700Btx2,DD800Atx2,DD800Btx2,GSM900Atx2,GSM900Btx2,Dcs1800Atx2,Dcs1800Btx2,Pcs1900Atx2,Pcs1900Btx2,Wcdma2100Atx2,Wcdma2100Btx2,Lte2600Atx2,Lte2600Btx2,Gpp1500Atx2,Gpp1500Btx2\n"\
@@ -304,9 +304,9 @@
 "\n"\
 "Lte2600Btx2 	= Signal2swich(Signalswich,PA3in2) ,Txoutswich(Testmdlte2600  ,no2) \n"\
 "\n"\
-"Gpp1500Atx2     = Signal2swich(Signalswich,PA4in2) , Txoutswich(TestmdGpp1500 ,nc1)\n"\
+"Gpp1500Atx2     = Signal2swich(Signalswich,PA4in2) , Txoutswich(Testmdpdc1500 ,nc1)\n"\
 "\n"\
-"Gpp1500Btx2    = Signal2swich(Signalswich,PA4in2) , Txoutswich(TestmdGpp1500 ,no2)\n"\
+"Gpp1500Btx2    = Signal2swich(Signalswich,PA4in2) , Txoutswich(Testmdpdc1500 ,no2)\n"\
 "\n"\
 "\n"\
 "\n"\
@@ -341,9 +341,9 @@
 "\n"\
 "Lte2600Bpim 	= Spectrumswich(Paspecumpwmt,MDwcdma2600pim),Pimswich( Testmdlte2600  , no2)\n"\
 "\n"\
-"Gpp1500Apim 	= Spectrumswich(Paspecumpwmt,MD1500pim),Pimswich(TestmdGpp1500, nc1)\n"\
+"Gpp1500Apim 	= Spectrumswich(Paspecumpwmt,MD1500pim),Pimswich(Testmdpdc1500, nc1)\n"\
 "\n"\
-"Gpp1500Bpim 	= Spectrumswich(Paspecumpwmt,MD1500pim),Pimswich(TestmdGpp1500, no2)\n"\
+"Gpp1500Bpim 	= Spectrumswich(Paspecumpwmt,MD1500pim),Pimswich(Testmdpdc1500, no2)\n"\
 "\n"\
 "[actiondet]\n"\
 "namelist 		=lte700tx1det,lte700tx2det,DD800tx1det,DD800tx2det,GSM900tx1det,GSM900tx2det,Dcs1800tx1det,Dcs1800tx2det,Pcs1900tx1det,Pcs1900tx2det,Wcdma2100tx1det,Wcdma2100tx2det,Lte2600tx1det,Lte2600tx2det,Gpp1500tx1det,Gpp1500tx2det\n"\
@@ -376,9 +376,9 @@
 "\n"\
 "Lte2600tx2det 	= Powermeterswich(Paspecumpwmt,MDwcdma2600pwmt), Couplerswich( Testmdlte2600,no2)\n"\
 "\n"\
-"Gpp1500tx1det = Powermeterswich(Paspecumpwmt,MD1500ppwmt), Couplerswich(TestmdGpp1500,nc1)\n"\
+"Gpp1500tx1det = Powermeterswich(Paspecumpwmt,MD1500ppwmt), Couplerswich(Testmdpdc1500,nc1)\n"\
 "\n"\
-"Gpp1500tx2det = Powermeterswich(Paspecumpwmt,MD1500ppwmt), Couplerswich(TestmdGpp1500,no2)\n"\
+"Gpp1500tx2det = Powermeterswich(Paspecumpwmt,MD1500ppwmt), Couplerswich(Testmdpdc1500,no2)\n"\
 ""
 
 #endif

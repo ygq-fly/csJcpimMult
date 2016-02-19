@@ -70,7 +70,6 @@ public:
 	void InstrInit() {
 		AgWrite("*RST\n");
 		//SetParam(eParam::SPAN, 500);
-		//SetParam(eParam::CENTER, 637 * 1000);
 		//SetParam(eParam::ATT, 0);
 		//SetParam(eParam::REFLEVEL, -60);
 		//SetParam(eParam::RBW, 10);
@@ -85,15 +84,16 @@ public:
 		SetParam(eParam::MARK_POS, eNULL);
 		if (GetSpeIndex() == 0)
 			AgWrite("MARK1:PEAK\n");
+		SetParam(eParam::CENTER, 637 * 1000);
 	}
 
 	//开始读取
 	double InstrGetAnalyzer(double freq_khz, bool isMax) {
 		double result_val = 0;
-		if (freq_khz != _freq_now){
+		//if (freq_khz != _freq_now){
 			InstrSetCenterFreq(freq_khz);
 			_freq_now = freq_khz;
-		}	
+		//}	
 
 		//清空状态
 		_isCmdSucc = AgWrite("*CLS\n");
@@ -167,20 +167,24 @@ public:
 		InstrSetOffset(0);
 		//开始预放
 		AgWrite(":POW:GAIN ON\n");
-		AgWrite(":POW:GAIN:BAND LOW\n");
+		if (GetSpeIndex() != 2)
+			AgWrite(":POW:GAIN:BAND LOW\n");
+
 		InstrSetRef(-60);
 		InstrClosgAvg();
 		InstrSetAtt(0);
 
-		if (GetSpeIndex() == 1) {
-			InstrSetRbw(10);
-			InstrSetVbw(10);
-			InstrSetSpan(500);
-		}
-		else {
+		//jcspe
+		if (GetSpeIndex() == 0) {
+			InstrSetSpan(10 * 1000);
 			InstrSetRbw(1000);
 			InstrSetVbw(1000);
-			InstrSetSpan(10 * 1000);
+		}
+		//aglient
+		else {
+			InstrSetSpan(500);
+			InstrSetRbw(10);
+			InstrSetVbw(10);
 		}
 	}
 	
@@ -189,21 +193,22 @@ public:
 		InstrSetOffset(0);
 		//开始预放
 		AgWrite(":POW:GAIN ON\n");
-		AgWrite(":POW:GAIN:BAND LOW\n");
+		if (GetSpeIndex() != 2)
+			AgWrite(":POW:GAIN:BAND LOW\n");
 
-		if (GetSpeIndex() == 1) {
-		//2015-5-5/vco: 15khz-100hz-100hz
-		InstrSetRbw(100);
-		InstrSetVbw(100);
-		InstrSetSpan(15 * 1000);
-		//InstrSetRbw(10 * 1000);
-		//InstrSetVbw(10 * 1000);
-		//InstrSetSpan(400 * 1000);
-		}
-		else {
+		if (GetSpeIndex() == 0) {
+			InstrSetSpan(10 * 1000);
 			InstrSetRbw(1000);
 			InstrSetVbw(1000);
-			InstrSetSpan(10 * 1000);
+		}
+		else {
+			//2015-5-5/vco: 15khz-100hz-100hz
+			InstrSetSpan(15 * 1000);
+			InstrSetRbw(100);
+			InstrSetVbw(100);
+			//InstrSetRbw(10 * 1000);
+			//InstrSetVbw(10 * 1000);
+			//InstrSetSpan(400 * 1000);
 		}
 	}
 	void InstrTxOffsetSetting() {
@@ -215,14 +220,15 @@ public:
 		InstrClosgAvg();
 		InstrSetAtt(40);
 
-		if (GetSpeIndex() == 1) {
-			InstrSetRbw(100);
-			InstrSetVbw(100);
-			InstrSetSpan(1000);
-		} else {
+		if (GetSpeIndex() == 0) {
+			InstrSetSpan(10 * 1000);
 			InstrSetRbw(1000);
 			InstrSetVbw(1000);
-			InstrSetSpan(10*1000);
+
+		} else {
+			InstrSetSpan(1000);
+			InstrSetRbw(100);
+			InstrSetVbw(100);
 		}
 	}
 	void InstrRxOffsetSetting() {
@@ -232,7 +238,7 @@ public:
 private:
 	//读取MARK
 	double ReadMarkY(bool isMax) {
-		if (isMax) SetParam(eParam::MARK_MAX, eNULL);
+		if (isMax || GetSpeIndex() == 2) SetParam(eParam::MARK_MAX, eNULL);
 
 		//开始读取
 		char buf[128] = {0};
@@ -281,6 +287,8 @@ private:
 	int GetSpeIndex() {
 		if (Util::strFind(_strIDN, "JCSPE"))
 			return 0;
+		else if (Util::strFind(_strIDN, "E4407"))
+			return 2;
 		else
 			return 1;
 	}

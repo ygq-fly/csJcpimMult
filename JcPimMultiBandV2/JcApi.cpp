@@ -81,6 +81,15 @@
 //  upgrade hw7tohw8
 //(buiut 321)
 //  fix bug GetExtBandToIntBand
+//(buiut 322)
+//  fix vco(NewHuawei) bug
+//(buiut 327)
+//  set switch of tx offset -1
+//  set switch of rx offset -1
+//(buiut 328)
+//  vco freq fix
+//(build 329)
+//  no memery freq and power
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -92,6 +101,7 @@
 
 #define SIGNAL_SOURCE_MAX_POW 8
 #define OFFSET_TX_THREASOLD 0.05
+#define OFFSET_SWITCH_NULL -1
 
 //#define JC_OFFSET_TX_SINGLE_DEBUG
 //#define JC_OFFSET_TX_DEBUG
@@ -520,11 +530,11 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, pim->freq_khz / 1000);
 	if (s) rxoff = 0;
 	//设置pim模块补偿(直接设置ana内置补偿)
-	JcSetAna_RefLevelOffset(rxoff);
+	JcSetAna_RefLevelOffset(0);
 	//获取互调,返回数据
 	dPimResult = JcGetAna(pim->freq_khz, false);
+	dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
-
 	if (dPimResult == JC_STATUS_ERROR){
 		Util::logged(L"fnGetImResult: Spectrum read error!");
 		__pobj->strErrorInfo = "Spectrum read error!\r\n";
@@ -920,22 +930,27 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	if (NULL == __pobj) return false;
 
 	double vco_freq_mhz; 
-	if (__pobj->now_mode == MODE_POI)
-		vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_a;
-	else if (__pobj->now_mode == MODE_HUAWEI) {
-		if (bySwitchBand == 14)
-			vco_freq_mhz = 1366;
-		else if (bySwitchBand == 15)
-			vco_freq_mhz = 1368;
-		else
-			vco_freq_mhz = 1334 + 2 * bySwitchBand;
+	if (__pobj->now_mode == MODE_POI) {
+		int band = bySwitchBand / 2;
+		vco_freq_mhz = __pobj->now_mode_bandset[band].vco_a;
 	}
-	else {
+	else  {
+		int band = bySwitchBand / 2;
 		if ((bySwitchBand % 2) == 0)
-			vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_a;
+			vco_freq_mhz = __pobj->now_mode_bandset[band].vco_a;
 		else
-			vco_freq_mhz = __pobj->now_mode_bandset[pim->band].vco_b;
+			vco_freq_mhz = __pobj->now_mode_bandset[band].vco_b;
+
+		if (__pobj->now_mode == MODE_HUAWEI && vco_freq_mhz == 0) {
+			if (bySwitchBand == 14)
+				vco_freq_mhz = 1366;
+			else if (bySwitchBand == 15)
+				vco_freq_mhz = 1368;
+			else
+				vco_freq_mhz = 1334 + 2 * bySwitchBand;
+		}
 	}
+
 	if (vco_freq_mhz == 0)
 		return false;
 	//__pobj->ana->InstrSetCenterFreq(vco_freq_mhz * 1000);
@@ -1118,14 +1133,30 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 			temp_iSwitchTx1 -= 5;
 		if (iSwitchTx2 > 11 && iSwitchTx2 < 17)
 			temp_iSwitchTx2 -= 5;
+		//新加一频
+		if (iSwitchTx1 == 12) {
+			iSwitchTx1 = 17;
+			temp_iSwitchTx1 = 12;
+		}
+		if (iSwitchTx2 == 12) {
+			iSwitchTx2 = 17;
+			temp_iSwitchTx2 = 12;
+		}
+		if (iSwitchPim == 12) {
+			iSwitchPim = 17;
+		}
 		//查找ID_POI检测通道标号
 		//这里的iSwitch和band相配对
 		//(配对信息在数据库中)
-		int coup1 = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
-		int coup2 = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
-
-		coup = iSwitchCoup == JC_COUP_TX1 ? coup1 : coup2;
-		if (coup < 0) coup = -1;
+		//int coup1 = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
+		//int coup2 = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
+		//coup = iSwitchCoup == JC_COUP_TX1 ? coup1 : coup2;
+		if (iSwitchCoup == JC_COUP_TX1 && temp_iSwitchTx1 >= 0)
+			coup = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
+		else if (iSwitchCoup == JC_COUP_TX2 && temp_iSwitchTx2 >= 0)
+			coup = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
+		else 
+			coup = -1;
 	} else {
 		//查找ID_HUAWEI检测通道标号
 		//这里的iSwitch和band不会配对
@@ -1227,6 +1258,19 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//检查当前接收频段是否允许
 	if (JcGetChannelEnable(JC_CARRIER_RX) == FALSE) {
 		__pobj->strErrorInfo = "RxOffset: rx channel can not used";
+		return JC_STATUS_ERROR;
+	}
+
+	//Band转换开关参数
+	int iswitch = -1;
+	if (__pobj->now_mode == MODE_POI)
+		iswitch = byInternalBand;
+	else
+		iswitch = byInternalBand * 2 + byDutPort;
+	//切换开关
+	JcBool isSwhConn = JcSetSwitch(OFFSET_SWITCH_NULL, OFFSET_SWITCH_NULL, iswitch, OFFSET_SWITCH_NULL);
+	if (isSwhConn == FALSE) {
+		__pobj->strErrorInfo = "RxOffset: Switch Fail!\r\n";
 		return JC_STATUS_ERROR;
 	}
 
@@ -1390,13 +1434,9 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//Util::logged("loss_db: %lf", loss_db);
 
 	//Band转换开关参数
-	int iswitch ;
-	if (__pobj->now_mode == MODE_POI) {
-		if (sband.find("td") == std::string::npos)
-			iswitch = byInternalBand;
-		else//查找TD模块特殊TX校准通道
-			iswitch = byInternalBand + 5;
-	}
+	int iswitch = -1;
+	if (__pobj->now_mode == MODE_POI) 
+		iswitch = byInternalBand;
 	else
 		iswitch = byInternalBand * 2 + byDutPort;
 	//----------------------------------------------------------------------------------------------
@@ -1413,7 +1453,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 
 		//----------------------------------------------------------------------------------------------
 		//切换开关
-		JcBool isSwhConn = JcSetSwitch(iswitch, iswitch, iswitch, coup);
+		JcBool isSwhConn = JcSetSwitch(iswitch, iswitch, OFFSET_SWITCH_NULL, coup);
 		if (isSwhConn == FALSE) {
 			__pobj->strErrorInfo = "TxOffset: Switch-Coup Fail!\r\n";
 			return JC_STATUS_ERROR;
@@ -1713,7 +1753,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 			memcpy(cIdn, buf, retCount);
 		std::string strIdn((char*)buf);
 		//功率计
-		if      (Util::strFind(strIdn, "U2000A")  || Util::strFind(strIdn, "U2001A")  || 
+		if      (Util::strFind(strIdn, "U2000A")  || Util::strFind(strIdn, "U2001")  || 
 				 Util::strFind(strIdn, "U2002A")  || Util::strFind(strIdn, "U2004"))
 			iDeviceIDN = INSTR_AG_U2000_SERIES;
 		else if (Util::strFind(strIdn, "NRT"))
@@ -1726,7 +1766,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 				 Util::strFind(strIdn, "N5183")  ||
 				 Util::strFind(strIdn, "E4436")  || Util::strFind(strIdn, "E4437")  ||
 				 Util::strFind(strIdn, "E4438")  || 
-				 Util::strFind(strIdn, "E4422"))
+				 Util::strFind(strIdn, "ESG-4000"))
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
 		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") ||
 			Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))

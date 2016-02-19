@@ -64,12 +64,12 @@ public:
 		if (freq_khz > _maxFreq_khz && freq_khz < _minFreq_khz)
 			return false;
 
-		if (freq_khz != _freq_now) {
+		//if (freq_khz != _freq_now) {
 			//need c++11 support!
 			std::string stemp = "FREQ " + std::to_string(freq_khz) + "KHz\n";
 			_isCmdSucc = AgWrite(stemp.c_str());
 			if (_isCmdSucc) _freq_now = freq_khz;
-		}
+		//}
 		return _isCmdSucc;
 	}
 
@@ -78,12 +78,12 @@ public:
 		if (pow_dbm >_maxPow_dbm && pow_dbm < _minPow_dbm)
 			return false;
 
-		if (pow_dbm != _pow_now) {
+		//if (pow_dbm != _pow_now) {
 			//need c++11 support!
 			std::string stemp = "POW " + std::to_string(pow_dbm) + "dBm\n";
 			_isCmdSucc = AgWrite(stemp.c_str());
 			if (_isCmdSucc) _pow_now = pow_dbm;
-		}
+		//}
 		return _isCmdSucc;
 	}
 
