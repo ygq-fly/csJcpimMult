@@ -53,12 +53,12 @@ bool ClsSigRsSMxSerial::InstrSetFreq(double freq_khz) {
     if (freq_khz > _maxFreq_khz && freq_khz < _minFreq_khz)
         return false;
 
-    if (freq_khz != _freq_now) {
+    //if (freq_khz != _freq_now) {
         //need c++11 support!
         std::string stemp = ":SOUR" + std::to_string(_sourTunnel) + ":FREQ " + std::to_string(freq_khz) + "KHz\n";
         _isCmdSucc = AgWrite(stemp.c_str());
         if (_isCmdSucc) _freq_now = freq_khz;
-    }
+    //}
     return _isCmdSucc;
 }
 
@@ -67,12 +67,12 @@ bool ClsSigRsSMxSerial::InstrSetPow(double pow_dbm) {
     if (pow_dbm >_maxPow_dbm && pow_dbm < _minPow_dbm)
         return false;
 
-    if (pow_dbm != _pow_now) {
+    //if (pow_dbm != _pow_now) {
         //need c++11 support!
         std::string stemp = ":SOUR" + std::to_string(_sourTunnel) + ":POW " + std::to_string(pow_dbm) + "dBm\n";
         _isCmdSucc = AgWrite(stemp.c_str());
         if (_isCmdSucc) _pow_now = pow_dbm;
-    }
+    //}
     return _isCmdSucc;
 }
 

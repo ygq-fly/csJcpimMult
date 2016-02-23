@@ -69,17 +69,6 @@ public:
 	//开始初始化
 	void InstrInit() {
 		AgWrite("*RST\n");
-		//SetParam(eParam::SPAN, 500);
-		//SetParam(eParam::ATT, 0);
-		//SetParam(eParam::REFLEVEL, -60);
-		//SetParam(eParam::RBW, 10);
-		//SetParam(eParam::VBW, 10);
-		//SetParam(eParam::MARK_POS, eNULL);
-		////开始预放
-		//AgWrite(":POW:GAIN ON\n");
-		//AgWrite(":POW:GAIN:BAND LOW\n");
-		//InstrSetAvg(0);
-		////InstrClosgAvg();
 		InstrPimSetting();
 		SetParam(eParam::MARK_POS, eNULL);
 		if (GetSpeIndex() == 0)

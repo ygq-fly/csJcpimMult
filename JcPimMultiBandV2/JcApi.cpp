@@ -89,7 +89,7 @@
 //(buiut 328)
 //  vco freq fix
 //(build 329)
-//  no memery freq and power
+//  no memory freq and power
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -341,18 +341,18 @@ int fnSetImAvg(JcInt8 byAvgTime) {
 
 //voc检测(针对ATE)
 int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
-	//判断vco_enable
-	if (__pobj->isUseExtBand){
-		JcInt8 byTemp = __pobj->GetExtBandToIntBand(byBandIndex);
-		if (__pobj->now_vco_enable[byTemp] == 0)
-			return 0;
-	}
 	//切开关
 	fnSetMeasBand(byBandIndex);
 	int s = fnSetDutPort(byPort);
 	if (s <= -10000){
 		Util::logged(L"fnVco: Set Switch fail! (Band-%d-%d)", (int)byBandIndex, (int)byPort);
 		return JC_STATUS_ERROR_SET_SWITCH_FAIL;
+	}
+	//判断vco_enable
+	if (__pobj->isUseExtBand){
+		JcInt8 byTemp = __pobj->GetExtBandToIntBand(byBandIndex);
+		if (__pobj->now_vco_enable[byTemp] == 0)
+			return 0;
 	}
 	//延时
 	Util::setSleep(500);
@@ -530,10 +530,11 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, pim->freq_khz / 1000);
 	if (s) rxoff = 0;
 	//设置pim模块补偿(直接设置ana内置补偿)
-	JcSetAna_RefLevelOffset(0);
+	JcSetAna_RefLevelOffset(rxoff);
+	//JcSetAna_RefLevelOffset(0);
 	//获取互调,返回数据
 	dPimResult = JcGetAna(pim->freq_khz, false);
-	dPimResult += rxoff;
+	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
 	if (dPimResult == JC_STATUS_ERROR){
 		Util::logged(L"fnGetImResult: Spectrum read error!");
