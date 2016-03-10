@@ -185,19 +185,17 @@ public:
 		if (GetSpeIndex() != 2)
 			AgWrite(":POW:GAIN:BAND LOW\n");
 
+		//jcspe
 		if (GetSpeIndex() == 0) {
 			InstrSetSpan(10 * 1000);
 			InstrSetRbw(1000);
 			InstrSetVbw(1000);
 		}
+		//aglient
 		else {
-			//2015-5-5/vco: 15khz-100hz-100hz
 			InstrSetSpan(15 * 1000);
 			InstrSetRbw(100);
 			InstrSetVbw(100);
-			//InstrSetRbw(10 * 1000);
-			//InstrSetVbw(10 * 1000);
-			//InstrSetSpan(400 * 1000);
 		}
 	}
 	void InstrTxOffsetSetting() {
@@ -209,12 +207,15 @@ public:
 		InstrClosgAvg();
 		InstrSetAtt(40);
 
+		//jcspe
 		if (GetSpeIndex() == 0) {
 			InstrSetSpan(10 * 1000);
 			InstrSetRbw(1000);
 			InstrSetVbw(1000);
 
-		} else {
+		} 
+		//aglient
+		else {
 			InstrSetSpan(1000);
 			InstrSetRbw(100);
 			InstrSetVbw(100);

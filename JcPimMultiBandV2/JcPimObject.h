@@ -37,7 +37,7 @@
 static int _protect_rx = OFFSET_PROTECT_RX;
 static int _debug_enable = 0;
 //功率调整延时
-static int _tx_delay = 400;
+static int _tx_delay = 200;
 static std::string _serial;
 const char DESkeys[] = "jointcom";
 const char DESiv[8] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
@@ -48,14 +48,7 @@ static std::wstring _startPath = [](){
 	Util::getMyPath(wcBuff, 256, L"JcPimMultiBandV2.dll");
 	//char cbuff[512] = { 0 };
 	//Util::getMyPath(cbuff, 256, "JcPimMultiBandV2.dll");
-	std::wstring wsPath_ini = std::wstring(wcBuff) + L"\\JcConfig.ini";
-	_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
-	_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 400, wsPath_ini.c_str());
-	//防止tx_delay小于200
-	_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
-	wchar_t wcSerial[1024] = { 0 };
-	GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
-	_serial = Util::wstring_to_utf8(std::wstring(wcSerial));
+
 	return std::wstring(wcBuff);
 }();
 
@@ -282,7 +275,7 @@ public:
 		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
 		bool b = offset.DbConnect(sPath.c_str());
 		if (b == false) {
-			Util::logged(L"fnSetInit: file error(JcOffset.db)");
+			Util::logged(L"fnSetInit: file not exist(JcOffset.db)");
 			return false;
 		}
 		//数据库初始化

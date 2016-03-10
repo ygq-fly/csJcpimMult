@@ -15,6 +15,7 @@
 namespace Util {
     int getMyPath(OUT wchar_t* w_path, uint16_t max, const wchar_t* module_name);
 	int getMyPath(OUT char* path, uint16_t max, const char* module_name);
+	int isFileExist(const char* path);
     int isFileExist(const wchar_t* w_path);
     int getFileSize(const wchar_t* w_path);
     int setSleep(uint32_t millisecond);

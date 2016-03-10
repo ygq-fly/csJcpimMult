@@ -127,6 +127,10 @@
 //mian
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+int fnSetInit2(const JC_ADDRESS cDeviceAddr, const char* cDirectory) {
+	_startPath = Util::utf8_to_wstring(cDirectory);
+	return fnSetInit(cDeviceAddr);
+}
 //初始化
 int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	//加载pim对象
@@ -138,6 +142,15 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 		//	Util::logged(L"授权已到期！");
 		//	return JC_STATUS_NO_AUTORIZE;
 		//}
+
+		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
+		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
+		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
+		//防止tx_delay小于200
+		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
+		wchar_t wcSerial[1024] = { 0 };
+		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
+		_serial = Util::wstring_to_utf8(std::wstring(wcSerial));
 
 		//分配地址
 		std::istringstream iss(cDeviceAddr);
@@ -152,10 +165,14 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 
 		//开始连接数据库
 		bool isSqlConn = __pobj->InitBandSet();
+		if (!isSqlConn) {
+			__pobj->strErrorInfo = ("DB Connected: false(JcOffset.db no find!)\r\n");
+			return JC_STATUS_NO_DATABASE;
+		}
 		//开始连接
 		std::string strConnMsg = "";
 		ViStatus s = viOpenDefaultRM(&__pobj->viDefaultRM);
-		if (s) return false;
+		if (s) return JC_STATUS_ERROR;
 
 		if (__pobj->vaddr.size() < 5) return JC_STATUS_ERROR;
 
@@ -738,7 +755,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 	//adjust
 	for (int i = 0; i < 4; i++) {
 		if (i == 0)
-			Util::setSleep(_tx_delay);
+			Util::setSleep(_tx_delay + 200);
 		if (byCarrier == JC_CARRIER_TX1) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
 			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;	
@@ -797,7 +814,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 				break;
 			}
 			strLog += "   tx_set: " + std::to_string(sig_val) + "\r\n";
-			Util::setSleep(200);
+			Util::setSleep(_tx_delay);
 		}
 	}
 	__pobj->WriteClDebug(strLog);
@@ -923,7 +940,7 @@ JcBool JcConnSen(JC_ADDRESS cAddr) {
 
 JcBool JcConnSwh() {
 	__pobj->swh = std::make_shared<ClsJcSwitch>();
-	__pobj->device_status[4] = __pobj->swh->SwitchInit(__pobj->now_mode, 2);
+	__pobj->device_status[4] = __pobj->swh->SwitchInit(__pobj->now_mode, 2, Util::wstring_to_utf8(_startPath));
 	return __pobj->device_status[SWITCH];
 }
 

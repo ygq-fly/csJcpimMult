@@ -30,6 +30,7 @@
 #include <map>
 #include <regex>
 #include <time.h>
+#include <io.h>
 
 #include <Winsock2.h>
 #include <mswsock.h>

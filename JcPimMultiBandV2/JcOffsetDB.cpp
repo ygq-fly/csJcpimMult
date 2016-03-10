@@ -5,7 +5,8 @@
 #define OFFSET_STEP 1
 
 bool JcOffsetDB::DbConnect(const char* addr) {
-	m_bConn = !sqlite3_open(addr, &m_pConn);
+	if (Util::isFileExist(addr) != -1)
+		m_bConn = !sqlite3_open(addr, &m_pConn);
 	return m_bConn;
 }
 

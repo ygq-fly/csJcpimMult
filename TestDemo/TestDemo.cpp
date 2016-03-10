@@ -39,6 +39,7 @@ void Test_dll(){
     ptestcb testcb = (ptestcb)GetProcAddress(hinst, "testcb");
 
 	pSetInit setInit = (pSetInit)GetProcAddress(hinst, "fnSetInit");
+	pSetInit2 setInit2 = (pSetInit2)GetProcAddress(hinst, "fnSetInit2");
 	pHwSetIsExtBand hwSetIsExtBand = (pHwSetIsExtBand)GetProcAddress(hinst, "HwSetIsExtBand");
 	pSetMeasBand setMeasBand = (pSetMeasBand)GetProcAddress(hinst, "fnSetMeasBand");
 	pSetExit setExit = (pSetExit)GetProcAddress(hinst, "fnSetExit");
@@ -101,7 +102,8 @@ void Test_dll(){
 	std::string addr_swh = "0";
 	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen + "," + addr_swh;
 	bool isCont = true;
-	int s = setInit("0,0,0,0,0");
+	//int s = setInit("0,0,0,0");
+	int s = setInit2("0,0,0,0", "C:\\Users\\san\\Desktop\\123");
 	//int s = setInit(const_cast<char*>(addr.c_str()));
 	if (s == 0 && isCont == true) {
 		std::cout << "init success!" << std::endl;
@@ -110,7 +112,7 @@ void Test_dll(){
 		char msg[512] = { 0 };
 		getError(msg, 512);
 		std::cout << msg << std::endl;
-		if (s == -10007)
+		if (s == -10007 || s == -10008)
 			return;
 	}
 	

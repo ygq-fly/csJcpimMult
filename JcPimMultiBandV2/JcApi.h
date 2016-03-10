@@ -22,6 +22,7 @@ extern "C" {
 #define JC_STATUS_ERROR_SET_TX_OUT_SMOOTH   -10005
 #define JC_STATUS_ERROR_SET_BOSH_USE_TX1TX2 -10006
 #define JC_STATUS_NO_AUTORIZE               -10007
+#define JC_STATUS_NO_DATABASE               -10008
 
 #define JC_STATUS_ERROR_SET_IM_FAIL -10010
 #define JC_STATUS_ERROR_SET_TX_ONOFF_FAIL -10011
@@ -98,6 +99,7 @@ enum JC_DEVICE {
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //设置初始化地址：格式为逗号隔开SG1addr,SG2Addr,SAAddr,PMAddr
+JIONTCOM_API int fnSetInit2(const JC_ADDRESS cDeviceAddr, const char* cDirectory);
 JIONTCOM_API int fnSetInit(const JC_ADDRESS cDeviceAddr);
 JIONTCOM_API void HwSetIsExtBand(JcBool isUse);
 //关闭连接

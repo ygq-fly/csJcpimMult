@@ -10,7 +10,7 @@ ClsJcSwitch::ClsJcSwitch()
 ClsJcSwitch::~ClsJcSwitch() {}
 
 //开关初始化
-bool ClsJcSwitch::SwitchInit(int switch_work_type, int switch_conn_type) {
+bool ClsJcSwitch::SwitchInit(int switch_work_type, int switch_conn_type, std::string path) {
 	_isConn = false;
 	//设置工作模式
 	if (switch_work_type == MODE_POI)
@@ -23,8 +23,9 @@ bool ClsJcSwitch::SwitchInit(int switch_work_type, int switch_conn_type) {
 		_switch_work_type = ID_HUAWEI;
 	//设置连接模式
 	_switch_conn_type = COMM_TYPE_TCP;
+	path += "\\JcPimMultiBandV2.dll";
 	//加载配置
-	int b = MartrixSwitchInit(NULL, "JcPimMultiBandV2.dll", _switch_work_type, _switch_conn_type);
+	int b = MartrixSwitchInit(NULL, const_cast<char*>(path.c_str()), _switch_work_type, _switch_conn_type);
 	if (b == -1){
 		_error_info = "SwitchInit: Init Error!";
 		Util::logged(L"SwitchInit: 初始化异常");

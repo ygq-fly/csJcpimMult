@@ -51,6 +51,10 @@ int Util::isFileExist(const wchar_t *w_path) {
     return  _waccess(w_path, 0);
 }
 
+int Util::isFileExist(const char* path) {
+	return  _access(path, 0);
+}
+
 int Util::getFileSize(const wchar_t *w_path) {
     struct _stat f_info;
     int s = _wstat(w_path, &f_info);

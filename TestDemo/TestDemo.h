@@ -31,6 +31,7 @@ typedef void(*Callback_Get_TX_Offset_Point)(double offset_freq, double Offset_re
 
 typedef int(*pTest)(int, int);
 //JIONTCOM_API int fnSetInit(ADDRESS_ cDeviceAddr);
+typedef int(*pSetInit2)(const char*, const char*);
 typedef int(*pSetInit)(const char*);
 typedef void(*pHwSetIsExtBand)(BOOL);
 //JIONTCOM_API int fnSetExit();
