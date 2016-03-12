@@ -90,6 +90,8 @@
 //  vco freq fix
 //(build 329)
 //  no memory freq and power
+//(build 332)
+//  add fnSetInit2
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -137,20 +139,12 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	if (NULL != __pobj) {
 
 		//建立模块
+		__pobj->InitConfig();
 		//if (__pobj->CheckAuthorization() == false) {
 		//	__pobj->strErrorInfo = "Authorize Fail: \n" + __pobj->strErrorInfo;
 		//	Util::logged(L"授权已到期！");
 		//	return JC_STATUS_NO_AUTORIZE;
 		//}
-
-		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
-		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
-		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
-		//防止tx_delay小于200
-		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
-		wchar_t wcSerial[1024] = { 0 };
-		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
-		_serial = Util::wstring_to_utf8(std::wstring(wcSerial));
 
 		//分配地址
 		std::istringstream iss(cDeviceAddr);
@@ -547,11 +541,11 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, pim->freq_khz / 1000);
 	if (s) rxoff = 0;
 	//设置pim模块补偿(直接设置ana内置补偿)
-	JcSetAna_RefLevelOffset(rxoff);
-	//JcSetAna_RefLevelOffset(0);
+	//JcSetAna_RefLevelOffset(rxoff);
+	JcSetAna_RefLevelOffset(0);
 	//获取互调,返回数据
 	dPimResult = JcGetAna(pim->freq_khz, false);
-	//dPimResult += rxoff;
+	dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
 	if (dPimResult == JC_STATUS_ERROR){
 		Util::logged(L"fnGetImResult: Spectrum read error!");
@@ -940,7 +934,14 @@ JcBool JcConnSen(JC_ADDRESS cAddr) {
 
 JcBool JcConnSwh() {
 	__pobj->swh = std::make_shared<ClsJcSwitch>();
-	__pobj->device_status[4] = __pobj->swh->SwitchInit(__pobj->now_mode, 2, Util::wstring_to_utf8(_startPath));
+	std::locale old_loc = std::locale::global(std::locale(""));
+	const wchar_t* src_wstr = _startPath.c_str();
+	size_t buffer_size = _startPath.size() * 4 + 1;
+	char buf[256] = { 0 };
+	size_t n;
+	wcstombs_s(&n, buf, 256, src_wstr, buffer_size);
+	std::locale::global(old_loc);
+	__pobj->device_status[4] = __pobj->swh->SwitchInit(__pobj->now_mode, 2, buf);
 	return __pobj->device_status[SWITCH];
 }
 
@@ -1783,7 +1784,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 				 Util::strFind(strIdn, "N5181")  || Util::strFind(strIdn, "N5182")  || 
 				 Util::strFind(strIdn, "N5183")  ||
 				 Util::strFind(strIdn, "E4436")  || Util::strFind(strIdn, "E4437")  ||
-				 Util::strFind(strIdn, "E4438")  || 
+				 Util::strFind(strIdn, "E4438")  || Util::strFind(strIdn, "E4433")  ||
 				 Util::strFind(strIdn, "ESG-4000"))
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
 		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") ||

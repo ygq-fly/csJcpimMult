@@ -270,12 +270,26 @@ private:
 	~JcPimObject() {}
 
 public:
+	void InitConfig() {
+		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
+		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
+		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
+		//防止tx_delay小于200
+		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
+		wchar_t wcSerial[1024] = { 0 };
+		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
+		_serial = Util::wstring_to_utf8(std::wstring(wcSerial));
+	}
 	//连接数据库，初始化参数
 	bool InitBandSet(){
+		std::wstring db_Path = _startPath + L"\\JcOffset.db";
 		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
-		bool b = offset.DbConnect(sPath.c_str());
-		if (b == false) {
-			Util::logged(L"fnSetInit: file not exist(JcOffset.db)");
+		
+		if (Util::isFileExist(db_Path.c_str()) == -1) {
+			Util::logged(L"fnSetInit: file not exist(%s)", db_Path.c_str());
+			return false;
+		}
+		if (!offset.DbConnect(sPath.c_str())) {
 			return false;
 		}
 		//数据库初始化

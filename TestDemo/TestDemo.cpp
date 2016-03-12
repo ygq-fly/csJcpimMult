@@ -99,11 +99,10 @@ void Test_dll(){
 	//USB0::0x0957::0x2B18::MY51020008::0::INSTR
 	//USB0::0x0957::0x2B18::MY51050018::0::INSTR
 	std::string addr_sen = "0";
-	std::string addr_swh = "0";
-	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen + "," + addr_swh;
+	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen;
 	bool isCont = true;
-	//int s = setInit("0,0,0,0");
-	int s = setInit2("0,0,0,0", "C:\\Users\\san\\Desktop\\123");
+	int s = setInit("0,0,0,0");
+	//int s = setInit2("0,0,0,0", "C:\\Users\\san\\Desktop\\123");
 	//int s = setInit(const_cast<char*>(addr.c_str()));
 	if (s == 0 && isCont == true) {
 		std::cout << "init success!" << std::endl;
@@ -116,7 +115,6 @@ void Test_dll(){
 			return;
 	}
 	
-	//jcSetSwitch(0, 0, 0, 1);
 	hwSetIsExtBand(FALSE);
 	double tx_freq, rx_freq;
 	if (setMeasBand(8) < 0) {
@@ -135,10 +133,11 @@ void Test_dll(){
 		jcGetOffsetBandInfo(i, cBandInfo);
 		printf("%s\n", cBandInfo);
 	}
-	//hwSetImCoefficients(0, 2, 0, 0);
-	//setMeasBand(6);
-	//setDutPort(1);
-	//setTxPower(43, 43, 0.5, 0.5);
+
+	//setImOrder(3);
+	setMeasBand(0);
+	setDutPort(0);
+	//setTxPower(43, 43, 0, 0);
 	//hwSetTxFreqs(930, 960, "mhz");
 	//setTxOn(true, 0);
 	//double dd = 0;
