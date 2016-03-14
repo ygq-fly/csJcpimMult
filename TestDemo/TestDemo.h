@@ -120,4 +120,9 @@ typedef int(*pJcGetOffsetBandInfo)(int, char*);
 //	double loss_db);
 typedef int(*pJcSetOffsetTx_Single)(double&, double&, int, double, double, double);
 
+//int JcGetCalibrationTime(char* cTime, int len, JcInt8 byInternalBand, JcInt8 byDutport)
+typedef int(*pJcGetCalibrationTime)(char*, int, char, char);
+//JC_API JC_STATUS JcSetOffsetTime(JcInt8 byInternalBand, JcInt8 byDutport, double val);
+typedef int(*pJcSetOffsetTime)(char, char);
+
 #endif //JCPIMMULTIBANDV2_TESTDEMO_H

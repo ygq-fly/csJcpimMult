@@ -242,6 +242,14 @@ void HwSetExit(){
 	JcPimObject::release();
 }
 
+//获取vco校准数值
+int JcGetCalibrationTime(char* cTime, int len, JcInt8 byInternalBand, JcInt8 byDutport) {
+	std::string sband = __pobj->GetBandString(byInternalBand);
+
+	__pobj->offset.OffsetTime(cTime, len, sband.c_str(), byDutport);
+	return 0;
+}
+
 //设置频段
 int fnSetMeasBand(JcInt8 byBandIndex){
 	return HwSetMeasBand(byBandIndex, byBandIndex, byBandIndex);
@@ -1518,6 +1526,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 #endif
 	}
 
+	JcSetOffsetTime(byInternalBand, byDutPort);
 	//还原频谱设置
 	if (__pobj->ext_sen_index == 0)
 		__pobj->ana->InstrPimSetting();
@@ -1673,8 +1682,23 @@ JC_STATUS JcSetOffsetVco(JcInt8 byInternalBand, JcInt8 byDutport, double val) {
 		__pobj->strErrorInfo = "VCO_Offset: VCO's data save error!\r\n";
 		return JC_STATUS_ERROR;
 	}
-	else
-		return JC_STATUS_SUCCESS;
+	return JC_STATUS_SUCCESS;
+}
+
+JC_STATUS JcSetOffsetTime(JcInt8 byInternalBand, JcInt8 byDutport) {
+	std::string sband = __pobj->GetBandString(byInternalBand);
+	time_t now = time(NULL);
+	char date[128] = { 0 };
+	struct tm p = { 0 };
+	localtime_s(&p, &now);
+	sprintf_s(date, "%d-%d-%d %d:%d:%d", 1900 + p.tm_year, 1 + p.tm_mon, p.tm_mday,
+										p.tm_hour, p.tm_min, p.tm_sec);
+	int s = __pobj->offset.Store_calibration_time(sband.c_str(), byDutport, date);
+	if (s) {
+		__pobj->strErrorInfo = "database: time save error!\r\n";
+		return JC_STATUS_ERROR;
+	}
+	return JC_STATUS_SUCCESS;
 }
 
 //设置自动校准tx的配置

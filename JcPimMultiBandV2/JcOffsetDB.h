@@ -129,6 +129,7 @@ public:
 	double OffsetRx(const char* band, const char& dut, const double& freq_now);
 	//获取vco数据
 	double OffsetVco(const char* band, const char& dut);
+	int OffsetTime(char*ctime, int len, const char* band, const char& dut);
 	//存储校准数据
 	int Store_v2(const char& tx_or_rx,
 				 const char* band, const char& dut, const char& coup,
@@ -137,6 +138,7 @@ public:
 				 const double* val, int num);
 	//存储vco校准数据
 	int Store_vco_single(const char* band, const char& dut, const double val);
+	int Store_calibration_time(const char* band, const char& dut, const char* val);
 
 private:
     //计算斜率

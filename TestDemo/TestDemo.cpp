@@ -77,6 +77,9 @@ void Test_dll(){
 	pJcSetOffsetTxIncremental jcSetOffsetTxIncremental = (pJcSetOffsetTxIncremental)GetProcAddress(hinst, "JcSetOffsetTxIncremental");
 	pJcSetOffsetTx_Single jcSetOffsetTx_Single = (pJcSetOffsetTx_Single)GetProcAddress(hinst, "JcSetOffsetTx_Single");
 
+	pJcGetCalibrationTime jcGetCalibrationTime = (pJcGetCalibrationTime)GetProcAddress(hinst, "JcGetCalibrationTime");
+	pJcSetOffsetTime jcSetOffsetTime = (pJcSetOffsetTime)GetProcAddress(hinst, "JcSetOffsetTime");
+
     testcb([](double offset_freq, double Offset_val){
         printf("freq = %lf ; val = %lf\n", offset_freq, Offset_val);
     });
@@ -132,6 +135,10 @@ void Test_dll(){
 		char cBandInfo[1024] = { 0 };
 		jcGetOffsetBandInfo(i, cBandInfo);
 		printf("%s\n", cBandInfo);
+
+		char time[256] = { 0 };
+		jcGetCalibrationTime(time, 256, 0, 0);
+		printf("CalibrationTime_%d: %s\n", i-1, time);
 	}
 
 	//setImOrder(3);

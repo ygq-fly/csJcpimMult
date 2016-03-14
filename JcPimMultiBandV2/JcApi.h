@@ -200,6 +200,8 @@ JC_API JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte, JC_RETURN_VALUE r
 
 JC_API JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, JcInt8 byInternalBand, JcInt8 byDutport);
 JC_API JC_STATUS JcSetOffsetVco(JcInt8 byInternalBand, JcInt8 byDutport, double val);
+JC_API JC_STATUS JcGetCalibrationTime(char* time,int len, JcInt8 byInternalBand, JcInt8 byDutport);
+JC_API JC_STATUS JcSetOffsetTime(JcInt8 byInternalBand, JcInt8 byDutport);
 JC_API JcBool JcSetOffsetTX_Config(int iAnalyzer, const JC_ADDRESS Device_Info);
 JC_API void  JcSetOffsetTX_Config_Close();
 

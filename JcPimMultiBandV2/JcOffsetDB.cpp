@@ -116,6 +116,13 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 			"PRIMARY KEY(\"port\"))";
 		ExecSql(table.c_str());
 	}
+	if (!IsExist("JC_CALIBATION_TIME")) {
+		std::string table = "CREATE TABLE \"JC_CALIBATION_TIME\" ("
+			"\"port\" text NOT NULL,"
+			"\"time\" text,"
+			"PRIMARY KEY(\"port\"))";
+		ExecSql(table.c_str());
+	}
 }
 
 bool JcOffsetDB::DbSetTxIncremental(const char* band, const char& dut, const char& coup, const char& real_or_dsp, double incremental) {
@@ -455,6 +462,29 @@ double JcOffsetDB::OffsetVco(const char* band, const char& dut) {
 	return val;
 }
 
+int JcOffsetDB::OffsetTime(char* ctime, int len, const char* band, const char& dut) {
+	std::string sSuffix = dut == 0 ? "_A" : "_B";
+
+	std::string sTable = "JC_CALIBATION_TIME";
+	std::string sColomn(band);
+	sColomn += sSuffix;
+	std::string sql = "select time from " + sTable + " where port = '" + sColomn + "'";
+
+	sqlite3_stmt* pStmt;
+	int s = sqlite3_prepare(m_pConn, sql.c_str(), -1, &pStmt, NULL);
+	const char* val;
+	if (sqlite3_step(pStmt) == SQLITE_ROW) {
+		//val = sqlite3_column_double(pStmt, 0);
+		val = (const char*)sqlite3_column_text(pStmt, 0);
+		int val_len = strlen(val);
+		len = len > val_len ? val_len : len;
+		memcpy(ctime, val, len);
+	}
+	sqlite3_finalize(pStmt);
+
+	return 0;
+}
+
 //存储校准数据
 int JcOffsetDB::Store_v2(const char& tx_or_rx,
 						 const char* band, const char& dut, const char& coup,
@@ -541,6 +571,27 @@ int JcOffsetDB::Store_vco_single(const char* band, const char& dut, const double
 	{
 		Util::logging("==> Save Vco error: %d\r\n%s\r\n", result, sql.c_str());
 		Util::logged("Save Vco error: %d", result);
+		return JCOFFSET_ERROR;
+	}
+}
+
+int JcOffsetDB::Store_calibration_time(const char* band, const char& dut, const char* val) {
+	std::string sSuffix = dut == 0 ? "_A" : "_B";
+	std::string sColomn(band);
+	sColomn += sSuffix;
+
+	std::string sql = "insert or replace into JC_CALIBATION_TIME (port,time) values ('" + sColomn + "','" + std::string(val) + "')";
+	sqlite3_stmt* pstmt;
+	sqlite3_prepare(m_pConn, sql.c_str(), -1, &pstmt, NULL);
+	int result = sqlite3_step(pstmt);
+	sqlite3_finalize(pstmt);
+
+	if (result == SQLITE_DONE)
+		return 0;
+	else
+	{
+		//Util::logging("==> Save time error: %d\r\n%s\r\n", result, sql.c_str());
+		//Util::logged("Save time error: %d", result);
 		return JCOFFSET_ERROR;
 	}
 }
