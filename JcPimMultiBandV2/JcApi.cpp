@@ -92,6 +92,10 @@
 //  no memory freq and power
 //(build 332)
 //  add fnSetInit2
+//(build 336)
+//  support calibration time
+//(build 339)
+//  fix rs's IDN bug ***************
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -549,11 +553,11 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, pim->freq_khz / 1000);
 	if (s) rxoff = 0;
 	//设置pim模块补偿(直接设置ana内置补偿)
-	//JcSetAna_RefLevelOffset(rxoff);
-	JcSetAna_RefLevelOffset(0);
+	JcSetAna_RefLevelOffset(rxoff);
+	//JcSetAna_RefLevelOffset(0);
 	//获取互调,返回数据
 	dPimResult = JcGetAna(pim->freq_khz, false);
-	dPimResult += rxoff;
+	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
 	if (dPimResult == JC_STATUS_ERROR){
 		Util::logged(L"fnGetImResult: Spectrum read error!");
@@ -886,7 +890,7 @@ JcBool JcConnAna(JC_ADDRESS cAddr) {
 		char cIdn[128] = { 0 };
 		int index = JcGetIDN(vi, cIdn);
 		//安捷伦
-		if (index == INSTR_AG_MXA_SERIES || INSTR_JCSPE) {
+		if (index == INSTR_AG_MXA_SERIES || index == INSTR_JCSPE) {
 			__pobj->ana = std::make_shared<ClsAnaAgN9020A>();
 			__pobj->ana->InstrSession(vi, cIdn);
 		}
@@ -1691,7 +1695,7 @@ JC_STATUS JcSetOffsetTime(JcInt8 byInternalBand, JcInt8 byDutport) {
 	char date[128] = { 0 };
 	struct tm p = { 0 };
 	localtime_s(&p, &now);
-	sprintf_s(date, "%d-%d-%d %d:%d:%d", 1900 + p.tm_year, 1 + p.tm_mon, p.tm_mday,
+	sprintf_s(date, "%d-%02d-%02d %02d:%02d:%02d", 1900 + p.tm_year, 1 + p.tm_mon, p.tm_mday,
 										p.tm_hour, p.tm_min, p.tm_sec);
 	int s = __pobj->offset.Store_calibration_time(sband.c_str(), byDutport, date);
 	if (s) {
@@ -1809,7 +1813,8 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 				 Util::strFind(strIdn, "N5183")  ||
 				 Util::strFind(strIdn, "E4436")  || Util::strFind(strIdn, "E4437")  ||
 				 Util::strFind(strIdn, "E4438")  || Util::strFind(strIdn, "E4433")  ||
-				 Util::strFind(strIdn, "ESG-4000"))
+				 Util::strFind(strIdn, "E4434")  || Util::strFind(strIdn, "E4435")  ||
+				 Util::strFind(strIdn, "ESG"))
 			iDeviceIDN = INSTR_AG_MXG_SERIES;
 		else if (Util::strFind(strIdn, "SMA") || Util::strFind(strIdn, "SMB") ||
 			Util::strFind(strIdn, "SMC") || Util::strFind(strIdn, "SMU"))
@@ -1830,7 +1835,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 			iDeviceIDN = INSTR_JCSPE;
 		//NONE
 		else
-			Util::logged(L"JcGetIDN: The current device does not support! (%s)", Util::utf8_to_wstring(strIdn).c_str());
+			Util::logged(L"JcGetIDN: The current device can not support! (%s)", Util::utf8_to_wstring(strIdn).c_str());
 	}
 	return iDeviceIDN;
 }

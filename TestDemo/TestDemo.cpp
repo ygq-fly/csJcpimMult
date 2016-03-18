@@ -104,7 +104,7 @@ void Test_dll(){
 	std::string addr_sen = "0";
 	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen;
 	bool isCont = true;
-	int s = setInit("0,0,0,0");
+	int s = setInit("0,0,1111,0");
 	//int s = setInit2("0,0,0,0", "C:\\Users\\san\\Desktop\\123");
 	//int s = setInit(const_cast<char*>(addr.c_str()));
 	if (s == 0 && isCont == true) {
@@ -137,13 +137,14 @@ void Test_dll(){
 		printf("%s\n", cBandInfo);
 
 		char time[256] = { 0 };
-		jcGetCalibrationTime(time, 256, 0, 0);
+		jcGetCalibrationTime(time, 256, (char)(i-1), 0);
 		printf("CalibrationTime_%d: %s\n", i-1, time);
 	}
 
+	//jcSetOffsetTime(0, 0);
 	//setImOrder(3);
-	setMeasBand(0);
-	setDutPort(0);
+	//setMeasBand(0);
+	//setDutPort(0);
 	//setTxPower(43, 43, 0, 0);
 	//hwSetTxFreqs(930, 960, "mhz");
 	//setTxOn(true, 0);

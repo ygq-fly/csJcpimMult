@@ -223,7 +223,7 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	//------------------------write by san-------------------
 	//fsp仪表不支持模拟FFT模式，sweeptime必须设置为auto
 	//------------------------write by san-------------------
-	if (Util::strFind(_strIDN, "FSP"))
+	if (!Util::strFind(_strIDN, "FSV"))
 		InstrSetSweepTime(0);
 	else
 		InstrSetSweepTime(sweep_time[pp]);

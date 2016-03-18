@@ -667,10 +667,16 @@ public:
 				_singleton->ana->InstrClose();
 			if (_singleton->sen)
 				_singleton->sen->InstrClose();
-			if (_singleton->sig1)
+			if (_singleton->sig1) {
+				if(_singleton->sig1->InstrConnStatus())
+					_singleton->sig1->InstrOpenPow(false);
 				_singleton->sig1->InstrClose();
-			if (_singleton->sig2)
+			}
+			if (_singleton->sig2) {
+				if (_singleton->sig2->InstrConnStatus())
+					_singleton->sig2->InstrOpenPow(false);
 				_singleton->sig2->InstrClose();
+			}
 			if (_singleton->vna)
 				_singleton->vna->InstrClose();
 			viClose(_singleton->viDefaultRM);
