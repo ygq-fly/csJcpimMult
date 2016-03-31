@@ -36,6 +36,7 @@
 
 static int _protect_rx = OFFSET_PROTECT_RX;
 static int _debug_enable = 0;
+static int _free_tx_enable = 0;
 //功率调整延时
 static int _tx_delay = 200;
 static std::string _serial;
@@ -273,6 +274,7 @@ public:
 	void InitConfig() {
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
+		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 0, wsPath_ini.c_str());
 		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
 		//防止tx_delay小于200
 		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;

@@ -96,6 +96,8 @@
 //  support calibration time
 //(build 339)
 //  fix rs's IDN bug ***************
+//(build 341)
+//  enable free power settings
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -407,15 +409,19 @@ int fnCheckTwoSignalROSC() {
 //设置rf1,rf2
 int fnSetTxPower(double dTxPower1, double dTxPower2,
 	double dPowerOffset1, double dPowerOffset2) {
-	//__pobj->now_txPow1 = dTxPower1;
-	//__pobj->now_txPow2 = dTxPower2;
-	////设置外部校准
-	//__pobj->offset_txPow1 = dPowerOffset1;
-	//__pobj->offset_txPow2 = dPowerOffset2;
-	rf1->pow_dbm = 43;
-	rf2->pow_dbm = 43;
-	rf1->offset_ext = dTxPower1 + dPowerOffset1 - 43;
-	rf2->offset_ext = dTxPower1 + dPowerOffset2 - 43;
+	
+	if (_free_tx_enable == 0) {
+		rf1->pow_dbm = dTxPower1;
+		rf2->pow_dbm = dTxPower2;
+		rf1->offset_ext = dPowerOffset1;
+		rf2->offset_ext = dPowerOffset2;
+	}
+	else {
+		rf1->pow_dbm = 43;
+		rf2->pow_dbm = 43;
+		rf1->offset_ext = dTxPower1 + dPowerOffset1 - 43;
+		rf2->offset_ext = dTxPower1 + dPowerOffset2 - 43;
+	}
 
 	return 0;
 }

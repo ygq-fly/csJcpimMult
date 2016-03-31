@@ -104,7 +104,7 @@ void Test_dll(){
 	std::string addr_sen = "0";
 	std::string addr = addr_sig1 + "," + addr_sig2 + "," + addr_ana + "," + addr_sen;
 	bool isCont = true;
-	int s = setInit("0,0,1111,0");
+	int s = setInit("0,0,0,0");
 	//int s = setInit2("0,0,0,0", "C:\\Users\\san\\Desktop\\123");
 	//int s = setInit(const_cast<char*>(addr.c_str()));
 	if (s == 0 && isCont == true) {
