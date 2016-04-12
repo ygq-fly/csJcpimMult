@@ -98,6 +98,8 @@
 //  fix rs's IDN bug ***************
 //(build 341)
 //  enable free power settings
+//(build 343)
+//  config tx_step to set offset step
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1832,7 +1834,8 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		//ÆµÆ×ÒÇ
 		else if (Util::strFind(strIdn, "N9000")  || Util::strFind(strIdn, "N9010")  || 
 				 Util::strFind(strIdn, "N9020")  || Util::strFind(strIdn, "N9030")  || 
-				 Util::strFind(strIdn, "N9038")  ||
+				 Util::strFind(strIdn, "N9038") || Util::strFind(strIdn, "E4443") ||
+				 Util::strFind(strIdn, "E4445") ||
 				 Util::strFind(strIdn, "E4407"))
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))

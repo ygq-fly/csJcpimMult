@@ -87,26 +87,11 @@ enum
 class JcOffsetDB
 {
 public:
-	JcOffsetDB()
-		: m_pConn(NULL)
-		, m_bConn(false)
-		, m_band_info_table("JC_BAND2_INFO")
-		, m_tx_offset_table("JC_TX_OFFSET_ALL")
-		, m_rx_offset_table("JC_RX_OFFSET_ALL")
-		, m_setting_table("JC_SETTING_INFO")
-		, m_offset_mode(discontinuous_offset_mode)
-    {
-        //char col_types[][10] = { "" ,"INTEGER", "FLOAT", "Text", "BLOB", "NULL"};
-    }
-    
-    ~JcOffsetDB()
-	{
-        if (m_pConn) {
-            sqlite3_close(m_pConn);
-        }
-    }
+	JcOffsetDB();
+	~JcOffsetDB();
     
 public:
+	void SetOffsetStep(int tx_step);
 	//连接数据库
 	bool DbConnect(const char* addr);
 	//初始化数据库，创建表
@@ -158,5 +143,6 @@ private:
 
 	//使用模式，关系到频段表的调用
 	uint8_t m_offset_mode;
+	int m_tx_step;
 };
 #endif /* defined(__MyTest__JcOffsetDB__) */

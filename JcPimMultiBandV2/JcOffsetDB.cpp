@@ -4,6 +4,33 @@
 //校准步进1M
 #define OFFSET_STEP 1
 
+JcOffsetDB::JcOffsetDB()
+	: m_pConn(NULL)
+	, m_bConn(false)
+	, m_band_info_table("JC_BAND2_INFO")
+	, m_tx_offset_table("JC_TX_OFFSET_ALL")
+	, m_rx_offset_table("JC_RX_OFFSET_ALL")
+	, m_setting_table("JC_SETTING_INFO")
+	, m_offset_mode(discontinuous_offset_mode)
+	, m_tx_step(OFFSET_STEP)
+{
+	//char col_types[][10] = { "" ,"INTEGER", "FLOAT", "Text", "BLOB", "NULL"};
+}
+
+JcOffsetDB::~JcOffsetDB()
+{
+	if (m_pConn) {
+		sqlite3_close(m_pConn);
+	}
+}
+
+void JcOffsetDB::SetOffsetStep(int tx_step) {
+	if (tx_step <= 0)
+		m_tx_step = OFFSET_STEP;
+	else
+		m_tx_step = tx_step;
+}
+
 bool JcOffsetDB::DbConnect(const char* addr) {
 	m_bConn = !sqlite3_open(addr, &m_pConn);
 	return m_bConn;
@@ -255,15 +282,15 @@ int JcOffsetDB::FreqHeader(const char& tx_or_rx, const char* band, double* freq,
 		if (s == JCOFFSET_ERROR)
 			return s;
 
-		int num = ceil((f_stop - f_start) / OFFSET_STEP) + 1;
+		int num = ceil((f_stop - f_start) / m_tx_step) + 1;
 		num = num < maxnum ? num : maxnum;
 		for (int j = 0; j < num; ++j)
 		{
-			*(freq + j) = f_start + OFFSET_STEP*j;
+			*(freq + j) = f_start + m_tx_step*j;
 		}
 
 		//最后一点不在步进点上时，修正最后一点
-		if ((f_start + (num - 1)  * OFFSET_STEP) > f_stop)
+		if ((f_start + (num - 1)  * m_tx_step) > f_stop)
 			*(freq + num - 1) = f_stop;
 		i = num;
 	}
@@ -313,11 +340,11 @@ double JcOffsetDB::OffsetTx(const char* band, const char& dut, const char& coup,
 		if (freq_mhz<f_start || freq_mhz>f_stop)
 			return JCOFFSET_ERROR;
 		//查找序号
-		f1 = floor((freq_mhz - f_start) / OFFSET_STEP) + 1;
-		f2 = ceil ((freq_mhz - f_start) / OFFSET_STEP) + 1;
+		f1 = floor((freq_mhz - f_start) / m_tx_step) + 1;
+		f2 = ceil((freq_mhz - f_start) / m_tx_step) + 1;
 		//查找序号对应的值
-		freq1 = f_start + OFFSET_STEP * (f1 - 1);
-		freq2 = f_start + OFFSET_STEP * (f2 - 1);
+		freq1 = f_start + m_tx_step * (f1 - 1);
+		freq2 = f_start + m_tx_step * (f2 - 1);
 	}
 	else 
 	{
@@ -408,10 +435,10 @@ double JcOffsetDB::OffsetRx(const char* band, const char& dut, const double& fre
 		if (freq_now<f_start || freq_now>f_stop)
 			return JCOFFSET_ERROR;
 
-		f1 = floor((freq_now - f_start) / OFFSET_STEP) + 1;
-		f2 = ceil((freq_now - f_start) / OFFSET_STEP) + 1;
-		freq1 = f_start + OFFSET_STEP * (f1 - 1);
-		freq2 = f_start + OFFSET_STEP * (f2 - 1);
+		f1 = floor((freq_now - f_start) / m_tx_step) + 1;
+		f2 = ceil((freq_now - f_start) / m_tx_step) + 1;
+		freq1 = f_start + m_tx_step * (f1 - 1);
+		freq2 = f_start + m_tx_step * (f2 - 1);
 	}
 	else
 	{

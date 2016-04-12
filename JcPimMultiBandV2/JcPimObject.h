@@ -39,6 +39,7 @@ static int _debug_enable = 0;
 static int _free_tx_enable = 0;
 //功率调整延时
 static int _tx_delay = 200;
+static int _tx_step = 0;
 static std::string _serial;
 const char DESkeys[] = "jointcom";
 const char DESiv[8] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
@@ -275,6 +276,7 @@ public:
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
 		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 0, wsPath_ini.c_str());
+		_tx_step = GetPrivateProfileIntW(L"Settings", L"tx_step", 1, wsPath_ini.c_str());
 		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
 		//防止tx_delay小于200
 		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
@@ -295,6 +297,7 @@ public:
 			return false;
 		}
 		//数据库初始化
+		offset.SetOffsetStep(_tx_step);
 		offset.DbInit(now_mode);
 
 		int ret = 0;
