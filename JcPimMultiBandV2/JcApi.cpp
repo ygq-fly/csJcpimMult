@@ -100,6 +100,10 @@
 //  enable free power settings
 //(build 343)
 //  config tx_step to set offset step
+//(build 344)
+//  config rbw to 10, vbw 30
+//(build 345)
+//  POI switch 's flag: coup = -1
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1214,6 +1218,7 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 		}
 	}
 
+	if (coup < -1) coup = -1;
 	JcBool ret = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
 	if (!ret) __pobj->strErrorInfo = "Switch: Excut Error!\r\n";
 	return ret;

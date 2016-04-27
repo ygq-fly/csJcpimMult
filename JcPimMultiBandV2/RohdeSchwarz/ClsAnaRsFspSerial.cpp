@@ -201,8 +201,8 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	//ATT:        0			,	0				,	30
 	//------------------------write by san-------------------
 	static const double freq_span       [PRESET_PARAMETER_TOTAL] = {  0,    15000,  1000 };
-	static const double freq_rbw        [PRESET_PARAMETER_TOTAL] = {  30,   300,   100  };
-	static const double freq_vbw        [PRESET_PARAMETER_TOTAL] = {  100,  1000,   100  };
+	static const double freq_rbw        [PRESET_PARAMETER_TOTAL] = {  10,   300,   100  };
+	static const double freq_vbw        [PRESET_PARAMETER_TOTAL] = {  30,  1000,   100  };
 	static const int    sweep_time      [PRESET_PARAMETER_TOTAL] = {  1,    0,       0    };
 
 	static const int    freq_aver       [PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
