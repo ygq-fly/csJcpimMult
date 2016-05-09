@@ -104,6 +104,10 @@
 //  config rbw to 10, vbw 30
 //(build 345)
 //  POI switch 's flag: coup = -1
+//(build 346)
+//  add pim_avg
+//(build 349)
+//  add _coup_delay, need jcMBP1.5.1.55
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -317,6 +321,7 @@ int HwSetDutPort(JcInt8 byPortTx1, JcInt8 byPortTx2, JcInt8 byPortRx) {
 	}
 
 	JcBool b = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, JC_COUP_TX2);
+	//Util::setSleep(_coup_delay);
 	if (b == FALSE)
 		__pobj->strErrorInfo = "fnSetDutPort: Switch Set Error!\r\n";
 
@@ -446,20 +451,25 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	//设置功放1
 	js = JcSetSig_Advanced(JC_CARRIER_TX1, true, dd);
 	if (js) return js;
+	char cLog[256] = { 0 };
+	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\nP1 = %lf, P2 = %lf\r\noffset1 = %lf, offset2 = %lf\r\n",
+		rf1->freq_khz / 1000, rf2->freq_khz / 1000,
+		rf1->offset_int + rf1->pow_dbm, rf2->offset_int + rf2->pow_dbm,
+		rf1->offset_ext, rf2->offset_ext);
+	__pobj->WriteClDebug(cLog);
 	//---------------------------------------------------------------------------------
 	//开启功放
 	js = fnSetTxOn(true, JC_CARRIER_TX1TX2);
 	if (0 != js) return js;
 	//---------------------------------------------------------------------------------
 	//切换耦合器tx2开关(保护多切一次)
-	JcBool b = HwSetCoup(JC_COUP_TX1);
-	b = HwSetCoup(JC_COUP_TX2);
+	JcBool b = HwSetCoup(JC_COUP_TX2);
 	if (FALSE == b) {
 		//关闭功放
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		return -10000;
 	}
-	Util::setSleep(100);
+	Util::setSleep(300);
 	//检测tx1功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX2);
 	if (js <= -10000) {
@@ -479,7 +489,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		return -10000;
 	}
-	Util::setSleep(100);
+	Util::setSleep(300);
 	//检测tx2功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX1);
 	if (js <= -10000) {
@@ -568,14 +578,19 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	JcSetAna_RefLevelOffset(rxoff);
 	//JcSetAna_RefLevelOffset(0);
 	//获取互调,返回数据
-	dPimResult = JcGetAna(pim->freq_khz, false);
+	dPimResult = 0;
+	for (int i = 0; i < _pim_avg; i++) {
+		int temp = JcGetAna(pim->freq_khz, false);
+		if (temp == JC_STATUS_ERROR){
+			Util::logged(L"fnGetImResult: Spectrum read error!");
+			__pobj->strErrorInfo = "Spectrum read error!\r\n";
+			return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
+		}
+		dPimResult += temp;
+	}
+	dPimResult = dPimResult / (double)_pim_avg;
 	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
-	if (dPimResult == JC_STATUS_ERROR){
-		Util::logged(L"fnGetImResult: Spectrum read error!");
-		__pobj->strErrorInfo = "Spectrum read error!\r\n";
-		return JC_STATUS_ERROR_READ_SPECTRUM_FAIL;
-	}
 	return 0;
 }
 
@@ -661,10 +676,9 @@ void HwSetBandEnable(int iBand, JcBool isEnable) {
 JcBool HwSetCoup(JcInt8 byCoup) {
 	//int iSwitch = __pobj->now_band * 2 + __pobj->now_dut_port;
 	JcBool r = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, byCoup);
-	Util::setSleep(300);
+	Util::setSleep(_coup_delay);
 	if (FALSE == r) 
 		Util::logged(L"HwSetCoup: set Coup fail! (Coup-%d)", (int)byCoup);		
-	
 	return r;
 }
 
@@ -695,7 +709,9 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 		tx_temp = rf2->pow_dbm + rf2->offset_ext;
 	}
 	//读取功率计
+	//__pobj->WriteClDebug("   Avg3rd_offset: " + std::to_string(val) + " \r\n");
 	double sen = JcGetSen();
+	__pobj->WriteClDebug("   Avg3rd_1_sensor: " + std::to_string(sen) + " \r\n");
 	if (Util::strFind(__pobj->sen->InstrGetIdn(), "nrpz")) {
 		sen += val;
 	} else {
@@ -705,8 +721,7 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 		sen = sen / 3 + val;
 	}
 	//log
-	std::string strLog = "start Dsp-Coup-" + std::to_string(byCoup) + "\r\n";
-	strLog += "   Avg3rd_1: " + std::to_string(sen) + " \r\n";
+	__pobj->WriteClDebug("   Avg3rd_1_value: " + std::to_string(sen) + " \r\n");
 	//retest
 	double dd = tx_temp - sen;
 	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) 
@@ -714,12 +729,12 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 		Util::setSleep(100);
 		//读2次后平均
 		sen = JcGetSen();
+		__pobj->WriteClDebug("   Avg3rd_2_sensor: " + std::to_string(sen) + " \r\n");
 		sen += JcGetSen();
 		sen += JcGetSen();
 		sen = sen / 3 + val;
 		//log
-		strLog += "   Avg3rd_2: " + std::to_string(sen) + " \r\n";
-		JcPimObject::Instance()->LoggingWrite(strLog.c_str());
+		__pobj->WriteClDebug("   Avg3rd_2_value: " + std::to_string(sen) + " \r\n");
 	}
 	return sen;
 }
@@ -762,16 +777,17 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		dd = 0;
 		return JC_STATUS_SUCCESS;
 	}
-
+	int error_time = 0;
 	JC_STATUS ret = JC_STATUS_SUCCESS;
 	//tx显示值
 	double tx_dsp = 0;
 	//tx偏差值
 	double tx_deviate = 0;
 	dd = 0;
-	std::string strLog = "start smooth-tx-" + std::to_string(byCarrier) + "\r\n";
+	__pobj->WriteClDebug("start smooth-tx-" + std::to_string(byCarrier) + "\r\n");
 	//adjust
 	for (int i = 0; i < 4; i++) {
+		__pobj->WriteClDebug("   No.: " + std::to_string(i + 1) + "\r\n");
 		if (i == 0)
 			Util::setSleep(_tx_delay + 200);
 		if (byCarrier == JC_CARRIER_TX1) {
@@ -785,12 +801,12 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		else
 			return JC_STATUS_ERROR_SET_BOSH_USE_TX1TX2;
 		//log
-		strLog += "   No.: " + std::to_string(i+1) + "\r\n";
-		strLog += "   tx_dsp: " + std::to_string(tx_dsp) + "\r\n";
+		__pobj->WriteClDebug("   tx_dsp: " + std::to_string(tx_dsp) + "\r\n");
 		//未检测功率时
 		if (tx_dsp <= 33) {
 			__pobj->strErrorInfo = "   PowerSmooth: No find Power!\r\n";
-			strLog += "   (tx_dsp <= 33)\r\n";
+			__pobj->WriteClDebug("   (tx_dsp <= 33)\r\n");
+			__pobj->WriteClDebug("   (Return error!)\r\n");
 			ret =  JC_STATUS_ERROR_NO_FIND_POWER;
 			break;
 		}
@@ -802,9 +818,33 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 			//检测错误后，关闭功放
 			//FnSetTxOn(false, byCarrier);		
 			__pobj->strErrorInfo = "   PowerSmooth: Power's Smooth out Allowable Range\r\n";
-			strLog += "   (tx_dsp out range)\r\n";
-			ret = JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
-			break;
+			error_time++;
+			__pobj->WriteClDebug("   (tx_dsp out range, count:" + std::to_string(error_time) + ")\r\n");
+			if (error_time == 2) {
+				//检测错误2次后，结束
+				__pobj->WriteClDebug("   (Return error!)\r\n");
+				ret = JC_STATUS_ERROR_SET_TX_OUT_SMOOTH;
+				break;
+			}
+			else {
+				//检测错误后，尝试重启信号源
+				__pobj->WriteClDebug("   (Try to restart!)\r\n");
+				fnSetTxOn(false);
+				if (byCarrier == JC_CARRIER_TX1) {
+					//尝试抖动
+					HwSetCoup(JC_COUP_TX2);
+					HwSetCoup(JC_COUP_TX1);
+				}
+				else if (byCarrier == JC_CARRIER_TX2) {
+					//尝试抖动
+					HwSetCoup(JC_COUP_TX1);
+					HwSetCoup(JC_COUP_TX2);
+				}
+				fnSetTxOn(true);
+				Util::setSleep(_coup_delay);
+				i--;
+				continue;
+			}
 		} else {
 			if (tx_deviate >= (__pobj->now_tx_smooth_accuracy * -1) && tx_deviate <= __pobj->now_tx_smooth_accuracy)
 				break;
@@ -828,14 +868,14 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 			}
 			if (b == FALSE) {
 				ret = -10000;
-				strLog += "   tx_set: sig set error\r\n";
+				__pobj->WriteClDebug("   (tx_set: sig set error)\r\n");
 				break;
 			}
-			strLog += "   tx_set: " + std::to_string(sig_val) + "\r\n";
+			__pobj->WriteClDebug("   tx_set: " + std::to_string(sig_val) + "\r\n");
 			Util::setSleep(_tx_delay);
 		}
 	}
-	__pobj->WriteClDebug(strLog);
+	//__pobj->WriteClDebug(strLog);
 	return ret;
 }
 
