@@ -126,8 +126,8 @@ void Test_dll(){
 		printf("This is HW_BAND or HwA_BAND!!\n");
 	}
 	else {
-		tx_freq = 926;
-		rx_freq = 880;
+		tx_freq = 960;
+		rx_freq = 885;
 		printf("This is POI_BAND or NewPOI_BAND!\n");
 	}
 	for (int i = 1; i <= 8; i++)

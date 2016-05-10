@@ -91,7 +91,7 @@ public:
 	~JcOffsetDB();
     
 public:
-	void SetOffsetStep(int tx_step);
+	void SetOffsetStep(int tx_step, int rx_step);
 	//连接数据库
 	bool DbConnect(const char* addr);
 	//初始化数据库，创建表
@@ -144,5 +144,6 @@ private:
 	//使用模式，关系到频段表的调用
 	uint8_t m_offset_mode;
 	int m_tx_step;
+	int m_rx_step;
 };
 #endif /* defined(__MyTest__JcOffsetDB__) */

@@ -37,10 +37,12 @@
 static int _protect_rx = OFFSET_PROTECT_RX;
 static int _debug_enable = 0;
 static int _free_tx_enable = 0;
-//功率调整延时
+//延时
 static int _tx_delay = 200;
 static int _coup_delay = 300;
-static int _tx_step = 0;
+static int _sensor_delay = 500;
+static int _tx_step = 1;
+static int _rx_step = 1;
 static int _pim_avg = 1;
 static std::string _serial;
 const char DESkeys[] = "jointcom";
@@ -278,14 +280,20 @@ public:
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
 		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 0, wsPath_ini.c_str());
+
 		_tx_step = GetPrivateProfileIntW(L"Settings", L"tx_step", 1, wsPath_ini.c_str());
+		_rx_step = GetPrivateProfileIntW(L"Settings", L"rx_step", 1, wsPath_ini.c_str());
+
 		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
 		_coup_delay = GetPrivateProfileIntW(L"Settings", L"coup_delay", 300, wsPath_ini.c_str());
+		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", 500, wsPath_ini.c_str());
 		_pim_avg = GetPrivateProfileIntW(L"Settings", L"pim_avg", 1, wsPath_ini.c_str());
 		//防止tx_delay小于200
 		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
 		_coup_delay = _coup_delay < 300 ? 300 : _coup_delay;
+		_sensor_delay = _sensor_delay < 500 ? 500 : _sensor_delay;
 		_pim_avg = _pim_avg < 1 ? 1 : _pim_avg;
+
 		wchar_t wcSerial[1024] = { 0 };
 		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
 		_serial = Util::wstring_to_utf8(std::wstring(wcSerial));
@@ -303,7 +311,7 @@ public:
 			return false;
 		}
 		//数据库初始化
-		offset.SetOffsetStep(_tx_step);
+		offset.SetOffsetStep(_tx_step, _rx_step);
 		offset.DbInit(now_mode);
 
 		int ret = 0;

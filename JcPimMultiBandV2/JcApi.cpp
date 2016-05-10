@@ -108,6 +108,8 @@
 //  add pim_avg
 //(build 349)
 //  add _coup_delay, need jcMBP1.5.1.55
+//(build 352)
+//  fix tx_step 's bug
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1698,7 +1700,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 		}	
 	}
 
-	Util::setSleep(500);
+	Util::setSleep(_sensor_delay);
 	double sen = JcGetSen();
 	sen += JcGetSen();
 	sen += JcGetSen();

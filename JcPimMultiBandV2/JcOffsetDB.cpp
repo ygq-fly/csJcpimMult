@@ -2,7 +2,8 @@
 #include "MyUtil\JcCommonAPI.h"
 
 //校准步进1M
-#define OFFSET_STEP 1
+#define OFFSET_STEP_TX 1
+#define OFFSET_STEP_RX 1
 
 JcOffsetDB::JcOffsetDB()
 	: m_pConn(NULL)
@@ -12,7 +13,8 @@ JcOffsetDB::JcOffsetDB()
 	, m_rx_offset_table("JC_RX_OFFSET_ALL")
 	, m_setting_table("JC_SETTING_INFO")
 	, m_offset_mode(discontinuous_offset_mode)
-	, m_tx_step(OFFSET_STEP)
+	, m_tx_step(OFFSET_STEP_TX)
+	, m_rx_step(OFFSET_STEP_RX)
 {
 	//char col_types[][10] = { "" ,"INTEGER", "FLOAT", "Text", "BLOB", "NULL"};
 }
@@ -24,11 +26,16 @@ JcOffsetDB::~JcOffsetDB()
 	}
 }
 
-void JcOffsetDB::SetOffsetStep(int tx_step) {
+void JcOffsetDB::SetOffsetStep(int tx_step, int rx_step) {
 	if (tx_step <= 0)
-		m_tx_step = OFFSET_STEP;
+		m_tx_step = OFFSET_STEP_TX;
 	else
 		m_tx_step = tx_step;
+
+	if (rx_step <= 0)
+		m_rx_step = OFFSET_STEP_RX;
+	else
+		m_rx_step = rx_step;
 }
 
 bool JcOffsetDB::DbConnect(const char* addr) {
@@ -275,27 +282,25 @@ int JcOffsetDB::FreqHeader(const char& tx_or_rx, const char* band, double* freq,
 	int i;
 
 	//新增POI获取频率区间
-	if (m_offset_mode == continuous_offset_mode)
-	{
+	if (m_offset_mode == continuous_offset_mode) {
+		int step = tx_or_rx == OFFSET_TX ? m_tx_step : m_rx_step;
 		double f_start, f_stop;
 		int s = FreqBand_continuous(tx_or_rx, band, f_start, f_stop);
 		if (s == JCOFFSET_ERROR)
 			return s;
 
-		int num = ceil((f_stop - f_start) / m_tx_step) + 1;
+		int num = ceil((f_stop - f_start) / step) + 1;
 		num = num < maxnum ? num : maxnum;
-		for (int j = 0; j < num; ++j)
-		{
-			*(freq + j) = f_start + m_tx_step*j;
+		for (int j = 0; j < num; ++j) {
+			*(freq + j) = f_start + step*j;
 		}
 
 		//最后一点不在步进点上时，修正最后一点
-		if ((f_start + (num - 1)  * m_tx_step) > f_stop)
+		if ((f_start + (num - 1)  * step) > f_stop)
 			*(freq + num - 1) = f_stop;
 		i = num;
 	}
-	else
-	{
+	else {
 		std::string shead = tx_or_rx == OFFSET_TX ? "TX_" : "RX_";
 		std::string sband(band);
 		std::string stable = shead + sband;
@@ -345,6 +350,10 @@ double JcOffsetDB::OffsetTx(const char* band, const char& dut, const char& coup,
 		//查找序号对应的值
 		freq1 = f_start + m_tx_step * (f1 - 1);
 		freq2 = f_start + m_tx_step * (f2 - 1);
+		if (freq1 > f_stop)
+			freq1 = f_stop;
+		if (freq2 > f_stop)
+			freq2 = f_stop;
 	}
 	else 
 	{
@@ -435,10 +444,14 @@ double JcOffsetDB::OffsetRx(const char* band, const char& dut, const double& fre
 		if (freq_now<f_start || freq_now>f_stop)
 			return JCOFFSET_ERROR;
 
-		f1 = floor((freq_now - f_start) / m_tx_step) + 1;
-		f2 = ceil((freq_now - f_start) / m_tx_step) + 1;
-		freq1 = f_start + m_tx_step * (f1 - 1);
-		freq2 = f_start + m_tx_step * (f2 - 1);
+		f1 = floor((freq_now - f_start) / m_rx_step) + 1;
+		f2 = ceil((freq_now - f_start) / m_rx_step) + 1;
+		freq1 = f_start + m_rx_step * (f1 - 1);
+		freq2 = f_start + m_rx_step * (f2 - 1);
+		if (freq1 > f_stop)
+			freq1 = f_stop;
+		if (freq2 > f_stop)
+			freq2 = f_stop;
 	}
 	else
 	{
@@ -572,8 +585,7 @@ int JcOffsetDB::Store_v2(const char& tx_or_rx,
 
 	if (result2 == SQLITE_DONE)
 		return 0;
-	else
-	{
+	else {
 		Util::logging("==> Save Rx/Tx error: %d - %d\r\n%s\r\n", result1, result2, sql.c_str());
 		Util::logged("Save Rx/Tx error: %d - %d", result1, result2);
 		return JCOFFSET_ERROR;
