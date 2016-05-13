@@ -28,6 +28,7 @@ namespace ns_com_io_ctl
 			bool state;
 			bool isOnline;		// «∑Ò‘⁄œﬂ
 		};
+		bool isZeroFrame;
 	private:
 		typedef vector<string> _tp_vs;
 
@@ -94,6 +95,7 @@ namespace ns_com_io_ctl
 		vector<string>&GetPimNameList(void);
 		vector<string>&GetDetNameList(void);
 		bool LoadMap(int type);
+		bool LoadMap(int type, wchar_t * cfgPath);
 		bool Connect(void);
 		void DisConnect(void);
 		void Clear(void);

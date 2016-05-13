@@ -17,10 +17,10 @@
 #define MATRIX_SWITCH_ERROR_CHAN_NO_EXIST		(-4)    //通道序号不存在
 #define MATRIX_SWITCH_EXCUTE_FAILED				(-1)    //开关操作执行失败
 
-#define MATRIX_CHAN_IDX_INVAID_1				(-10001)//通道1不合法
-#define MATRIX_CHAN_IDX_INVAID_2				(-10002)//通道2不合法
-#define MATRIX_CHAN_IDX_INVAID_3				(-10003)//通道3不合法
-#define MATRIX_CHAN_IDX_INVAID_4				(-10004)//通道4不合法
+#define MATRIX_CHAN_IDX_INVAID_1				(-10001)//通道1序号不合法
+#define MATRIX_CHAN_IDX_INVAID_2				(-10002)//通道2序号不合法
+#define MATRIX_CHAN_IDX_INVAID_3				(-10003)//通道3序号不合法
+#define MATRIX_CHAN_IDX_INVAID_4				(-10004)//通道4序号不合法
 //通信连接方式定义
 #define COMM_TYPE_TCP		(2)
 #define COMM_TYPE_UDP		(3)
@@ -126,24 +126,24 @@
 #define IP_Testmdtdd23      (7)
 #define IP_Testmdtdd26      (8)
 //POI-TX1 通道
-#define POI_IDX_1Cmgsmtx1			(0    )
-#define POI_IDX_2Cucdmatx1          (1    )
-#define POI_IDX_3Ctfd18tx1             (2    )
-#define POI_IDX_4Cufd18tx1            (3    )
-#define POI_IDX_5Ctfd21tx1             (4    )
-#define POI_IDX_6Cuw21tx1             (5    )
-#define POI_IDX_7Cmdcstx1             (6    )
-#define POI_IDX_8Cmtdftx1              (7    )
-#define POI_IDX_9null                        (8    )
-#define POI_IDX_10Cmtdetx1           (9   )
-#define POI_IDX_11Cttdetx1             (10 )
-#define POI_IDX_12null                      (11  )
-#define POI_IDX_13Cmtdftx1            (12 )
-#define POI_IDX_14null                      (13  )
-#define POI_IDX_15Cmtdetx1           (14 )
-#define POI_IDX_16Cttdetx1             (15 )
-#define POI_IDX_17null                      (16  )
-#define POI_IDX_18Cmtdetx1           (17 )
+#define POI_IDX_1Cmgsmtx1				(0    )
+#define POI_IDX_2Cucdmatx1				(1    )
+#define POI_IDX_3Ctfd18tx1				(2    )
+#define POI_IDX_4Cufd18tx1				(3    )
+#define POI_IDX_5Ctfd21tx1				(4    )
+#define POI_IDX_6Cuw21tx1				(5    )
+#define POI_IDX_7Cmdcstx1				(6    )
+#define POI_IDX_8Cmtdftx1				(7    )
+#define POI_IDX_9null                   (8    )
+#define POI_IDX_10Cmtdetx1				(9   )
+#define POI_IDX_11Cttdetx1				(10 )
+#define POI_IDX_12null                  (11  )
+#define POI_IDX_13Cmtdftx1				(12 )
+#define POI_IDX_14null                  (13  )
+#define POI_IDX_15Cmtdetx1				(14 )
+#define POI_IDX_16Cttdetx1				(15 )
+#define POI_IDX_17null                  (16  )
+#define POI_IDX_18Cmtdetx1				(17 )
 //POI-TX2 通道             
 #define POI_IDX_1Cmgsmtx2 			(0    )
 #define POI_IDX_2Cucdmatx2           (1    ) 
@@ -405,6 +405,16 @@ extern int MartrixSwitchInit(int handle, char*dllName, int swType, int comType);
  */
 extern int MartrixSwitchBoxExcute(int tx1, int tx2, int pim, int det);
 /*******************************************************************************
+*函数名称：MartrixSwitchBoxReset
+*函数功能：矩阵开组合通道操作(零帧序)
+*参数说明：int tx1	—— TX1通道序号
+*			int tx2 —— TX2通道序号
+*			int pim	—— PIM通道序号
+*			int det	—— DET通道序号
+*返回类型：参照错误返回代码
+*/
+extern int MartrixSwitchBoxReset(int tx1, int tx2, int pim, int det);
+/*******************************************************************************
  *函数名称：MartrixSwitchExcute
  *函数功能：矩阵开关单开关操作
  *参数说明：int addr	——模块地址			(1~n:只要模块支持相应的天关即可)
@@ -413,6 +423,38 @@ extern int MartrixSwitchBoxExcute(int tx1, int tx2, int pim, int det);
  *返回类型：参照错误返回代码
  */
 extern int MartrixSwitchExcute(int addr, int swId, int swIdx);
+/*******************************************************************************
+*函数名称：MartrixSwitchOpenAccpetMask
+*函数功能：矩阵开关箱屏蔽
+*参数说明：char *hosts[]     开关箱地址
+*		  int size			开关箱个数
+*			
+*返回类型：参照错误返回代码
+*/
+extern int MartrixSwitchOpenAccpetMask(char*hosts[],int size);
+/*******************************************************************************
+*函数名称：MartrixSwitchBoxQClear
+*函数功能：矩阵开关箱组合清零
+*参数说明：int addr	——模块地址			(1~n:只要模块支持相应的天关即可)
+*返回类型：参照错误返回代码
+*/
+extern int MartrixSwitchBoxQClear(int addr);
+/*******************************************************************************
+*函数名称：MartrixSwitchBoxQAdd
+*函数功能：矩阵开关箱组合入队
+*参数说明：int addr	——模块地址			(1~n:只要模块支持相应的天关即可)
+*			int swId	——开关类型序号	(ID_SW1_SDT3...)
+*			int swIdx	——开关引脚序号	(1~n)
+*返回类型：参照错误返回代码
+*/
+extern int MartrixSwitchBoxQAdd(int addr, int swId, int swIdx);
+/*******************************************************************************
+*函数名称：MartrixSwitchBoxQExcute
+*函数功能：矩阵开关箱组合操作
+*参数说明：int addr	——模块地址			(1~n:只要模块支持相应的天关即可)
+*返回类型：参照错误返回代码
+*/
+extern int MartrixSwitchBoxQExcute(int addr);
 /*******************************************************************************
  *函数名称：MartrixSwitchDispose
  *函数功能：矩阵开关释放资源

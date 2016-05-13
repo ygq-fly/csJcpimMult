@@ -39,7 +39,7 @@
 namespace ns_com_io_ctl
 {
 	//构造函数
-	implementsetting::implementsetting(void)
+	implementsetting::implementsetting(void) : isZeroFrame(false)
 	{
 		//virtual table not build,do not call the virtual function
 		__ac_tx1 = &__actionCellc[0];
@@ -129,8 +129,13 @@ namespace ns_com_io_ctl
 		}  
 		return result;  
 	}  
-	//加载映射表
+	//加载映射表1
 	bool implementsetting::LoadMap(int type)
+	{
+		return LoadMap(type,NULL);
+	}
+	//加载映射表2
+	bool implementsetting::LoadMap(int type, wchar_t * cfgPath)
 	{
 		bool result = true;
 		string iopath = GetRunPath();
@@ -635,6 +640,12 @@ namespace ns_com_io_ctl
 				}
 
 				txBuf[11] = checkValue;
+
+				//帧清零
+				if (isZeroFrame)
+				{
+					memset(txBuf + 1, 0, 11);
+				}
 
 				bool wrResult = false;
 				int len = 12;

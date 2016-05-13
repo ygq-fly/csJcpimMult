@@ -50,31 +50,34 @@ bool ClsJcSwitch::SwitchInit(int switch_work_type, int switch_conn_type, std::st
 
 //开关执行切换
 bool ClsJcSwitch::SwitchExcut(const int& iSwitchTx1, const int& iSwitchTx2,
-							  const int& iSwitchPim, const int& iSwitchDet) {
+							  const int& iSwitchPim, const int& iSwitchDet, 
+							  bool reset) {
 	bool ret = true;
+	int b = -1;
 	//操作开关矩阵
-	int b = MartrixSwitchBoxExcute(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchDet);
+	if (!reset)
+		b = MartrixSwitchBoxExcute(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchDet);
+	else
+		b = MartrixSwitchBoxReset(iSwitchTx1, iSwitchTx2, iSwitchPim, iSwitchDet);
 	//开关操作执行失败
-	if (b == -1) 
-	{
+	if (b == -1) {
 		ret = false;
-		_error_info = "SwitchExcut: switch set error";
+		if (!reset)
+			_error_info = "SwitchExcut: switch set error";
+		else
+			_error_info = "SwitchExcut: switch reset error";
 		//Util::logged(L"SwitchExcut: 开关操作执行失败");
 	}
-	else if (b == -10001)
-	{
+	else if (b == -10001) {
 		//channel(1) set error!
 	}
-	else if (b == -10002)
-	{
+	else if (b == -10002) {
 		//channel(2) set error!
 	}
-	else if (b == -10003)
-	{
+	else if (b == -10003) {
 		//channel(3) set error!
 	}
-	else if (b == -10004)
-	{
+	else if (b == -10004) {
 		//channel(4) set error!
 	}
 	return ret;

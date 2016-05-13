@@ -15,7 +15,8 @@ public:
 	//开关初始化
 	bool SwitchInit(int switch_work_type, int switch_conn_type, std::string path);
 	//开关执行切换
-	bool SwitchExcut(const int& iSwitchTx1, const int& iSwitchTx2, const int& iSwitchPim, const int& iSwitchDet);
+	bool SwitchExcut(const int& iSwitchTx1, const int& iSwitchTx2, 
+		const int& iSwitchPim, const int& iSwitchDet, bool reset = false);
 	//释放资源
 	void SwitchClose();
 	//获取信息

@@ -112,6 +112,8 @@
 //  fix tx_step 's bug
 //(build 356)
 //  add auto extend tx or rx offset point's count
+//(build 358)
+//  rewrite: power out of range
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -834,6 +836,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 				//检测错误后，尝试重启信号源
 				__pobj->WriteClDebug("   (Try to restart!)\r\n");
 				fnSetTxOn(false);
+				JcNeedRetSwitch();
 				if (byCarrier == JC_CARRIER_TX1) {
 					//尝试抖动
 					HwSetCoup(JC_COUP_TX2);
@@ -845,7 +848,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 					HwSetCoup(JC_COUP_TX2);
 				}
 				fnSetTxOn(true);
-				Util::setSleep(_coup_delay);
+				Util::setSleep(_reset_delay);
 				i--;
 				continue;
 			}
@@ -1208,6 +1211,15 @@ double JcGetAna(double freq_khz, bool isMax){
 //	LTE2600_A = 12,
 //	LTE2600_B = 13
 //};
+void JcNeedRetSwitch() {
+	//开始重置标识，only once
+	_need_reset = true;
+	JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, JC_COUP_TX2);
+	_need_reset = false;
+	Util::setSleep(_reset_delay);
+	JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, JC_COUP_TX2);
+
+}
 JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCoup) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
 	//查找检测通道标号
@@ -1263,7 +1275,8 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 	}
 
 	if (coup < -1) coup = -1;
-	JcBool ret = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup);
+	JcBool ret = __pobj->swh->SwitchExcut(iSwitchTx1, iSwitchTx2, iSwitchPim, coup, _need_reset);
+	_need_reset = false;
 	if (!ret) __pobj->strErrorInfo = "Switch: Excut Error!\r\n";
 	return ret;
 }

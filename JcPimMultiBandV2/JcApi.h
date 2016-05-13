@@ -168,6 +168,7 @@ JC_API double JcGetSig_CoupDsp(JcInt8 byCoup, JcInt8 byBand, JcInt8 byPort,
 JC_API double JcGetSen();
 JC_API void   JcSetAna_RefLevelOffset(double offset);
 JC_API double JcGetAna(double freq_khz, bool isMax);
+JC_API void JcNeedRetSwitch();
 JC_API JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2,
 						  int iSwitchPim, int iSwitchDet);
 JC_API JcBool JcGetChannelEnable(int channel_num);

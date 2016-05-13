@@ -35,6 +35,7 @@
 #define DES_SIZE	   1024	
 #define MAX_SIZE_FREQ 1024	
 
+static bool _need_reset = false;
 static int _protect_rx = OFFSET_PROTECT_RX;
 static int _protect_range_rx = 10;
 static int _debug_enable = 0;
@@ -42,6 +43,7 @@ static int _free_tx_enable = 0;
 //—” ±
 static int _tx_delay = 200;
 static int _coup_delay = 300;
+static int _reset_delay = 500;
 static int _sensor_delay = 500;
 static int _tx_step = 1;
 static int _rx_step = 1;
@@ -291,6 +293,7 @@ public:
 		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
 		_coup_delay = GetPrivateProfileIntW(L"Settings", L"coup_delay", 300, wsPath_ini.c_str());
 		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", 500, wsPath_ini.c_str());
+		_reset_delay = GetPrivateProfileIntW(L"Settings", L"reset_delay", 500, wsPath_ini.c_str());
 		_pim_avg = GetPrivateProfileIntW(L"Settings", L"pim_avg", 1, wsPath_ini.c_str());
 		//∑¿÷πtx_delay–°”⁄200
 		_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
@@ -298,6 +301,7 @@ public:
 		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
 		_coup_delay = _coup_delay < 300 ? 300 : _coup_delay;
 		_sensor_delay = _sensor_delay < 500 ? 500 : _sensor_delay;
+		_reset_delay = _reset_delay < 500 ? 500 : _reset_delay;
 		_pim_avg = _pim_avg < 1 ? 1 : _pim_avg;
 
 		wchar_t wcSerial[1024] = { 0 };

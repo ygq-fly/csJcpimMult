@@ -45,10 +45,41 @@ namespace ns_com_io_ctl{
 	{
 		Sleep(mil);
 	}
+	//设置许可的模块列表
+	void com_io_ctl::SetAccpectHosts(char *hosts[],int size)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			__mAccpetHosts.push_back(hosts[i]);
+		}
+	}
+	//判断是否在许可的模块列表内
+	bool com_io_ctl::IsAcceptModule(const string&host)
+	{		
+		if (__mAccpetHosts.size() != 0)
+		{//只有许可的模块列表长度不为零时才启用屏蔽功能
+			bool result = false;
+
+			for (vector<string>::iterator itr = __mAccpetHosts.begin();
+				itr != __mAccpetHosts.end();
+				itr++)
+			{
+				if (*itr == host)
+					result = true;
+			}
+
+			return result;
+		}
+		else
+		{
+			return true;
+		}
+	}
 	//网络连接虚函数
 	bool com_io_ctl::IOConnect(const string&host)
 	{
-		if(__maskIO)return true;		
+		if(__maskIO)return true;	
+		if (!IsAcceptModule(host))return true;
 
 		bool result = true;
 		int iTimeOut = TCP_SEND_TIMEOUT*1000;
@@ -122,6 +153,7 @@ namespace ns_com_io_ctl{
 	bool com_io_ctl::IODisConnect(const string&host)
 	{
 		if (__maskIO)return true;
+		if (!IsAcceptModule(host))return true;
 
 		vector<string>hostInfo = split(host, ":");
 		if (hostInfo.size() > 2)
@@ -184,6 +216,11 @@ namespace ns_com_io_ctl{
 		//FD_CLR(hSocket, &fdwrite);
 
 		if (__maskIO)return true;
+		if (!IsAcceptModule(host))
+		{
+			memcpy_s(__ioBuf1, len,buf, len);
+			return true;
+		}
 
 		vector<string>hostInfo = split(host, ":");
 		if (hostInfo.size() > 2)
@@ -247,6 +284,11 @@ namespace ns_com_io_ctl{
 		//FD_CLR(hSocket, &fdread);
 
 		if (__maskIO)return true;
+		if (!IsAcceptModule(host))
+		{
+			memcpy_s(buf,*len,__ioBuf1,*len);
+			return true;
+		}
 
 		vector<string>hostInfo = split(host, ":");
 		if (hostInfo.size() > 2)
@@ -301,6 +343,13 @@ namespace ns_com_io_ctl{
 		return string(strBuff);	
 	}
 	//获取文件路径虚函数   未处理“\\”和“//”,Linux基类需要修改
+	wstring com_io_ctl::GetRunPathW()
+	{
+		wchar_t strBuff[MAX_PATH] = { 0 };
+		//GetCurrentDirectoryA(256,strBuff);  //危险
+		GetModuleFileName(GetModuleHandle(__dllHostNameW.c_str()), strBuff, MAX_PATH);
+		return wstring(strBuff);
+	}
 	string com_io_ctl::GetRunPath()
 	{
 		char strBuff[MAX_PATH] = { 0 };
@@ -490,6 +539,7 @@ namespace ns_com_io_ctl{
 	bool com_io_ctl::IOConnectBegin(const string&host)
 	{
 		if (__maskIO)return true;
+		if (!IsAcceptModule(host))return true;
 
 		bool result = true;
 		int iTimeOut = TCP_SEND_TIMEOUT * 1000;
@@ -646,6 +696,7 @@ namespace ns_com_io_ctl{
 	bool com_io_ctl::IOSocketIsActive(const string&host)
 	{
 		if (__maskIO)return true;
+		if (!IsAcceptModule(host))return true;
 
 		SOCKET hSocket = __socketClient[host];
 		bool result = true;
@@ -795,4 +846,3 @@ namespace ns_com_io_ctl{
 		return wstr;
 	}
 }
-
