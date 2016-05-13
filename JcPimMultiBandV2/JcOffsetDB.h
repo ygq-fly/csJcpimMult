@@ -91,7 +91,7 @@ public:
 	~JcOffsetDB();
     
 public:
-	void SetOffsetStep(int tx_step, int rx_step);
+	void SetOffsetStep(double tx_step, double rx_step);
 	//连接数据库
 	bool DbConnect(const char* addr);
 	//初始化数据库，创建表
@@ -132,6 +132,8 @@ private:
 	int GetSqlVal(const char* strsql, double& a1, double& a2);
 	bool IsExist(const char* table);
 	bool ExecSql(const char* sql);
+	int GetColCount(const char* table);
+	bool ExtendTable(const char* table, int num);
 private:
     sqlite3* m_pConn;
     bool m_bConn;
@@ -143,7 +145,7 @@ private:
 
 	//使用模式，关系到频段表的调用
 	uint8_t m_offset_mode;
-	int m_tx_step;
-	int m_rx_step;
+	double m_tx_step;
+	double m_rx_step;
 };
 #endif /* defined(__MyTest__JcOffsetDB__) */

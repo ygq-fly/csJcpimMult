@@ -33,8 +33,10 @@
 #define SUM_LESS       0
 #define SUM_ADD        1
 #define DES_SIZE	   1024	
+#define MAX_SIZE_FREQ 1024	
 
 static int _protect_rx = OFFSET_PROTECT_RX;
+static int _protect_range_rx = 10;
 static int _debug_enable = 0;
 static int _free_tx_enable = 0;
 //—” ±
@@ -281,6 +283,8 @@ public:
 		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
 		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 0, wsPath_ini.c_str());
 
+		_protect_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_value", -90, wsPath_ini.c_str());
+		_protect_range_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_range", 10, wsPath_ini.c_str());
 		_tx_step = GetPrivateProfileIntW(L"Settings", L"tx_step", 1, wsPath_ini.c_str());
 		_rx_step = GetPrivateProfileIntW(L"Settings", L"rx_step", 1, wsPath_ini.c_str());
 
@@ -289,6 +293,8 @@ public:
 		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", 500, wsPath_ini.c_str());
 		_pim_avg = GetPrivateProfileIntW(L"Settings", L"pim_avg", 1, wsPath_ini.c_str());
 		//∑¿÷πtx_delay–°”⁄200
+		_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
+		_protect_rx = _protect_rx > 0 ? -90 : _protect_rx;
 		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
 		_coup_delay = _coup_delay < 300 ? 300 : _coup_delay;
 		_sensor_delay = _sensor_delay < 500 ? 500 : _sensor_delay;

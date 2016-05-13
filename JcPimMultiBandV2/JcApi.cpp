@@ -110,6 +110,8 @@
 //  add _coup_delay, need jcMBP1.5.1.55
 //(build 352)
 //  fix tx_step 's bug
+//(build 356)
+//  add auto extend tx or rx offset point's count
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1333,8 +1335,8 @@ long JcGetOffsetRxNum(JcInt8 byInternalBand){
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//获取Rx校准点
-	double Rxfreq[256] = { 0 };
-	int freq_num = __pobj->offset.FreqHeader(OFFSET_RX, sband.c_str(), Rxfreq, 256);
+	double Rxfreq[MAX_SIZE_FREQ] = { 0 };
+	int freq_num = __pobj->offset.FreqHeader(OFFSET_RX, sband.c_str(), Rxfreq, MAX_SIZE_FREQ);
 	return freq_num;
 }
 
@@ -1363,9 +1365,9 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//获取Rx校准点
-	double Rxfreq[256] = {0};
-	int freq_num = __pobj->offset.FreqHeader(OFFSET_RX, sband.c_str(), Rxfreq, 256);
-	double off[256] = {0};
+	double Rxfreq[MAX_SIZE_FREQ] = { 0 };
+	int freq_num = __pobj->offset.FreqHeader(OFFSET_RX, sband.c_str(), Rxfreq, MAX_SIZE_FREQ);
+	double off[MAX_SIZE_FREQ] = { 0 };
 	__pobj->ana->InstrRxOffsetSetting();
 
 	std::string strLog = "start offset-rx-" +
@@ -1408,11 +1410,11 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		}
 		//计算规则: 目标值（OFFSET_PROTECT_RX） = 实际值（v） + 校准值 （off） +差损（loss_db）
 		off[i] = _protect_rx - v - loss_db;
-		if (off[i] > 10 || off[i] < -10) {
+		if (off[i] > _protect_range_rx || off[i] < (_protect_range_rx*-1)) {
 			//错误，关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1);
 			//__pobj->ana->InstrSetAvg(2);
-			__pobj->strErrorInfo = "   RxOffset: No Find Power(-90)!\r\n";
+			__pobj->strErrorInfo = "   RxOffset: No Find Power(" + std::to_string(_protect_rx) + ")!\r\n";
 			strLog += __pobj->strErrorInfo;
 			JcPimObject::Instance()->LoggingWrite(strLog.c_str());
 			return JC_STATUS_ERROR;
@@ -1482,8 +1484,8 @@ long JcGetOffsetTxNum(JcInt8 byInternalBand) {
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//获取Tx校准频点
-	double txfreq[256] = { 0 };
-	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq, 256);
+	double txfreq[MAX_SIZE_FREQ] = { 0 };
+	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq, MAX_SIZE_FREQ);
 	return freq_num;
 }
 
@@ -1511,11 +1513,11 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//获取Tx校准频点
-	double txfreq[256] = { 0 };
-	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq, 256);
+	double txfreq[MAX_SIZE_FREQ] = { 0 };
+	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq, MAX_SIZE_FREQ);
 
-	double off_real[256] = { 0 };
-	double off_dsp[256] = { 0 };
+	double off_real[MAX_SIZE_FREQ] = { 0 };
+	double off_dsp[MAX_SIZE_FREQ] = { 0 };
 
 	//Util::logged("loss_db: %lf", loss_db);
 

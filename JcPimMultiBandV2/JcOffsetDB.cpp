@@ -26,7 +26,7 @@ JcOffsetDB::~JcOffsetDB()
 	}
 }
 
-void JcOffsetDB::SetOffsetStep(int tx_step, int rx_step) {
+void JcOffsetDB::SetOffsetStep(double tx_step, double rx_step) {
 	if (tx_step <= 0)
 		m_tx_step = OFFSET_STEP_TX;
 	else
@@ -283,7 +283,7 @@ int JcOffsetDB::FreqHeader(const char& tx_or_rx, const char* band, double* freq,
 
 	//新增POI获取频率区间
 	if (m_offset_mode == continuous_offset_mode) {
-		int step = tx_or_rx == OFFSET_TX ? m_tx_step : m_rx_step;
+		double step = tx_or_rx == OFFSET_TX ? m_tx_step : m_rx_step;
 		double f_start, f_stop;
 		int s = FreqBand_continuous(tx_or_rx, band, f_start, f_stop);
 		if (s == JCOFFSET_ERROR)
@@ -575,7 +575,18 @@ int JcOffsetDB::Store_v2(const char& tx_or_rx,
 		}
 		ss_val << ")";
 	}
-	
+
+	int index = tx_or_rx == OFFSET_TX ? 3 : 1;
+	int col_count = GetColCount(stable.c_str());
+	if (col_count>0 && col_count<(num + index)) {
+		for (int i = col_count - index + 1; i <= num; i++) {
+			bool b = ExtendTable(stable.c_str(), i);
+			if (!b) {
+				Util::logged("Store_v2: ExtendTable Error");
+				return JCOFFSET_ERROR;
+			}
+		}
+	}
 	//开始存储，按列名写入，注：未列入的列名默认值为0
 	std::string sql = "insert or replace into [" + stable + "] " + ss_freq.str() + " values " + ss_val.str();	
 	sqlite3_stmt* pstmt;
@@ -586,8 +597,8 @@ int JcOffsetDB::Store_v2(const char& tx_or_rx,
 	if (result2 == SQLITE_DONE)
 		return 0;
 	else {
-		Util::logging("==> Save Rx/Tx error: %d - %d\r\n%s\r\n", result1, result2, sql.c_str());
-		Util::logged("Save Rx/Tx error: %d - %d", result1, result2);
+		Util::logging("==> Store_v2: error(%d - %d)\r\n%s\r\n", result1, result2, sql.c_str());
+		Util::logged("Store_v2: error(%d - %d)", result1, result2);
 		return JCOFFSET_ERROR;
 	}
 }
@@ -685,4 +696,21 @@ bool JcOffsetDB::ExecSql(const char* sql) {
 	sqlite3_finalize(pstmt);
 
 	return (resulte == SQLITE_DONE);
+}
+
+int JcOffsetDB::GetColCount(const char* table) {
+	char sql[128] = { 0 };
+	sprintf_s(sql, "select * from '%s' where rowid = 1", table);
+	int n = 0;
+	sqlite3_stmt* pstmt = NULL;
+	sqlite3_prepare(m_pConn, sql, -1, &pstmt, NULL);
+	n = sqlite3_column_count(pstmt);
+	sqlite3_finalize(pstmt);
+	return n;
+}
+
+bool JcOffsetDB::ExtendTable(const char* table, int num) {
+	char sql[128] = { 0 };
+	sprintf_s(sql, "ALTER TABLE %s ADD COLUMN '%d' real", table, num);
+	return ExecSql(sql);
 }
