@@ -114,6 +114,8 @@
 //  add auto extend tx or rx offset point's count
 //(build 358)
 //  rewrite: power out of range
+//(build 359)
+//  fig getPimResult to int
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -353,7 +355,7 @@ int HwSetImOrder(JcInt8 byImOrder, JcInt8 byImLow, JcInt8 byImLess) {
 		pim->im_coefficients1 = pim->im_order / 2;
 		pim->im_coefficients2 = pim->im_order / 2;
 	}
-	else{
+	else {
 		//奇数阶
 		pim->im_coefficients1 = pim->im_order / 2 + 1;
 		pim->im_coefficients2 = pim->im_order / 2;
@@ -553,7 +555,7 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 int fnSetTxOn(JcBool bOn, JcInt8 byCarrier){
 	bool isSucc = false;
 	bool isOn = bOn == 0 ? false : true;
-	if (byCarrier == JC_CARRIER_TX1TX2){
+	if (byCarrier == JC_CARRIER_TX1TX2) {
 		isSucc = __pobj->sig1->InstrOpenPow(isOn);
 		isSucc &= __pobj->sig2->InstrOpenPow(isOn);
 	}
@@ -586,7 +588,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	//获取互调,返回数据
 	dPimResult = 0;
 	for (int i = 0; i < _pim_avg; i++) {
-		int temp = JcGetAna(pim->freq_khz, false);
+		double temp = JcGetAna(pim->freq_khz, false);
 		if (temp == JC_STATUS_ERROR){
 			Util::logged(L"fnGetImResult: Spectrum read error!");
 			__pobj->strErrorInfo = "Spectrum read error!\r\n";
@@ -624,8 +626,7 @@ int fnSendCmd(JcInt8 byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
 	int num = 0;
 	std::string scmd(cmd);
 	int n = scmd.find('?');
-	switch (byDevice)
-	{
+	switch (byDevice) {
 	case 0://SIG1
 		if (n > 0)
 			num = __pobj->sig1->InstrWriteAndRead(cmd, cResult);
@@ -730,8 +731,7 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 	__pobj->WriteClDebug("   Avg3rd_1_value: " + std::to_string(sen) + " \r\n");
 	//retest
 	double dd = tx_temp - sen;
-	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) 
-	{
+	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) {
 		Util::setSleep(100);
 		//读2次后平均
 		sen = JcGetSen();
