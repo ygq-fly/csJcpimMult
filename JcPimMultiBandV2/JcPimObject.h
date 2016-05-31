@@ -84,6 +84,9 @@ struct JcBandModule {
 	//功率范围
 	double power_min;
 	double power_max;
+	//
+	double fine_adjust1;
+	double fine_adjust2;
 };
 
 //rf发射模块参数类
@@ -310,6 +313,7 @@ public:
 	}
 	//连接数据库，初始化参数
 	bool InitBandSet(){
+		std::wstring ini_Path = _startPath + L"\\JcConfig.ini";
 		std::wstring db_Path = _startPath + L"\\JcOffset.db";
 		std::string sPath = Util::wstring_to_utf8(_startPath + L"\\JcOffset.db");
 		
@@ -379,6 +383,14 @@ public:
 			bm.rx_enable = channel_enable & 0x001;
 			bm.switch_coup1 = atoi(band_items[9].c_str()) -1;
 			bm.switch_coup2 = atoi(band_items[10].c_str()) -1;
+
+			wchar_t keyname[64] = { 0 };
+			swprintf_s(keyname, L"band%d_tx1", i);
+			bm.fine_adjust1 = Util::getIniDouble(L"Adjust", keyname, 0, ini_Path.c_str());
+
+			memset(keyname, 0x00, sizeof(keyname));
+			swprintf_s(keyname, L"band%d_tx2", i);
+			bm.fine_adjust2 = Util::getIniDouble(L"Adjust", keyname, 0, ini_Path.c_str());
 
 			now_mode_bandset.push_back(bm);
 		}

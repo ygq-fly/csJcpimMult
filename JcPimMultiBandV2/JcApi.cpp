@@ -116,6 +116,8 @@
 //  rewrite: power out of range
 //(build 359)
 //  fig getPimResult to int
+//(build 360)
+//  add fine_adjust
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -1142,6 +1144,8 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	}
 	if (byCarrier == JC_CARRIER_TX1) {
 		rf1->offset_int = internal_offset;
+		//Î¢µ÷
+		tx_true += __pobj->now_mode_bandset[rf->band].fine_adjust1;
 		bool b = __pobj->sig1->InstrSetFreqPow(freq_khz, tx_true);
 		if (false == b) {
 			Util::logged(L"JcSetSig_Adv: set sig fail! (sig-%d)", (int)byCarrier);
@@ -1150,6 +1154,8 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	}
 	else if (byCarrier == JC_CARRIER_TX2){
 		rf2->offset_int = internal_offset;
+		//Î¢µ÷
+		tx_true += __pobj->now_mode_bandset[rf->band].fine_adjust1;
 		bool b = __pobj->sig2->InstrSetFreqPow(freq_khz, tx_true);
 		if (false == b) {
 			Util::logged(L"JcSetSig_Adv: set sig fail! (sig-%d)", (int)byCarrier);
