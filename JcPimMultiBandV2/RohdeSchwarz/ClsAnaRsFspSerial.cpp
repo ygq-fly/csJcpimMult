@@ -58,6 +58,8 @@ void ClsAnaRsFspSerial::InstrInit()
 	//rs仪表需要实时显示
     AgWrite("SYST:DISP:UPD ON\n");
 	AgWrite("CALC:MARK1 ON\n");
+	if (Util::strFind(_strIDN, "FSC"))
+		AgWrite("ROSC:SOUR EXT\n");
     Preset (preset_default);
 
 	//------------------------write by san-------------------
@@ -217,16 +219,24 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	pp_ = pp;
 
 	InstrSetOffset(disp_rlev_offset[pp]);
-	InstrSetSpan(freq_span[pp]);
-	InstrSetVbw(freq_vbw[pp]);
-	InstrSetRbw(freq_rbw[pp]);
+	if (Util::strFind(_strIDN, "FSC") && pp == preset_default) {
+		InstrSetSpan(500);
+		InstrSetVbw(30);
+		InstrSetRbw(30);
+	}
+	else {
+		InstrSetSpan(freq_span[pp]);
+		InstrSetVbw(freq_vbw[pp]);
+		InstrSetRbw(freq_rbw[pp]);
+	}
 	//------------------------write by san-------------------
 	//fsp仪表不支持模拟FFT模式，sweeptime必须设置为auto
 	//------------------------write by san-------------------
-	if (!Util::strFind(_strIDN, "FSV"))
-		InstrSetSweepTime(0);
-	else
+	if (Util::strFind(_strIDN, "FSV"))
 		InstrSetSweepTime(sweep_time[pp]);
+	else
+		InstrSetSweepTime(0);
+		
 	InstrSetAtt(input_att[pp]);
 	InstrSetAvg(freq_aver[pp]);
 	//------------------------write by san-------------------

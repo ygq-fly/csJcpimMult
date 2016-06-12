@@ -118,6 +118,8 @@
 //  fig getPimResult to int
 //(build 360)
 //  add fine_adjust
+//(build 364)
+//  support FSC
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -150,6 +152,9 @@
 #define INSTR_AG_MXA_SERIES 20
 #define INSTR_RS_FS_SERIES 21
 #define INSTR_JCSPE 23
+
+#define ROSC_EXT 1
+#define ROSC_INT 0
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //mian
@@ -196,6 +201,11 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 
 		if (__pobj->vaddr.size() < 5) return JC_STATUS_ERROR;
 
+		if ("0" != __pobj->vaddr[2]) {
+			if (false == JcConnAna(const_cast<char*>(__pobj->vaddr[2].c_str())))
+				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[2]).c_str());
+		}
+
 		if ("0" != __pobj->vaddr[0]){
 			if (false == JcConnSig(0, const_cast<char*>(__pobj->vaddr[0].c_str())))
 				Util::logged(L"fnSetInit: Connect SG1 Fail!(%s)", Util::utf8_to_wstring(__pobj->vaddr[0]).c_str());
@@ -209,11 +219,6 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 		if ("0" != __pobj->vaddr[3]) {
 			if (false == JcConnSen(const_cast<char*>(__pobj->vaddr[3].c_str())))
 				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[3]).c_str());
-		}
-
-		if ("0" != __pobj->vaddr[2]) {
-			if (false == JcConnAna(const_cast<char*>(__pobj->vaddr[2].c_str())))
-				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[2]).c_str());
 		}
 
 		if ("0" != __pobj->vaddr[4]) {
@@ -917,11 +922,11 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 		//ÂÞµÂË¹Íß´Ä
 		else if (index == INSTR_RS_SM_SERIES) {
 			if (byDevice == SIGNAL1) {
-				__pobj->sig1 = std::make_shared<ClsSigRsSMxSerial>();
+				__pobj->sig1 = std::make_shared<ClsSigRsSMxSerial>(_sig_rosc);
 				__pobj->sig1->InstrSession(vi, cIdn);
 			}
 			else if (byDevice == SIGNAL2) {
-				__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>();
+				__pobj->sig2 = std::make_shared<ClsSigRsSMxSerial>(ROSC_EXT);
 				__pobj->sig2->InstrSession(vi, cIdn);
 			}
 		}
@@ -950,6 +955,8 @@ JcBool JcConnAna(JC_ADDRESS cAddr) {
 		JcPimObject::Instance()->JcSetViAttribute(vi);
 		char cIdn[128] = { 0 };
 		int index = JcGetIDN(vi, cIdn);
+		if (Util::strFind(cIdn, "FSC"))
+			_sig_rosc = ROSC_INT;
 		//°²½ÝÂ×
 		if (index == INSTR_AG_MXA_SERIES || index == INSTR_JCSPE) {
 			__pobj->ana = std::make_shared<ClsAnaAgN9020A>();
@@ -1906,7 +1913,8 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 				 Util::strFind(strIdn, "E4445") ||
 				 Util::strFind(strIdn, "E4407"))
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
-		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || Util::strFind(strIdn, "FSV"))
+		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || 
+				 Util::strFind(strIdn, "FSV")     || Util::strFind(strIdn, "FSC"))
 			iDeviceIDN = INSTR_RS_FS_SERIES;
 		else if (Util::strFind(strIdn, "JCSPE"))
 			iDeviceIDN = INSTR_JCSPE;

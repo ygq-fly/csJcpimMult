@@ -12,12 +12,13 @@ class ClsSigRsSMxSerial : public ClsVisa, Implements_ IfSignalSource
 #define AG_POW_OPEN true
 #define AG_POW_CLOSE false
 public:
-    ClsSigRsSMxSerial()
+    ClsSigRsSMxSerial(int rosc)
         :_bOpen(false),
         _isCmdSucc(false),
         _freq_now(0),
         _pow_now(0),
         _sourTunnel(1),
+		_rosc(rosc),
 		ClsVisa()
     {}
 
@@ -62,6 +63,7 @@ private:
     double _freq_now;
     double _pow_now;
     int   _sourTunnel;                 //Êä³öÍ¨µÀ 1 = A; 2 = B
+	int _rosc;
 
     const double _maxFreq_khz = 6000 * 1000;
     const double _minFreq_khz = 100;

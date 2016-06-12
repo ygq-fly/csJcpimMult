@@ -48,6 +48,7 @@ static int _sensor_delay = 500;
 static int _tx_step = 1;
 static int _rx_step = 1;
 static int _pim_avg = 1;
+static int _sig_rosc = 0;
 static std::string _serial;
 const char DESkeys[] = "jointcom";
 const char DESiv[8] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
@@ -298,6 +299,7 @@ public:
 		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", 500, wsPath_ini.c_str());
 		_reset_delay = GetPrivateProfileIntW(L"Settings", L"reset_delay", 500, wsPath_ini.c_str());
 		_pim_avg = GetPrivateProfileIntW(L"Settings", L"pim_avg", 1, wsPath_ini.c_str());
+		_sig_rosc = GetPrivateProfileIntW(L"Settings", L"sig_rosc", 1, wsPath_ini.c_str());
 		//∑¿÷πtx_delay–°”⁄200
 		_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
 		_protect_rx = _protect_rx > 0 ? -90 : _protect_rx;

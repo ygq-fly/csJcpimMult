@@ -16,7 +16,10 @@ bool ClsSigRsSMxSerial::InstrConnect(const char* c_addr){
 		//------------------------write by san-------------------
 		//AgWrite("*CLS\n");
 		//AgWrite("ROSC:SOUR INT\n");
-		AgWrite("ROSC:SOUR EXT\n");
+		if (_rosc != 0)
+			AgWrite("ROSC:SOUR EXT\n");
+		else
+			AgWrite("ROSC:SOUR INT\n");
 		//------------------------write by san-------------------
 	}
     return isconn;
@@ -27,7 +30,10 @@ void ClsSigRsSMxSerial::InstrSession(unsigned long viConnectedSession, const cha
 
 	AgWrite("*RST\n");
 	//------------------------write by san-------------------
-	AgWrite("ROSC:SOUR EXT\n");
+	if (_rosc != 0)
+		AgWrite("ROSC:SOUR EXT\n");
+	else
+		AgWrite("ROSC:SOUR INT\n");
 	//------------------------write by san-------------------
 	
 }
