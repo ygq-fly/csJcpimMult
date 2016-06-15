@@ -120,6 +120,8 @@
 //  add fine_adjust
 //(build 364)
 //  support FSC
+//(build 364)
+//  fix _free_enable_tx default to 1
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -816,9 +818,9 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier){
 		//log
 		__pobj->WriteClDebug("   tx_dsp: " + std::to_string(tx_dsp) + "\r\n");
 		//Î´¼ì²â¹¦ÂÊÊ±
-		if (tx_dsp <= 33) {
+		if (tx_dsp <= 25) {
 			__pobj->strErrorInfo = "   PowerSmooth: No find Power!\r\n";
-			__pobj->WriteClDebug("   (tx_dsp <= 33)\r\n");
+			__pobj->WriteClDebug("   (tx_dsp <= 25)\r\n");
 			__pobj->WriteClDebug("   (Return error!)\r\n");
 			ret =  JC_STATUS_ERROR_NO_FIND_POWER;
 			break;

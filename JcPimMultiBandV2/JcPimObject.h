@@ -39,7 +39,7 @@ static bool _need_reset = false;
 static int _protect_rx = OFFSET_PROTECT_RX;
 static int _protect_range_rx = 10;
 static int _debug_enable = 0;
-static int _free_tx_enable = 0;
+static int _free_tx_enable = 1;
 //—” ±
 static int _tx_delay = 200;
 static int _coup_delay = 300;
@@ -287,7 +287,7 @@ public:
 	void InitConfig() {
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
-		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 0, wsPath_ini.c_str());
+		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 1, wsPath_ini.c_str());
 
 		_protect_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_value", -90, wsPath_ini.c_str());
 		_protect_range_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_range", 10, wsPath_ini.c_str());
