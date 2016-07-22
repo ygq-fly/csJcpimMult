@@ -56,6 +56,7 @@ public:
 	virtual void InstrSetVbw(const double& vbw_hz);
 	virtual void InstrSetSpan(const double& span_hz);
 	virtual void InstrSetCenterFreq(const double& freq_khz);
+	virtual void InstrSetPreamp(bool isOn);
 
 	virtual void InstrPimSetting();
 	virtual void InstrVcoSetting();
@@ -64,14 +65,16 @@ public:
 	virtual void InstrSetSweepTime(int count_ms);
 
 public:
-	ClsAnaRsFspSerial() :
-		pp_(preset_parameter::preset_no_set)
+	ClsAnaRsFspSerial(bool isPreamp) 
+		: pp_(preset_parameter::preset_no_set)
+		, _isNeedPreamp(isPreamp)
 	{}
     //重置仪表的参数 
     void Preset(enum preset_parameter pp);
 private:
     bool CommonSet(char const *command, ...);
 	enum preset_parameter pp_;
+	bool _isNeedPreamp;
 };
 
 

@@ -187,6 +187,21 @@ void ClsAnaRsFspSerial::InstrSetSweepTime(int count_ms) {
 
 }
 
+void ClsAnaRsFspSerial::InstrSetPreamp(bool isOn) {
+	if (!_isNeedPreamp) {
+		AgWrite("INP:GAIN:STAT OFF\n");
+		return;
+	}
+	if (isOn){
+		//开始预放
+		AgWrite("INP:GAIN:STAT ON\n");
+	}
+	else {
+		//off预放
+		AgWrite("INP:GAIN:STAT OFF\n");
+	}
+}
+
 void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 {
 	//2015-5-5/vco: 15khz-300hz-1000hz
@@ -265,20 +280,17 @@ bool ClsAnaRsFspSerial::CommonSet(char const *command, ...)
 
 //------------------------write by san-------------------
 void ClsAnaRsFspSerial::InstrPimSetting() {
-	//开始预放
-	AgWrite("INP:GAIN:STAT ON\n");
+	InstrSetPreamp(true);
 	Preset(preset_parameter::preset_default);
 }
 
 void ClsAnaRsFspSerial::InstrVcoSetting() {
-	//开始预放
-	AgWrite("INP:GAIN:STAT ON\n");
+	InstrSetPreamp(true);
 	Preset(preset_parameter::preset_mensuration);
 }
 
 void ClsAnaRsFspSerial::InstrTxOffsetSetting() {
-	//开始预放
-	AgWrite("INP:GAIN:STAT OFF\n");
+	InstrSetPreamp(false);
 	Preset(preset_parameter::preset_calibration);
 }
 

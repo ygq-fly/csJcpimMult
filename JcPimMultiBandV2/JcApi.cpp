@@ -122,6 +122,10 @@
 //  support FSC
 //(build 364)
 //  fix _free_enable_tx default to 1
+//(build 367)
+// remove OFFSET_JCPROTECT_RX
+//(build 370)
+// add some config
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -597,7 +601,8 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	//获取互调,返回数据
 	dPimResult = 0;
 	for (int i = 0; i < _pim_avg; i++) {
-		double temp = JcGetAna(pim->freq_khz, false);
+		double temp = JcGetAna(pim->freq_khz, _spe_is_max);
+		//double temp = JcGetAna(pim->freq_khz, false);
 		if (temp == JC_STATUS_ERROR){
 			Util::logged(L"fnGetImResult: Spectrum read error!");
 			__pobj->strErrorInfo = "Spectrum read error!\r\n";
@@ -918,8 +923,8 @@ JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 				__pobj->sig2 = std::make_shared<ClsSigAgN5181A>();
 				__pobj->sig2->InstrSession(vi, cIdn);
 			}
-			if (index == INSTR_JCSIG)
-				_protect_rx = OFFSET_JCPROTECT_RX;
+			//if (index == INSTR_JCSIG)
+			//	_protect_rx = OFFSET_JCPROTECT_RX;
 		}
 		//罗德斯瓦茨
 		else if (index == INSTR_RS_SM_SERIES) {
@@ -958,15 +963,16 @@ JcBool JcConnAna(JC_ADDRESS cAddr) {
 		char cIdn[128] = { 0 };
 		int index = JcGetIDN(vi, cIdn);
 		if (Util::strFind(cIdn, "FSC"))
-			_sig_rosc = ROSC_INT;
+			_sig_rosc = ROSC_INT; 
+		bool isPreamp = _spe_preamp & 1;
 		//安捷伦
 		if (index == INSTR_AG_MXA_SERIES || index == INSTR_JCSPE) {
-			__pobj->ana = std::make_shared<ClsAnaAgN9020A>();
+			__pobj->ana = std::make_shared<ClsAnaAgN9020A>(isPreamp);
 			__pobj->ana->InstrSession(vi, cIdn);
 		}
 		//罗德斯瓦茨
 		else if (index == INSTR_RS_FS_SERIES) {
-			__pobj->ana = std::make_shared<ClsAnaRsFspSerial>();
+			__pobj->ana = std::make_shared<ClsAnaRsFspSerial>(isPreamp);
 			__pobj->ana->InstrSession(vi, cIdn);
 		}
 		else
@@ -1529,7 +1535,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		return JC_STATUS_ERROR;
 	}
 
-	if (__pobj->ext_sen_index == 1){
+	if (__pobj->ext_sen_index == 1) {
 		//to do
 		//外部传感器使用
 	} else {
@@ -1577,7 +1583,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		//----------------------------------------------------------------------------------------------
 		//开启功放,设置保护值
 		std::shared_ptr<IfSignalSource> pow = coup == JC_COUP_TX1 ? __pobj->sig1 : __pobj->sig2;
-		pow->InstrSetFreqPow(txfreq[0] * 1000, OFFSET_PROTECT_TX);
+		pow->InstrSetFreqPow(txfreq[0] * 1000, _protect_tx);
 		pow->InstrOpenPow(true);
 		//----------------------------------------------------------------------------------------------
 		Util::setSleep(400);
@@ -1632,7 +1638,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 							   double loss_db) {
 	std::shared_ptr<IfSignalSource> pow = coup == JC_COUP_TX1 ? __pobj->sig1 : __pobj->sig2;
 	//设置保护值
-	pow->InstrSetFreqPow(des_f_mhz * 1000, OFFSET_PROTECT_TX);
+	pow->InstrSetFreqPow(des_f_mhz * 1000, _protect_tx);
 	//-------------------------------------------------------------------------------------
 	//pow->InstrOpenPow(true);
 	//-------------------------------------------------------------------------------------
@@ -1646,14 +1652,14 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 		__pobj->ana->InstrTxOffsetSetting();
 	}
 
-	double p_true = OFFSET_PROTECT_TX;
+	double p_true = _protect_tx;
 	resulte = 0;
 	std::string strLog = "start offset-tx\r\n";
 
 	for (int i = 0; i < 8; i++) {
 		//设置
 		pow->InstrSetFreqPow(des_f_mhz * 1000, p_true);
-		Util::setSleep(100);
+		Util::setSleep(_tx_offset_delay);
 		//读取
 		double v = -10000;
 		double r = 0;
@@ -1677,7 +1683,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 						"  val: " + std::to_string(v) + "\r\n";
 			
 			//判断1
-            if (v <= -50) {
+			if (v <= _tx_no_power_limit) {
                 Util::setSleep(1000);
                 continue;
             }
@@ -1694,7 +1700,7 @@ JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte,
 		}
 
 		//检测
-		if (v <= -50) {
+		if (v <= _tx_no_power_limit) {
 			pow->InstrOpenPow(false);
 			__pobj->strErrorInfo = "   TxOffset: This Channel can not find Power!\r\n";
 			strLog += __pobj->strErrorInfo;

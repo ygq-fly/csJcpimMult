@@ -36,6 +36,7 @@
 #define MAX_SIZE_FREQ 1024	
 
 static bool _need_reset = false;
+static int _protect_tx = OFFSET_PROTECT_TX;
 static int _protect_rx = OFFSET_PROTECT_RX;
 static int _protect_range_rx = 10;
 static int _debug_enable = 0;
@@ -45,10 +46,14 @@ static int _tx_delay = 200;
 static int _coup_delay = 300;
 static int _reset_delay = 500;
 static int _sensor_delay = 500;
+static int _tx_offset_delay = 100;
+static int _tx_no_power_limit = -50;
 static int _tx_step = 1;
 static int _rx_step = 1;
 static int _pim_avg = 1;
 static int _sig_rosc = 0;
+static int _spe_is_max = 0;
+static int _spe_preamp = 1;
 static std::string _serial;
 const char DESkeys[] = "jointcom";
 const char DESiv[8] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
@@ -289,25 +294,39 @@ public:
 		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
 		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 1, wsPath_ini.c_str());
 
-		_protect_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_value", -90, wsPath_ini.c_str());
+		_protect_tx = GetPrivateProfileIntW(L"Settings", L"tx_protect_value", OFFSET_PROTECT_TX, wsPath_ini.c_str());
+		_protect_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_value", OFFSET_PROTECT_RX, wsPath_ini.c_str());
 		_protect_range_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_range", 10, wsPath_ini.c_str());
 		_tx_step = GetPrivateProfileIntW(L"Settings", L"tx_step", 1, wsPath_ini.c_str());
 		_rx_step = GetPrivateProfileIntW(L"Settings", L"rx_step", 1, wsPath_ini.c_str());
+
+		_tx_no_power_limit = GetPrivateProfileIntW(L"Settings", L"tx_no_power_limit", -50, wsPath_ini.c_str());
 
 		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
 		_coup_delay = GetPrivateProfileIntW(L"Settings", L"coup_delay", 300, wsPath_ini.c_str());
 		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", 500, wsPath_ini.c_str());
 		_reset_delay = GetPrivateProfileIntW(L"Settings", L"reset_delay", 500, wsPath_ini.c_str());
+		_tx_offset_delay = GetPrivateProfileIntW(L"Settings", L"tx_offset_delay", 100, wsPath_ini.c_str());
 		_pim_avg = GetPrivateProfileIntW(L"Settings", L"pim_avg", 1, wsPath_ini.c_str());
 		_sig_rosc = GetPrivateProfileIntW(L"Settings", L"sig_rosc", 1, wsPath_ini.c_str());
+		_spe_is_max = GetPrivateProfileIntW(L"Settings", L"spe_is_max", 0, wsPath_ini.c_str());
+		_spe_preamp = GetPrivateProfileIntW(L"Settings", L"spe_preamp", 1, wsPath_ini.c_str());
+
+		_tx_no_power_limit = _tx_no_power_limit > 0 ? 0 : _tx_no_power_limit;
+
 		//·ÀÖ¹tx_delayÐ¡ÓÚ200
+
+		_protect_tx = _protect_tx > OFFSET_PROTECT_TX ? OFFSET_PROTECT_TX : _protect_tx;
 		_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
-		_protect_rx = _protect_rx > 0 ? -90 : _protect_rx;
+		_protect_rx = _protect_rx > 0 ? OFFSET_PROTECT_RX : _protect_rx;
 		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
 		_coup_delay = _coup_delay < 300 ? 300 : _coup_delay;
 		_sensor_delay = _sensor_delay < 500 ? 500 : _sensor_delay;
 		_reset_delay = _reset_delay < 500 ? 500 : _reset_delay;
+		_tx_offset_delay = _tx_offset_delay < 100 ? 100 : _tx_offset_delay;
 		_pim_avg = _pim_avg < 1 ? 1 : _pim_avg;
+		_spe_is_max = _spe_is_max == 0 ? 0 : 1;
+		_spe_preamp = _spe_preamp == 0 ? 0 : 1;
 
 		wchar_t wcSerial[1024] = { 0 };
 		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());

@@ -23,10 +23,11 @@ public:
 	};
 
 public:
-	ClsAnaAgN9020A()
-		:_isCmdSucc(false),
-		_freq_now(eNULL),
-		ClsVisa()
+	ClsAnaAgN9020A(bool isPreamp)
+		:_isCmdSucc(false)
+		,_freq_now(eNULL)
+		, _isNeedPreamp(isPreamp)
+		,ClsVisa()
 	{}
 
 	~ClsAnaAgN9020A() {
@@ -151,13 +152,28 @@ public:
 		SetParam(eParam::MARK_X, freq_khz);
 	}
 
+	void InstrSetPreamp(bool isOn) {
+		if (!_isNeedPreamp) {
+			AgWrite(":POW:GAIN OFF\n");
+			return;
+		}
+
+		if (isOn) {
+			//开始预放
+			AgWrite(":POW:GAIN ON\n");
+			if (GetSpeIndex() != 2)
+				AgWrite(":POW:GAIN:BAND LOW\n");
+		}
+		else {
+			//关闭预防
+			AgWrite(":POW:GAIN OFF\n");
+		}
+	}
+
 	//仪器配置
 	void InstrPimSetting() {
 		InstrSetOffset(0);
-		//开始预放
-		AgWrite(":POW:GAIN ON\n");
-		if (GetSpeIndex() != 2)
-			AgWrite(":POW:GAIN:BAND LOW\n");
+		InstrSetPreamp(true);
 
 		InstrSetRef(-60);
 		InstrClosgAvg();
@@ -180,10 +196,7 @@ public:
 	void InstrVcoSetting() {
 		//OFFSET置零
 		InstrSetOffset(0);
-		//开始预放
-		AgWrite(":POW:GAIN ON\n");
-		if (GetSpeIndex() != 2)
-			AgWrite(":POW:GAIN:BAND LOW\n");
+		InstrSetPreamp(true);
 
 		//jcspe
 		if (GetSpeIndex() == 0) {
@@ -201,8 +214,7 @@ public:
 	void InstrTxOffsetSetting() {
 		//OFFSET置零
 		InstrSetOffset(0);
-		//关闭预防
-		AgWrite(":POW:GAIN OFF\n");
+		InstrSetPreamp(false);
 		InstrSetRef(10);
 		InstrClosgAvg();
 		InstrSetAtt(40);
@@ -286,6 +298,7 @@ private:
 private:
 	bool _isCmdSucc;
 	double _freq_now;
+	bool _isNeedPreamp;
 	
 };
 
