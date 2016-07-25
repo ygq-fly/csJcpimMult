@@ -70,37 +70,15 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	if (!IsExist(m_band_info_table.c_str()))
 		ExecSql(sql_table);
 
+	//华为模式
 	std::string hw_sql_param[8] = huawei_sql_body;
-	std::string poi_sql_param[12] = poi_sql_body;
-	std::string NewPoi_sql_param[12] = NewPoi_sql_body;
-	std::string nhw_sql_param[8] = NewHuawei_sql_body;
-
 	std::string hw_band_table_sql = sql_header + hw_sql_param[0];
 	for (int i = 1; i < 7; i++){
 		hw_band_table_sql += " union all select " + hw_sql_param[i];
 	}
-	std::string poi_band_table_sql = sql_header + poi_sql_param[0];
-	for (int i = 1; i < 12; i++){
-		poi_band_table_sql += " union all select " + poi_sql_param[i];
-	}
-	std::string NewPoi_band_table_sql = sql_header + NewPoi_sql_param[0];
-	for (int i = 1; i < 12; i++){
-		NewPoi_band_table_sql += " union all select " + NewPoi_sql_param[i];
-	}
-	std::string HuaweiA_band_table_sql = sql_header + nhw_sql_param[0];
-	for (int i = 1; i < 8; i++){
-		HuaweiA_band_table_sql += " union all select " + nhw_sql_param[i];
-	}
-
 	if (GetBandCount("hw") == 0)
 		ExecSql(hw_band_table_sql.c_str());
-	if (GetBandCount("poi") == 0)
-		ExecSql(poi_band_table_sql.c_str());
-	if (GetBandCount("np") == 0)
-		ExecSql(NewPoi_band_table_sql.c_str());
-	if (GetBandCount("nhw") == 0)
-		ExecSql(HuaweiA_band_table_sql.c_str());
-
+	//华为扩频至8频
 	if (GetBandInfo("hw8", NULL) == -1) {
 		//printf("No find hw8!\n");
 		std::string strSql("insert into [JC_BAND2_INFO] (prefix,band,tx_start,tx_end,rx_start,rx_end,vco_a,vco_b,tx_enable,coup1,coup2) values (");
@@ -108,6 +86,48 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 		strSql += ")";
 		ExecSql(strSql.c_str());
 	}
+
+	//poi模式
+	if (GetBandCount("poi") == 0) {
+		std::string poi_sql_param[12] = poi_sql_body;
+		std::string poi_band_table_sql = sql_header + poi_sql_param[0];
+		for (int i = 1; i < 12; i++){
+			poi_band_table_sql += " union all select " + poi_sql_param[i];
+		}
+
+		ExecSql(poi_band_table_sql.c_str());
+	}
+
+	if (GetBandCount("np") == 0) {
+		std::string NewPoi_sql_param[12] = NewPoi_sql_body;
+		std::string NewPoi_band_table_sql = sql_header + NewPoi_sql_param[0];
+		for (int i = 1; i < 12; i++){
+			NewPoi_band_table_sql += " union all select " + NewPoi_sql_param[i];
+		}
+
+		ExecSql(NewPoi_band_table_sql.c_str());
+	}
+
+	if (GetBandCount(NewHuawei_flag) == 0) {
+		std::string nhw_sql_param[8] = NewHuawei_sql_body;
+		std::string HuaweiA_band_table_sql = sql_header + nhw_sql_param[0];
+		for (int i = 1; i < 8; i++){
+			HuaweiA_band_table_sql += " union all select " + nhw_sql_param[i];
+		}
+
+		ExecSql(HuaweiA_band_table_sql.c_str());
+	}
+
+	//poi15频
+	//if (GetBandCount(poi_15_flag) == 0) {
+	//	std::string poi15_sql_param[15] = poi_15_sql_body;
+	//	std::string poi15_band_table_sql = sql_header + poi15_sql_param[0];
+	//	for (int i = 1; i < 8; i++){
+	//		poi15_band_table_sql += " union all select " + poi15_sql_param[i];
+	//	}
+
+	//	ExecSql(poi15_band_table_sql.c_str());
+	//}
 
 	{
 		std::string version(VERSION_BAND);
