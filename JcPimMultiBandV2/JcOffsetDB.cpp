@@ -90,7 +90,7 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	//poi 15Æµ(12ÆµÀ©ÈÝ)
 	std::string poi_sql_param[15] = poi_sql_body;
 	int count = GetBandCount(poi_flag);
-	if (count == 12) {
+	if (count == 12 || count == 13) {
 		ExecSql("delete from JC_BAND2_INFO  where prefix like 'poi%'");
 		count = 0;
 	}
