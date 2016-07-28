@@ -134,15 +134,17 @@ namespace ns_com_io_ctl
 	{
 		return LoadMap(type,NULL);
 	}
+
+
 	//º”‘ÿ”≥…‰±Ì2
-	bool implementsetting::LoadMap(int type, wchar_t * cfgPath)
+	bool implementsetting::LoadMap(int type, char * cfgPath)
 	{
 		bool result = true;
-		string iopath = GetRunPath();
-		string impath(iopath.c_str());
-		string cfgpath(iopath.c_str());
+		string iopath;
+		string impath;
+		string cfgpath(cfgPath);
 
-		cfgpath = cfgpath.substr(0, cfgpath.rfind('\\'));
+		//cfgpath = cfgpath.substr(0, cfgpath.rfind('\\'));
 
 		__runPath.assign(cfgpath);
 

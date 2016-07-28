@@ -31,6 +31,9 @@ enum
 //频段信息， 构建初始化数据库
 #define sql_table "CREATE  TABLE [JC_BAND2_INFO] (prefix TEXT PRIMARY KEY  NOT NULL , band TEXT, tx_start REAL, tx_end REAL, rx_start REAL, rx_end REAL, vco_a REAL, vco_b REAL, tx_enable TEXT, coup1 INTEGER, coup2 INTEGER)"
 #define sql_header "insert into [JC_BAND2_INFO] (prefix,band,tx_start,tx_end,rx_start,rx_end,vco_a,vco_b,tx_enable,coup1,coup2) select "
+
+//poi 15频(12频扩容)
+#define poi_flag "poi"
 #define poi_sql_body { \
 	"'poi1', '1Cmgsm',     925,   960,   880,   915,  0, 0,   '111',  1,   2",  \
 	"'poi2', '2Cucdma',    865,   894,   820,   849,  0, 0,   '111',  1,   2",  \
@@ -43,10 +46,10 @@ enum
 	"'poi9', '9Cmtda',     2010,  2025,  0,     0,    0, 0,   '010',  -1,  9",  \
 	"'poi10', '10Cmtde',   2300,  2390,  2300,  2390, 0, 0,   '111',  10,  11",  \
 	"'poi11', '11Cttde',   2300,  2390,  2300,  2390, 0, 0,   '101',  10,  -1",  \
-	"'poi12', '12Cutde',   2300,  2390,  0,     0,    0, 0,   '010',  -1,  11"  \
-	"'poi13', '13Cmtdd',   2575,  2615,  2575,  2615, 0, 0,   '111',  12,  13"  \
+	"'poi12', '12Cutde',   2300,  2390,  0,     0,    0, 0,   '010',  -1,  11",  \
+	"'poi13', '13Cmtdd',   2620,  2690,  2500,  2570, 0, 0,   '111',  12,  13",  \
 	"'poi14', '14lte700',  728,   746,   698,   716,  0, 0,   '111',  14,  15",  \
-	"'poi15', '15pcs1900', 1930,  1990,  1850,  1910, 0, 0,   '111',  15,  15"  \
+	"'poi15', '15pcs1900', 1930,  1990,  1850,  1910, 0, 0,   '111',  16,  17"  \
 				}
 
 //#define poi_15_flag "_POI15_"
@@ -67,7 +70,9 @@ enum
 //	"'_POI15_14', '14lte700',   728,     746,      698,    716,   0, 0,   '111',   21,   22",  \
 //	"'_POI15_15', '15pcs1900',  1930,    1990,     1850,   1910,  0, 0,   '111',   23,   24"  \
 //							}
+
 //huawei频段
+#define huawei_flag "hw"
 #define huawei_sql_body { \
 	"'hw1', 'LTE700',     728,   746,   698,   716,    1334,    1336,   '111',   1,   2",  \
 	"'hw2', 'DD800',      791,   821,   832,   862,    1338,    1340,   '111',   3,   4",  \
@@ -79,6 +84,8 @@ enum
 	"'hw8', 'PDC1500',    1475,  1512,  1405,  1464,   1366,    1368,   '111',   15,  16"  \
 					}
 
+//poi新12频
+#define NewPoi_flag "np"
 #define NewPoi_sql_body { \
 	"'np1', '450f1',      460,     465.75,  450,    455.75,  0, 0,   '111',   1,   2",  \
 	"'np2', '450f2',      462.5,   467.5,   452.5,  457.5,   0, 0,   '111',   3,   4",  \
@@ -94,6 +101,7 @@ enum
 	"'np12', 'wcdma2600', 2620,    2690,    2500,   2570,    0, 0,   '111',   23,   24"  \
 					}
 
+//华为新8频
 #define NewHuawei_flag "nhw"
 #define NewHuawei_sql_body { \
 	"'nhw1', '800a',      862,      869,      848,     857,    1362,  1364,   '111',   1,   2",  \

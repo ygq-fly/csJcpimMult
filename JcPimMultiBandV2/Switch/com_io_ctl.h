@@ -43,6 +43,8 @@ namespace ns_com_io_ctl{
 		static void SocketTest();
 		virtual bool Reset(void);		
 		map<string, bool> __socketState;
+		virtual string GetRunPath();
+		virtual wstring GetRunPathW();
 	private:	
 		bool __maskIO;	
 		// »º³å1
@@ -56,8 +58,6 @@ namespace ns_com_io_ctl{
 		virtual bool IOWrite(const string&host,const char*buf,int len);
 		virtual bool IORead(const string&host,char*buf,int*len);
 		virtual void WindowsDeleteFile(const char* file);
-		virtual string GetRunPath();
-		virtual wstring GetRunPathW();
 		virtual string GetRowFromFile(const string&section,const string&key,const string&defaultValue,const string&fileName);
 		virtual string GetTempFileInfo(const string& flagName);
 		USHORT GetCheckSum(LPBYTE lpBuff, DWORD dwSize);

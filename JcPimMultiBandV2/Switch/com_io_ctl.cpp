@@ -354,9 +354,9 @@ namespace ns_com_io_ctl{
 	{
 		char strBuff[MAX_PATH] = { 0 };
 		//GetCurrentDirectoryA(256,strBuff);  //危险
-		return __dllHostName;
-		//GetModuleFileNameA(GetModuleHandleA(__dllHostName.c_str()), strBuff, MAX_PATH);
-		//return string(strBuff);
+		//return __dllHostName;
+		GetModuleFileNameA(GetModuleHandleA(__dllHostName.c_str()), strBuff, MAX_PATH);
+		return string(strBuff);
 	}
 	//模块复位一个
 	bool com_io_ctl::ResetOne(const string&host)

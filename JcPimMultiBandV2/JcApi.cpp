@@ -1248,23 +1248,25 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 	if (__pobj->now_mode == MODE_POI) {
 		int temp_iSwitchTx1 = iSwitchTx1;
 		int temp_iSwitchTx2 = iSwitchTx2;
-		//特殊频段处理(防止出现下面的频段同时出现)
-		if (iSwitchTx1 > 11 && iSwitchTx1 < 17)
-			temp_iSwitchTx1 -= 5;
-		if (iSwitchTx2 > 11 && iSwitchTx2 < 17)
-			temp_iSwitchTx2 -= 5;
-		//新加一频
-		if (iSwitchTx1 == 12) {
-			iSwitchTx1 = 17;
-			temp_iSwitchTx1 = 12;
-		}
-		if (iSwitchTx2 == 12) {
-			iSwitchTx2 = 17;
-			temp_iSwitchTx2 = 12;
-		}
-		if (iSwitchPim == 12) {
-			iSwitchPim = 17;
-		}
+
+		////特殊频段处理(防止出现下面的频段同时出现)
+		//if (iSwitchTx1 > 11 && iSwitchTx1 < 17)
+		//	temp_iSwitchTx1 -= 5;
+		//if (iSwitchTx2 > 11 && iSwitchTx2 < 17)
+		//	temp_iSwitchTx2 -= 5;
+		////新加一频
+		//if (iSwitchTx1 == 12) {
+		//	iSwitchTx1 = 17;
+		//	temp_iSwitchTx1 = 12;
+		//}
+		//if (iSwitchTx2 == 12) {
+		//	iSwitchTx2 = 17;
+		//	temp_iSwitchTx2 = 12;
+		//}
+		//if (iSwitchPim == 12) {
+		//	iSwitchPim = 17;
+		//}
+
 		//查找ID_POI检测通道标号
 		//这里的iSwitch和band相配对
 		//(配对信息在数据库中)
@@ -1277,6 +1279,13 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 			coup = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
 		else 
 			coup = -1;
+
+		//根据tx_enable重设
+		if (!__pobj->now_mode_bandset[temp_iSwitchTx1].tx1_enable)
+			iSwitchTx1 = -1;
+		if (!__pobj->now_mode_bandset[temp_iSwitchTx2].tx2_enable)
+			iSwitchTx2 = -1;
+
 	} else {
 		//查找ID_HUAWEI检测通道标号
 		//这里的iSwitch和band不会配对

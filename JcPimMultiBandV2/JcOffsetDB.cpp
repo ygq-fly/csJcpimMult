@@ -87,18 +87,31 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 		ExecSql(strSql.c_str());
 	}
 
-	//poi模式
-	if (GetBandCount("poi") == 0) {
-		std::string poi_sql_param[12] = poi_sql_body;
+	//poi 15频(12频扩容)
+	std::string poi_sql_param[15] = poi_sql_body;
+	int count = GetBandCount(poi_flag);
+	if (count == 12) {
+		ExecSql("delete from JC_BAND2_INFO  where prefix like 'poi%'");
+		count = 0;
+	}
+	if (count == 0) {
 		std::string poi_band_table_sql = sql_header + poi_sql_param[0];
-		for (int i = 1; i < 12; i++){
+		for (int i = 1; i < 15; i++){
 			poi_band_table_sql += " union all select " + poi_sql_param[i];
 		}
-
 		ExecSql(poi_band_table_sql.c_str());
 	}
+	//if (count == 12) {
+	//	for (int i = 12; i < 15; i++) {
+	//		std::string strSql("insert into [JC_BAND2_INFO] (prefix,band,tx_start,tx_end,rx_start,rx_end,vco_a,vco_b,tx_enable,coup1,coup2) values (");
+	//		strSql += poi_sql_param[i];
+	//		strSql += ")";
+	//		ExecSql(strSql.c_str());
+	//	}
+	//}
 
-	if (GetBandCount("np") == 0) {
+	//poi新12频
+	if (GetBandCount(NewPoi_flag) == 0) {
 		std::string NewPoi_sql_param[12] = NewPoi_sql_body;
 		std::string NewPoi_band_table_sql = sql_header + NewPoi_sql_param[0];
 		for (int i = 1; i < 12; i++){
@@ -108,6 +121,7 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 		ExecSql(NewPoi_band_table_sql.c_str());
 	}
 
+	//华为新8频
 	if (GetBandCount(NewHuawei_flag) == 0) {
 		std::string nhw_sql_param[8] = NewHuawei_sql_body;
 		std::string HuaweiA_band_table_sql = sql_header + nhw_sql_param[0];

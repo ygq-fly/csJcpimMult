@@ -38,8 +38,14 @@ int MartrixSwitchInit(int handle,char *dllName, int swType,int comType)
 		{
 			cic->__dllHostName.assign(dllName);
 		}
+
+		char cfgPath[512];
+		string scfgPath = cic->GetRunPath();
+		scfgPath = scfgPath.substr(0, scfgPath.rfind('\\'));
+		strcpy_s(cfgPath, sizeof(cfgPath), scfgPath.c_str());
+
 		//¼ÓÔØÅäÖÃ
-		if (!cic->LoadMap(swType))
+		if (!cic->LoadMap(swType,cfgPath))
 		{
 			result = MATRIX_SWITCH_ERROR_INI_FILE_NOEXIST;
 		}		

@@ -95,7 +95,7 @@ namespace ns_com_io_ctl
 		vector<string>&GetPimNameList(void);
 		vector<string>&GetDetNameList(void);
 		bool LoadMap(int type);
-		bool LoadMap(int type, wchar_t * cfgPath);
+		bool LoadMap(int type, char * cfgPath);
 		bool Connect(void);
 		void DisConnect(void);
 		void Clear(void);
