@@ -128,6 +128,8 @@
 // add some config
 //(build 375)
 // support poi_band_15 mode
+//(build 376)
+// remove fnSetFreq delay
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -492,7 +494,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		return -10000;
 	}
-	Util::setSleep(300);
+	//Util::setSleep(300);
 	//检测tx1功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX2);
 	if (js <= -10000) {
@@ -512,7 +514,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		return -10000;
 	}
-	Util::setSleep(300);
+	//Util::setSleep(300);
 	//检测tx2功率平稳度
 	js = HwGetSig_Smooth(dd, JC_CARRIER_TX1);
 	if (js <= -10000) {
@@ -1929,7 +1931,7 @@ int JcGetIDN(unsigned long vi, OUT char* cIdn) {
 		else if (Util::strFind(strIdn, "N9000")  || Util::strFind(strIdn, "N9010")  || 
 				 Util::strFind(strIdn, "N9020")  || Util::strFind(strIdn, "N9030")  || 
 				 Util::strFind(strIdn, "N9038") || Util::strFind(strIdn, "E4443") ||
-				 Util::strFind(strIdn, "E4445") ||
+				 Util::strFind(strIdn, "E4445") || Util::strFind(strIdn, "E4440") ||
 				 Util::strFind(strIdn, "E4407"))
 			iDeviceIDN = INSTR_AG_MXA_SERIES;
 		else if (Util::strFind(strIdn, "FSP")     || Util::strFind(strIdn, "FSU")     || 
