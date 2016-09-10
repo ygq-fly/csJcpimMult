@@ -35,25 +35,37 @@
 #define DES_SIZE	   1024	
 #define MAX_SIZE_FREQ 1024	
 
-static bool _need_reset = false;
+//debug模式
+static int _debug_enable = 0;
+//保护门限相关
 static int _protect_tx = OFFSET_PROTECT_TX;
 static int _protect_rx = OFFSET_PROTECT_RX;
 static int _protect_range_rx = 10;
-static int _debug_enable = 0;
-static int _free_tx_enable = 1;
-//延时
+static int _tx_no_power_limit = -50;
+static double _out_of_val_range = -149;
+//延时相关
+static bool _need_reset = false;
 static int _tx_delay = 200;
 static int _coup_delay = 300;
 static int _reset_delay = 500;
 static int _sensor_delay = 500;
 static int _tx_offset_delay = 100;
-static int _tx_no_power_limit = -50;
+//设置相关
+static int _free_tx_enable = 1;
 static int _tx_step = 1;
 static int _rx_step = 1;
 static int _pim_avg = 1;
+//sig的rosc
 static int _sig_rosc = 0;
+//spe读取模式
 static int _spe_is_max = 0;
+//spe测试预设预放
 static int _spe_preamp = 1;
+//spe测试预设att
+static int _spe_pim_att = -1;
+//sep校准预设att
+static int _spe_offset_att = -1;
+
 static std::string _serial;
 const char DESkeys[] = "jointcom";
 const char DESiv[8] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
@@ -301,6 +313,7 @@ public:
 		_rx_step = GetPrivateProfileIntW(L"Settings", L"rx_step", 1, wsPath_ini.c_str());
 
 		_tx_no_power_limit = GetPrivateProfileIntW(L"Settings", L"tx_no_power_limit", -50, wsPath_ini.c_str());
+		_out_of_val_range = Util::getIniDouble(L"Settings", L"out_of_val_range", -149, wsPath_ini.c_str());
 
 		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
 		_coup_delay = GetPrivateProfileIntW(L"Settings", L"coup_delay", 300, wsPath_ini.c_str());
@@ -311,6 +324,8 @@ public:
 		_sig_rosc = GetPrivateProfileIntW(L"Settings", L"sig_rosc", 1, wsPath_ini.c_str());
 		_spe_is_max = GetPrivateProfileIntW(L"Settings", L"spe_is_max", 0, wsPath_ini.c_str());
 		_spe_preamp = GetPrivateProfileIntW(L"Settings", L"spe_preamp", 1, wsPath_ini.c_str());
+		_spe_pim_att = GetPrivateProfileIntW(L"Settings", L"spe_pim_att", _spe_pim_att, wsPath_ini.c_str());
+		_spe_offset_att = GetPrivateProfileIntW(L"Settings", L"spe_offset_att", _spe_offset_att, wsPath_ini.c_str());
 
 		_tx_no_power_limit = _tx_no_power_limit > 0 ? 0 : _tx_no_power_limit;
 

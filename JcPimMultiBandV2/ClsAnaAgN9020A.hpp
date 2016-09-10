@@ -38,15 +38,15 @@ public:
 	bool InstrConnect(const char* c_addr){
 		bool isconn = AgConnect(c_addr);
 		//连接成功即开始初始化
-		if (isconn)
-			InstrInit();
+		//if (isconn)
+		//	InstrInit();
 		return isconn;
 	}
 
 	void InstrSession(unsigned long viConnectedSession, const char* cIdn) {
 		AgSession(viConnectedSession, cIdn);
 		//连接成功即开始初始化
-		InstrInit();
+		//InstrInit();
 	}
 
 	bool InstrWrite(const char* c_cmd) {
@@ -177,7 +177,12 @@ public:
 
 		InstrSetRef(-60);
 		InstrClosgAvg();
-		InstrSetAtt(0);
+
+		//moshi att
+		if (m_offset_att < 0)
+			InstrSetAtt(0);
+		else
+			InstrSetAtt(m_pim_att);
 
 		//jcspe
 		if (GetSpeIndex() == 0) {
@@ -217,7 +222,12 @@ public:
 		InstrSetPreamp(false);
 		InstrSetRef(10);
 		InstrClosgAvg();
-		InstrSetAtt(40);
+
+		//moshi att
+		if (m_offset_att < 0)
+			InstrSetAtt(40);
+		else
+			InstrSetAtt(m_offset_att);
 
 		//jcspe
 		if (GetSpeIndex() == 0) {

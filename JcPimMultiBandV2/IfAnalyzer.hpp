@@ -25,6 +25,16 @@ public:
 	virtual void InstrVcoSetting() = 0;
 	virtual void InstrTxOffsetSetting() = 0;
 	virtual void InstrRxOffsetSetting() = 0;
+
+	IfAnalyzer() :m_pim_att(-1), m_offset_att(-1){}
+	void InstrSetModeAtt(int pim_att, int offset_att) {
+		m_pim_att = pim_att;
+		m_offset_att = offset_att;
+	}
+
+protected:
+	int m_pim_att;
+	int m_offset_att;
 };
 
 #endif

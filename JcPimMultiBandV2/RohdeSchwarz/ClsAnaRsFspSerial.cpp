@@ -19,8 +19,8 @@ bool ClsAnaRsFspSerial::InstrConnect(const char* c_addr)
 {
 	bool isconn = AgConnect(c_addr);
 	//连接成功即开始初始化
-	if (isconn)
-		InstrInit();
+	//if (isconn)
+	//	InstrInit();
 	return isconn;
 }
 
@@ -28,7 +28,7 @@ void ClsAnaRsFspSerial::InstrSession(unsigned long viConnectedSession, const cha
 {
 	AgSession(viConnectedSession, cIdn);
 	//连接成功即开始初始化
-	InstrInit();
+	//InstrInit();
 }
 
 bool ClsAnaRsFspSerial::InstrWrite(const char* c_cmd)
@@ -217,16 +217,16 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	//OFFSET:     0			,	0				,	0
 	//ATT:        0			,	0				,	30
 	//------------------------write by san-------------------
-	static const double freq_span       [PRESET_PARAMETER_TOTAL] = {  0,    15000,  1000 };
-	static const double freq_rbw        [PRESET_PARAMETER_TOTAL] = {  10,   300,   100  };
-	static const double freq_vbw        [PRESET_PARAMETER_TOTAL] = {  30,  1000,   100  };
-	static const int    sweep_time      [PRESET_PARAMETER_TOTAL] = {  1,    0,       0    };
+	static const double freq_span[PRESET_PARAMETER_TOTAL] = { 0, 15000, 1000 };
+	static const double freq_rbw[PRESET_PARAMETER_TOTAL] = { 10, 300, 100 };
+	static const double freq_vbw[PRESET_PARAMETER_TOTAL] = { 30, 1000, 100 };
+	static const int    sweep_time[PRESET_PARAMETER_TOTAL] = { 1, 0, 0 };
 
-	static const int    freq_aver       [PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
-	static const int    disp_rlev       [PRESET_PARAMETER_TOTAL] = { -60,  -60,      10   };
-	static const double disp_rlev_offset[PRESET_PARAMETER_TOTAL] = {  0,    0,       0    };
-	static const int    input_att       [PRESET_PARAMETER_TOTAL] = {  0,    0,       40   };
-	
+	static const int    freq_aver[PRESET_PARAMETER_TOTAL] = { 0, 0, 0 };
+	static const int    disp_rlev[PRESET_PARAMETER_TOTAL] = { -60, -60, 10 };
+	static const double disp_rlev_offset[PRESET_PARAMETER_TOTAL] = { 0, 0, 0 };
+	static const int    input_att[PRESET_PARAMETER_TOTAL] = { 0, 0, 40 };
+
 
 	if (pp < 0 || pp >= PRESET_PARAMETER_TOTAL || pp_ == pp)
 		return;
@@ -251,8 +251,19 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 		InstrSetSweepTime(sweep_time[pp]);
 	else
 		InstrSetSweepTime(0);
-		
-	InstrSetAtt(input_att[pp]);
+
+	if (m_offset_att < 0)
+	{
+		InstrSetAtt(input_att[pp]);
+	}
+	else
+	{
+		if (pp == preset_calibration)
+			InstrSetAtt(m_offset_att);
+		else
+			InstrSetAtt(m_pim_att);		
+	}
+
 	InstrSetAvg(freq_aver[pp]);
 	//------------------------write by san-------------------
 	//ref level需放最后执行！

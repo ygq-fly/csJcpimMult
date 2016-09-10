@@ -130,6 +130,8 @@
 // support poi_band_15 mode
 //(build 376)
 // remove fnSetFreq delay
+//(build 379)
+//add config: spe_pim_att,spe_offset_att 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -615,6 +617,9 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 		dPimResult += temp;
 	}
 	dPimResult = dPimResult / (double)_pim_avg;
+	//·ÀÖ¹»ªÎªATE¸æ¾¯
+	if (dPimResult <= -150)
+		dPimResult = _out_of_val_range;
 	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
 	return 0;
@@ -981,6 +986,8 @@ JcBool JcConnAna(JC_ADDRESS cAddr) {
 		}
 		else
 			return FALSE;
+		__pobj->ana->InstrSetModeAtt(_spe_pim_att, _spe_offset_att);
+		__pobj->ana->InstrInit();
 	}
 
 	__pobj->device_status[ANALYZER] = !s;
