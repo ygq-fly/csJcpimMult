@@ -63,6 +63,7 @@ public:
 	virtual void InstrTxOffsetSetting();
 	virtual void InstrRxOffsetSetting();
 	virtual void InstrSetSweepTime(int count_ms);
+	void InstrSetModeAtt(int pim_att, int offset_att);
 
 public:
 	ClsAnaRsFspSerial(bool isPreamp) 
@@ -75,6 +76,8 @@ private:
     bool CommonSet(char const *command, ...);
 	enum preset_parameter pp_;
 	bool _isNeedPreamp;
+	int m_pim_att;
+	int m_offset_att;
 };
 
 

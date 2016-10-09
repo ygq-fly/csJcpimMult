@@ -66,6 +66,10 @@ public:
 	}
 
 public:
+	void InstrSetModeAtt(int pim_att, int offset_att) {
+		m_pim_att = pim_att;
+		m_offset_att = offset_att;
+	}
 
 	//开始初始化
 	void InstrInit() {
@@ -179,10 +183,7 @@ public:
 		InstrClosgAvg();
 
 		//moshi att
-		if (m_offset_att < 0)
-			InstrSetAtt(0);
-		else
-			InstrSetAtt(m_pim_att);
+		InstrSetAtt(m_pim_att < 0 ? 0 : m_pim_att);
 
 		//jcspe
 		if (GetSpeIndex() == 0) {
@@ -224,10 +225,7 @@ public:
 		InstrClosgAvg();
 
 		//moshi att
-		if (m_offset_att < 0)
-			InstrSetAtt(40);
-		else
-			InstrSetAtt(m_offset_att);
+		InstrSetAtt(m_offset_att < 0 ? 40 : m_offset_att);
 
 		//jcspe
 		if (GetSpeIndex() == 0) {
@@ -309,6 +307,8 @@ private:
 	bool _isCmdSucc;
 	double _freq_now;
 	bool _isNeedPreamp;
+	int m_pim_att;
+	int m_offset_att;
 	
 };
 

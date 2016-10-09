@@ -233,6 +233,8 @@ public:
 	std::shared_ptr<ClsJcSwitch> swh;
 	//数据库
 	JcOffsetDB offset;
+	//调整标识
+	bool isNeedSmooth;
 
 	//外部传感器(预留)
 	bool isExtSenConn;
@@ -253,6 +255,7 @@ private:
 		, isExtSenConn(false)
 		, ext_sen_index(0)
 		, wstrLogFlag(L"MBP")
+		, isNeedSmooth(true)
 		, offset()
 	{
 		//INIT

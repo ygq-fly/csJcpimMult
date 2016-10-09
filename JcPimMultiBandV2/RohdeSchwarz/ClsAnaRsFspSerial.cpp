@@ -252,17 +252,10 @@ void ClsAnaRsFspSerial::Preset(enum preset_parameter pp)
 	else
 		InstrSetSweepTime(0);
 
-	if (m_offset_att < 0)
-	{
-		InstrSetAtt(input_att[pp]);
-	}
+	if (pp == preset_calibration)
+		InstrSetAtt(m_offset_att < 0 ? input_att[pp] : m_offset_att);
 	else
-	{
-		if (pp == preset_calibration)
-			InstrSetAtt(m_offset_att);
-		else
-			InstrSetAtt(m_pim_att);		
-	}
+		InstrSetAtt(m_pim_att < 0 ? input_att[pp] : m_pim_att);
 
 	InstrSetAvg(freq_aver[pp]);
 	//------------------------write by san-------------------
@@ -307,6 +300,11 @@ void ClsAnaRsFspSerial::InstrTxOffsetSetting() {
 
 void ClsAnaRsFspSerial::InstrRxOffsetSetting() {
 	InstrPimSetting();
+}
+
+void ClsAnaRsFspSerial::InstrSetModeAtt(int pim_att, int offset_att) {
+	m_pim_att = pim_att;
+	m_offset_att = offset_att;
 }
 //------------------------write by san-------------------
 

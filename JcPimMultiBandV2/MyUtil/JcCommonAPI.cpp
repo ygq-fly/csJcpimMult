@@ -242,7 +242,7 @@ std::string Util::wstring_to_utf8(const std::wstring& str)
 #endif
 }
 
-std::vector<std::string> Util::split(const std::string str, const char sc){
+std::vector<std::string> Util::split(const std::string str, const char sc) {
 	std::istringstream iss(str);
 	std::vector<std::string> ret;
 	std::string stemp = "";
@@ -276,8 +276,7 @@ void Util::showcldebug(const char* fmt, ...) {
 			dwConSize, coordScreen, &cCharsWritten);
 		bSuccess = SetConsoleCursorPosition(hcl, coordScreen);
 	}
-	else 
-	{
+	else {
 		char cInfo[1024] = { 0 };
 		va_list ap;
 		va_start(ap, fmt);
