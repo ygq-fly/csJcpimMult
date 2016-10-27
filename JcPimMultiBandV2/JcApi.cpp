@@ -480,6 +480,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	//设置功放1
 	js = JcSetSig_Advanced(JC_CARRIER_TX1, true, rf2->dd);
 	if (js) return js;
+	//计算pim互调频率，设置中心频率
+	pim->freq_khz = __pobj->GetPimFreq();
+	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
 
 	char cLog[256] = { 0 };
 	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\nP1 = %lf, P2 = %lf\r\noffset1 = %lf, offset2 = %lf\r\n",
@@ -487,6 +490,8 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		rf1->offset_int + rf1->pow_dbm, rf2->offset_int + rf2->pow_dbm,
 		rf1->offset_ext, rf2->offset_ext);
 	__pobj->WriteClDebug(cLog);
+	__pobj->WriteClDebug("   pim_band: " + std::to_string(pim->band) + "   name: " + __pobj->GetBandString(pim->band) + "\r\n");
+	__pobj->WriteClDebug("   pim_freq: " + std::to_string(pim->freq_khz) + "\r\n");
 	__pobj->WriteClDebug("   rf_dd1: " + std::to_string(rf1->dd) + "   rf_dd2: " + std::to_string(rf2->dd) + "\r\n");
 
 	//dd调整标识
@@ -542,9 +547,6 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		__pobj->isNeedSmooth = false;
 	}
 	//---------------------------------------------------------------------------------
-	//计算pim互调频率，设置中心频率
-	pim->freq_khz = __pobj->GetPimFreq();
-	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
 	
 	return 0;
 }

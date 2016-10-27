@@ -550,9 +550,16 @@ public:
 			dF2 = rf1->freq_khz;
 		}
 		//DD800Р§Эт
-		if (GetBandString(pim->band) == "DD800") {
-			dF1 = rf2->freq_khz;
-			dF2 = rf1->freq_khz;
+		//if (GetBandString(pim->band) == "DD800") {
+		//	dF1 = rf2->freq_khz;
+		//	dF2 = rf1->freq_khz;
+		//}
+		if (now_mode == MODE_HUAWEI || now_mode == MODE_TRANSMISSION) {
+			//DD800Р§Эт
+			if (pim->band == 1) {
+				dF1 = rf2->freq_khz;
+				dF2 = rf1->freq_khz;
+			}
 		}
 		//Р§Эт:2F1/2F2
 		if (pim->im_order == 0)

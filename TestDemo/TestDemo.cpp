@@ -143,7 +143,7 @@ void Test_dll(){
 
 	//jcSetOffsetTime(0, 0);
 	//setImOrder(3);
-	//setMeasBand(10);
+	//setMeasBand(0);
 	//setDutPort(0);
 	//setTxPower(43, 43, 0, 0);
 	//hwSetTxFreqs(930, 960, "mhz");
@@ -151,6 +151,7 @@ void Test_dll(){
 	//double dd = 0;
 	//int n =hwGetSig_Smooth(dd, 1);
 
+	//setTxFreqs(830,960,)
 	//double pim_freq, pim_val;
 	//getImResult(pim_freq, pim_val, "mhz");
 	
