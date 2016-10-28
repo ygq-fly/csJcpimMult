@@ -53,6 +53,8 @@ static int _tx_offset_delay = 100;
 //设置相关
 static int _free_tx_enable = 1;
 static int _tx_step = 1;
+static int _tx_adjust_count = 4;
+static bool _tx_no_coup_switch = false;
 static int _rx_step = 1;
 static int _pim_avg = 1;
 //sig的rosc

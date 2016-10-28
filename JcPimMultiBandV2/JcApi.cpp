@@ -333,6 +333,7 @@ int HwSetDutPort(JcInt8 byPortTx1, JcInt8 byPortTx2, JcInt8 byPortRx) {
 	__pobj->isNeedSmooth = true;
 	rf1->dd = 0;
 	rf2->dd = 0;
+
 	//__pobj->now_dut_port = byPort;
 	rf1->dutport = byPortTx1;
 	rf2->dutport = byPortTx2;
@@ -496,10 +497,11 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 
 	//dd调整标识
 	if (__pobj->isNeedSmooth) {
-		double dd = 0;
 		//---------------------------------------------------------------------------------
-		//开启功放
-		js = fnSetTxOn(true, JC_CARRIER_TX1TX2);
+		//开启功放2
+		js = fnSetTxOn(false, JC_CARRIER_TX1);
+		if (0 != js) return js;
+		js = fnSetTxOn(true, JC_CARRIER_TX2);
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
 		//切换耦合器tx2开关(保护多切一次)
@@ -509,7 +511,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		//	return -10000;
 		//}
 		//检测tx2功率平稳度
-		js = HwGetSig_Smooth(dd, JC_CARRIER_TX2);
+		js = HwGetSig_Smooth(rf2->dd, JC_CARRIER_TX2);
 		if (js <= -10000) {
 			//关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1TX2);
@@ -519,16 +521,24 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 				Util::logged(_T("fnSetTxFreqs: TX2功率偏差过大！"));
 			return js;
 		}
-		rf2->dd = dd;
 		//---------------------------------------------------------------------------------
-		//切换耦合器tx1开关
-		if (HwSetCoup(JC_COUP_TX1) == FALSE) {
-			//关闭功放
-			fnSetTxOn(false, JC_CARRIER_TX1TX2);
-			return -10000;
+		//开启功放1
+		js = fnSetTxOn(true, JC_CARRIER_TX1);
+		if (0 != js) return js;
+		js = fnSetTxOn(false, JC_CARRIER_TX2);
+		if (0 != js) return js;
+		//---------------------------------------------------------------------------------
+		if (!_tx_no_coup_switch) {
+			//切换耦合器tx1开关
+			if (HwSetCoup(JC_COUP_TX1) == FALSE) {
+				//关闭功放
+				fnSetTxOn(false, JC_CARRIER_TX1TX2);
+				return -10000;
+			}
 		}
+
 		//检测tx1功率平稳度
-		js = HwGetSig_Smooth(dd, JC_CARRIER_TX1);
+		js = HwGetSig_Smooth(rf1->dd, JC_CARRIER_TX1);
 		if (js <= -10000) {
 			//关闭功放
 			fnSetTxOn(false, JC_CARRIER_TX1TX2);
@@ -539,14 +549,19 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 
 			return js;
 		}
-		rf1->dd = dd;
 		//---------------------------------------------------------------------------------
 		//关闭功放
 		js = fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (0 != js) return js;
+
 		__pobj->isNeedSmooth = false;
 	}
 	//---------------------------------------------------------------------------------
+	if (_tx_no_coup_switch) {
+		__pobj->isNeedSmooth = true;
+		rf1->dd = 0;
+		rf1->dd = 0;
+	}
 	
 	return 0;
 }
@@ -827,7 +842,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 
 	__pobj->WriteClDebug("start smooth-tx-" + std::to_string(byCarrier) + "\r\n");
 	//adjust
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < _tx_adjust_count; i++) {
 		__pobj->WriteClDebug("   No.: " + std::to_string(i + 1) + "\r\n");
 		if (i == 0)
 			Util::setSleep(_tx_delay + 200);
@@ -869,20 +884,22 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 			else {
 				//检测错误后，尝试重启信号源
 				__pobj->WriteClDebug("   (Try to restart!)\r\n");
-				fnSetTxOn(false);
-				JcNeedRetSwitch();
-				if (byCarrier == JC_CARRIER_TX1) {
-					//尝试抖动
-					HwSetCoup(JC_COUP_TX2);
-					HwSetCoup(JC_COUP_TX1);
+				if (!_tx_no_coup_switch){
+					fnSetTxOn(false);
+					JcNeedRetSwitch();
+					if (byCarrier == JC_CARRIER_TX1) {
+						//尝试抖动
+						HwSetCoup(JC_COUP_TX2);
+						HwSetCoup(JC_COUP_TX1);
+					}
+					else if (byCarrier == JC_CARRIER_TX2) {
+						//尝试抖动
+						HwSetCoup(JC_COUP_TX1);
+						HwSetCoup(JC_COUP_TX2);
+					}
+					fnSetTxOn(true);
+					Util::setSleep(_reset_delay);
 				}
-				else if (byCarrier == JC_CARRIER_TX2) {
-					//尝试抖动
-					HwSetCoup(JC_COUP_TX1);
-					HwSetCoup(JC_COUP_TX2);
-				}
-				fnSetTxOn(true);
-				Util::setSleep(_reset_delay);
 				i--;
 				continue;
 			}
@@ -891,7 +908,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 				break;
 
 			if (i == 0)
-				dd += tx_deviate * 0.9;
+				dd += tx_deviate;
 			else
 				dd += (tx_deviate * 0.6);
 
