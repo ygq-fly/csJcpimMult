@@ -33,7 +33,7 @@
 #define SUM_LESS       0
 #define SUM_ADD        1
 #define DES_SIZE	   1024	
-#define MAX_SIZE_FREQ 1024	
+#define MAX_SIZE_FREQ  1024	
 
 //debug模式
 static int _debug_enable = 0;
@@ -50,6 +50,7 @@ static int _coup_delay = 300;
 static int _reset_delay = 500;
 static int _sensor_delay = 500;
 static int _tx_offset_delay = 100;
+static int _vco_delay = 100;
 //设置相关
 static int _free_tx_enable = 1;
 static int _tx_step = 1;
@@ -325,28 +326,38 @@ public:
 		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", 500, wsPath_ini.c_str());
 		_reset_delay = GetPrivateProfileIntW(L"Settings", L"reset_delay", 500, wsPath_ini.c_str());
 		_tx_offset_delay = GetPrivateProfileIntW(L"Settings", L"tx_offset_delay", 100, wsPath_ini.c_str());
+		_vco_delay = GetPrivateProfileIntW(L"Settings", L"vco_delay", _vco_delay, wsPath_ini.c_str());
+
 		_pim_avg = GetPrivateProfileIntW(L"Settings", L"pim_avg", 1, wsPath_ini.c_str());
 		_sig_rosc = GetPrivateProfileIntW(L"Settings", L"sig_rosc", 1, wsPath_ini.c_str());
 		_spe_is_max = GetPrivateProfileIntW(L"Settings", L"spe_is_max", 0, wsPath_ini.c_str());
 		_spe_preamp = GetPrivateProfileIntW(L"Settings", L"spe_preamp", 1, wsPath_ini.c_str());
+
 		_spe_pim_att = GetPrivateProfileIntW(L"Settings", L"spe_pim_att", _spe_pim_att, wsPath_ini.c_str());
 		_spe_offset_att = GetPrivateProfileIntW(L"Settings", L"spe_offset_att", _spe_offset_att, wsPath_ini.c_str());
 
 		_tx_no_power_limit = _tx_no_power_limit > 0 ? 0 : _tx_no_power_limit;
 
+		_tx_no_coup_switch = GetPrivateProfileIntW(L"Settings", L"tx_no_coup_switch", 0, wsPath_ini.c_str());
+		_tx_adjust_count = GetPrivateProfileIntW(L"Settings", L"tx_adjust_count", _tx_adjust_count, wsPath_ini.c_str());
 		//防止tx_delay小于200
 
 		_protect_tx = _protect_tx > OFFSET_PROTECT_TX ? OFFSET_PROTECT_TX : _protect_tx;
 		_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
 		_protect_rx = _protect_rx > 0 ? OFFSET_PROTECT_RX : _protect_rx;
+
 		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
 		_coup_delay = _coup_delay < 300 ? 300 : _coup_delay;
 		_sensor_delay = _sensor_delay < 500 ? 500 : _sensor_delay;
 		_reset_delay = _reset_delay < 500 ? 500 : _reset_delay;
 		_tx_offset_delay = _tx_offset_delay < 100 ? 100 : _tx_offset_delay;
+		_vco_delay = _vco_delay < 100 ? 100 : _vco_delay;
+
 		_pim_avg = _pim_avg < 1 ? 1 : _pim_avg;
 		_spe_is_max = _spe_is_max == 0 ? 0 : 1;
 		_spe_preamp = _spe_preamp == 0 ? 0 : 1;
+
+		_tx_adjust_count = _tx_adjust_count < 1 ? 1 : _tx_adjust_count;
 
 		wchar_t wcSerial[1024] = { 0 };
 		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
