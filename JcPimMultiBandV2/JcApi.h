@@ -44,6 +44,8 @@ extern "C" {
 #define JC_OFFSET_REAL 0
 #define JC_OFFSET_DSP 1
 
+#define JC_EXT_FLAG -1
+
 typedef unsigned char JcInt8;
 typedef int JcBool;
 typedef char* JC_ADDRESS;
@@ -102,6 +104,7 @@ enum JC_DEVICE {
 JIONTCOM_API int fnSetInit2(const JC_ADDRESS cDeviceAddr, const char* cDirectory);
 JIONTCOM_API int fnSetInit(const JC_ADDRESS cDeviceAddr);
 JIONTCOM_API void HwSetIsExtBand(JcBool isUse);
+JIONTCOM_API int HwSetExtFlag(int Build, const char* Flag);
 //πÿ±’¡¨Ω”
 JIONTCOM_API int fnSetExit();
 JIONTCOM_API void HwSetExit();

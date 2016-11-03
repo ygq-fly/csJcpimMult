@@ -41,6 +41,7 @@ void Test_dll(){
 	pSetInit setInit = (pSetInit)GetProcAddress(hinst, "fnSetInit");
 	pSetInit2 setInit2 = (pSetInit2)GetProcAddress(hinst, "fnSetInit2");
 	pHwSetIsExtBand hwSetIsExtBand = (pHwSetIsExtBand)GetProcAddress(hinst, "HwSetIsExtBand");
+	pHwSetExtFlag hwSetExtFlag = (pHwSetExtFlag)GetProcAddress(hinst, "HwSetExtFlag");
 	pSetMeasBand setMeasBand = (pSetMeasBand)GetProcAddress(hinst, "fnSetMeasBand");
 	pSetExit setExit = (pSetExit)GetProcAddress(hinst, "fnSetExit");
 	pSetImAvg setImAvg = (pSetImAvg)GetProcAddress(hinst, "fnSetImAvg");
@@ -118,7 +119,8 @@ void Test_dll(){
 			return;
 	}
 	
-	hwSetIsExtBand(FALSE);
+	//hwSetIsExtBand(FALSE);
+	hwSetExtFlag(JC_EXT_FLAG, "JCMBP");
 	double tx_freq, rx_freq;
 	if (setMeasBand(8) < 0) {
 		tx_freq = 729;

@@ -26,6 +26,8 @@
 #define JC_OFFSET_REAL 0
 #define JC_OFFSET_DSP 1
 
+#define JC_EXT_FLAG -1
+
 typedef void(*Callback_Get_RX_Offset_Point)(double offset_freq, double Offset_val);
 typedef void(*Callback_Get_TX_Offset_Point)(double offset_freq, double Offset_real_val, double Offset_dsp_val);
 
@@ -34,6 +36,8 @@ typedef int(*pTest)(int, int);
 typedef int(*pSetInit2)(const char*, const char*);
 typedef int(*pSetInit)(const char*);
 typedef void(*pHwSetIsExtBand)(BOOL);
+//JIONTCOM_API int HwSetExtFlag(int Build, const char* Flag);
+typedef int(*pHwSetExtFlag)(int, const char*);
 //JIONTCOM_API int fnSetExit();
 typedef int(*pSetExit)();
 //JIONTCOM_API int fnSetMeasBand(BYTE_ byBandIndex);

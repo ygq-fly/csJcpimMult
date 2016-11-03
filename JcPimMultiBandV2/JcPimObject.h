@@ -57,7 +57,7 @@ static int _tx_step = 1;
 static int _tx_adjust_count = 1;
 
 //false通用（无关是否有耦合器开关），true针对华为无耦合器开关
-static bool _tx_coup_enable = true;
+//static bool _tx_coup_enable = true;
 bool _tx_fast_mode = true;
 
 static int _rx_step = 1;
@@ -280,7 +280,7 @@ private:
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 
 		//INIT VCO_ENABLE
-		int len = sizeof(now_vco_enable) / sizeof(now_vco_enable[0]);
+		int len = sizeof(now_vco_enable) / sizeof(int);
 		for (int i = 0; i < len; i++){
 			wchar_t key[32] = { 0 };
 			swprintf_s(key, L"vco_band%d", i);
@@ -348,7 +348,7 @@ public:
 
 		_tx_no_power_limit = _tx_no_power_limit > 0 ? 0 : _tx_no_power_limit;
 
-		_tx_coup_enable = GetPrivateProfileIntW(L"Settings", L"tx_coup_enable", 1, wsPath_ini.c_str());
+		//_tx_coup_enable = GetPrivateProfileIntW(L"Settings", L"tx_coup_enable", 1, wsPath_ini.c_str());
 		_tx_adjust_count = GetPrivateProfileIntW(L"Settings", L"tx_adjust_count", _tx_adjust_count, wsPath_ini.c_str());
 		_tx_fast_mode = GetPrivateProfileIntW(L"Settings", L"tx_fast_mode", 1, wsPath_ini.c_str());
 
@@ -601,6 +601,11 @@ public:
 		//	(int)pim->im_order, (int)pim->im_low, (int)pim->im_less,
 		//	ord1, ord2);
 		return abs(dFreq);
+	}
+
+	bool GetCoupEnable(const uint8_t& MeasBand) {
+		JcInt8 byTemp = isUseExtBand ? GetExtBandToIntBand(MeasBand) : MeasBand;
+		return now_coup_enable[byTemp] != 0;
 	}
 
 	//???

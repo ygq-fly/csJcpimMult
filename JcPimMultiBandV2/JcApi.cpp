@@ -252,7 +252,7 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 			__pobj->strErrorInfo += ("DB Connected: " + std::to_string(isSqlConn) + "(JcOffset.db no find!)\r\n");
 
 		//启用接收外部频段
-		HwSetIsExtBand(TRUE);
+		HwSetExtFlag(-1, "ATE");
 
 		if (false == __pobj->isAllConn)
 			return JC_STATUS_ERROR;
@@ -263,7 +263,13 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 
 //设置外部频段（ATE请设true，其他false）
 void HwSetIsExtBand(JcBool isUse) {
-	if (isUse == FALSE) {
+	Util::logged(L"当前软件版本无法使用此DLL，请更新软件！");
+	fnSetExit();
+}
+
+//设置外部标识
+int HwSetExtFlag(int Build, const char* Flag) {
+	if (Build <= -1) {
 		__pobj->isUseExtBand = false;
 		__pobj->wstrLogFlag = L"MBP";
 	}
@@ -271,6 +277,7 @@ void HwSetIsExtBand(JcBool isUse) {
 		__pobj->isUseExtBand = true;
 		__pobj->wstrLogFlag = L"ATE";
 	}
+	return 0;
 }
 
 //释放
@@ -462,7 +469,7 @@ int fnSetTxPower(double dTxPower1, double dTxPower2,
 		rf1->pow_dbm = 43;
 		rf2->pow_dbm = 43;
 		rf1->offset_ext = dTxPower1 + dPowerOffset1 - 43;
-		rf2->offset_ext = dTxPower1 + dPowerOffset2 - 43;
+		rf2->offset_ext = dTxPower2 + dPowerOffset2 - 43;
 	}
 
 	return 0;
@@ -508,12 +515,11 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
 		//切换耦合器tx2开关
-		if (_tx_coup_enable) {
-			if (HwSetCoup(JC_COUP_TX2) == FALSE) {
-				fnSetTxOn(false, JC_CARRIER_TX1TX2);
-				return -10000;
-			}
+		if (HwSetCoup(JC_COUP_TX2) == FALSE) {
+			fnSetTxOn(false, JC_CARRIER_TX1TX2);
+			return -10000;
 		}
+
 		//检测tx2功率平稳度
 		js = HwGetSig_Smooth(rf2->dd, JC_CARRIER_TX2);
 		if (js <= -10000) {
@@ -533,11 +539,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
 		//切换耦合器tx1开关
-		if (_tx_coup_enable) {
-			if (HwSetCoup(JC_COUP_TX1) == FALSE) {
-				fnSetTxOn(false, JC_CARRIER_TX1TX2);
-				return -10000;
-			}
+		if (HwSetCoup(JC_COUP_TX1) == FALSE) {
+			fnSetTxOn(false, JC_CARRIER_TX1TX2);
+			return -10000;
 		}
 
 		//检测tx1功率平稳度
@@ -735,11 +739,19 @@ void HwSetBandEnable(int iBand, JcBool isEnable) {
 
 //设置当前功放的耦合器
 JcBool HwSetCoup(JcInt8 byCoup) {
+	if (!__pobj->GetCoupEnable(byCoup == JC_COUP_TX1 ? rf1->band : rf2->band)) {
+		char cLog[256] = { 0 };
+		__pobj->WriteClDebug("Set Coup-" + std::to_string(byCoup) + ": CoupEnale = 0\r\n");
+		return true;
+	}
+	__pobj->WriteClDebug("Set Coup-" + std::to_string(byCoup) + "): CoupEnale = 1\r\n");
 	//int iSwitch = __pobj->now_band * 2 + __pobj->now_dut_port;
 	JcBool r = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, byCoup);
 	Util::setSleep(_coup_delay);
-	if (FALSE == r) 
-		Util::logged(L"HwSetCoup: set Coup fail! (Coup-%d)", (int)byCoup);		
+	if (FALSE == r)  {
+		__pobj->WriteClDebug("   (return: set Coup fail)\r\n");
+		Util::logged(L"HwSetCoup(Coup-%d): set Coup fail!", (int)byCoup);
+	}
 	return r;
 }
 
@@ -890,22 +902,22 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 			else {
 				//检测错误后，尝试重启信号源
 				__pobj->WriteClDebug("   (Try to restart!)\r\n");
-				if (_tx_coup_enable){
-					fnSetTxOn(false);
-					JcNeedRetSwitch();
-					if (byCarrier == JC_CARRIER_TX1) {
-						//尝试抖动
-						HwSetCoup(JC_COUP_TX2);
-						HwSetCoup(JC_COUP_TX1);
-					}
-					else if (byCarrier == JC_CARRIER_TX2) {
-						//尝试抖动
-						HwSetCoup(JC_COUP_TX1);
-						HwSetCoup(JC_COUP_TX2);
-					}
-					fnSetTxOn(true);
-					Util::setSleep(_reset_delay);
+				fnSetTxOn(false);
+				JcNeedRetSwitch();
+				if (byCarrier == JC_CARRIER_TX1) {
+					//尝试抖动
+					HwSetCoup(JC_COUP_TX2);
+					HwSetCoup(JC_COUP_TX1);
+					fnSetTxOn(true, JC_CARRIER_TX1);
 				}
+				else if (byCarrier == JC_CARRIER_TX2) {
+					//尝试抖动
+					HwSetCoup(JC_COUP_TX1);
+					HwSetCoup(JC_COUP_TX2);
+					fnSetTxOn(true, JC_CARRIER_TX2);
+				}				
+				Util::setSleep(_reset_delay);
+				__pobj->WriteClDebug("   (Complete restart!)\r\n");
 				i--;
 				continue;
 			}
