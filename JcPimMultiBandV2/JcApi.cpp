@@ -426,12 +426,12 @@ int fnCheckReceiveChannel(JcInt8 byBandIndex, JcInt8 byPort) {
 	//开始测量
 	double real_val = 0;
 	double vco_val = 0;
-	if (HwGet_Vco(real_val, vco_val) == FALSE){
+	if (HwGet_Vco(real_val, vco_val) == FALSE) {
 		Util::logged(L"fnVco: check VCO fail! (%lf)", real_val - vco_val);
 		return JC_STATUS_ERROR_CHECK_VCO_FAIL;	
 	}
-	else
-		return 0;
+
+	return 0;
 }
 
 //时钟同步检测(针对ATE)
@@ -486,9 +486,12 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
 
 	char cLog[256] = { 0 };
-	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\nP1 = %lf, P2 = %lf\r\noffset1 = %lf, offset2 = %lf\r\n",
+	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\n"
+		"P1 = %lf(%lf), P2 = %lf(%lf)\r\n"
+		"offset1 = %lf, offset2 = %lf\r\n",
 		rf1->freq_khz / 1000, rf2->freq_khz / 1000,
-		rf1->offset_int + rf1->pow_dbm, rf2->offset_int + rf2->pow_dbm,
+		rf1->offset_int + rf1->pow_dbm, rf1->pow_dbm,
+		rf2->offset_int + rf2->pow_dbm, rf2->pow_dbm,
 		rf1->offset_ext, rf2->offset_ext);
 	__pobj->WriteClDebug(cLog);
 	__pobj->WriteClDebug("   pim_band: " + std::to_string(pim->band) + "   name: " + __pobj->GetBandString(pim->band) + "\r\n");
@@ -505,7 +508,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
 		//切换耦合器tx2开关
-		if (!_tx_no_coup_switch) {
+		if (_tx_coup_enable) {
 			if (HwSetCoup(JC_COUP_TX2) == FALSE) {
 				fnSetTxOn(false, JC_CARRIER_TX1TX2);
 				return -10000;
@@ -530,7 +533,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
 		//切换耦合器tx1开关
-		if (!_tx_no_coup_switch) {
+		if (_tx_coup_enable) {
 			if (HwSetCoup(JC_COUP_TX1) == FALSE) {
 				fnSetTxOn(false, JC_CARRIER_TX1TX2);
 				return -10000;
@@ -887,7 +890,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 			else {
 				//检测错误后，尝试重启信号源
 				__pobj->WriteClDebug("   (Try to restart!)\r\n");
-				if (!_tx_no_coup_switch){
+				if (_tx_coup_enable){
 					fnSetTxOn(false);
 					JcNeedRetSwitch();
 					if (byCarrier == JC_CARRIER_TX1) {
@@ -1079,14 +1082,14 @@ JcBool JcGetVcoDsp(JC_RETURN_VALUE vco, JcInt8 bySwitchBand) {
 	double vco_freq_mhz; 
 	if (__pobj->now_mode == MODE_POI) {
 		int band = bySwitchBand / 2;
-		vco_freq_mhz = __pobj->now_mode_bandset[band].vco_a;
+		vco_freq_mhz = __pobj->now_mode_bandset[band]->vco_a;
 	}
 	else  {
 		int band = bySwitchBand / 2;
 		if ((bySwitchBand % 2) == 0)
-			vco_freq_mhz = __pobj->now_mode_bandset[band].vco_a;
+			vco_freq_mhz = __pobj->now_mode_bandset[band]->vco_a;
 		else
-			vco_freq_mhz = __pobj->now_mode_bandset[band].vco_b;
+			vco_freq_mhz = __pobj->now_mode_bandset[band]->vco_b;
 
 		if (__pobj->now_mode == MODE_HUAWEI && vco_freq_mhz == 0) {
 			if (bySwitchBand == 14)
@@ -1200,7 +1203,7 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	if (byCarrier == JC_CARRIER_TX1) {
 		rf1->offset_int = internal_offset;
 		//微调
-		tx_true += __pobj->now_mode_bandset[rf->band].fine_adjust1;
+		tx_true += __pobj->now_mode_bandset[rf->band]->fine_adjust1;
 		bool b = __pobj->sig1->InstrSetFreqPow(freq_khz, tx_true);
 		if (false == b) {
 			Util::logged(L"JcSetSig_Adv: set sig fail! (sig-%d)", (int)byCarrier);
@@ -1210,7 +1213,7 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	else if (byCarrier == JC_CARRIER_TX2){
 		rf2->offset_int = internal_offset;
 		//微调
-		tx_true += __pobj->now_mode_bandset[rf->band].fine_adjust1;
+		tx_true += __pobj->now_mode_bandset[rf->band]->fine_adjust1;
 		bool b = __pobj->sig2->InstrSetFreqPow(freq_khz, tx_true);
 		if (false == b) {
 			Util::logged(L"JcSetSig_Adv: set sig fail! (sig-%d)", (int)byCarrier);
@@ -1314,16 +1317,16 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 		//int coup2 = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
 		//coup = iSwitchCoup == JC_COUP_TX1 ? coup1 : coup2;
 		if (iSwitchCoup == JC_COUP_TX1 && temp_iSwitchTx1 >= 0)
-			coup = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
+			coup = __pobj->now_mode_bandset[temp_iSwitchTx1]->switch_coup1;
 		else if (iSwitchCoup == JC_COUP_TX2 && temp_iSwitchTx2 >= 0)
-			coup = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
+			coup = __pobj->now_mode_bandset[temp_iSwitchTx2]->switch_coup2;
 		else 
 			coup = -1;
 
 		//根据tx_enable重设
-		if (!__pobj->now_mode_bandset[temp_iSwitchTx1].tx1_enable)
+		if (!__pobj->now_mode_bandset[temp_iSwitchTx1]->tx1_enable)
 			iSwitchTx1 = -1;
-		if (!__pobj->now_mode_bandset[temp_iSwitchTx2].tx2_enable)
+		if (!__pobj->now_mode_bandset[temp_iSwitchTx2]->tx2_enable)
 			iSwitchTx2 = -1;
 
 	} else {
@@ -1355,11 +1358,11 @@ JcBool JcGetChannelEnable(int channel_num) {
 	switch (channel_num)
 	{
 	case 1:
-		return __pobj->now_mode_bandset[rf1->band].tx1_enable;
+		return __pobj->now_mode_bandset[rf1->band]->tx1_enable;
 	case 2:
-		return __pobj->now_mode_bandset[rf2->band].tx2_enable;
+		return __pobj->now_mode_bandset[rf2->band]->tx2_enable;
 	case 3:
-		return __pobj->now_mode_bandset[pim->band].rx_enable;
+		return __pobj->now_mode_bandset[pim->band]->rx_enable;
 	default:
 		break;
 	}
@@ -1396,7 +1399,7 @@ JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 						JcInt8 byInternalBand, JcInt8 byDutPort,
 						double freq_mhz){
 	//检查当前频段是否允许
-	if (__pobj->now_mode_bandset[byInternalBand].rx_enable == FALSE) {
+	if (__pobj->now_mode_bandset[byInternalBand]->rx_enable == FALSE) {
 		__pobj->strErrorInfo = "GetRxOffset: rx channel can not used";
 		return JC_STATUS_ERROR;
 	}
@@ -1535,9 +1538,9 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 						double freq_mhz, double tx_dbm) {
 
 	//检查当前频段是否允许
-	JcBool tx_enable = coup == JC_DUTPORT_A ? 
-		__pobj->now_mode_bandset[byInternalBand].tx1_enable : 
-		__pobj->now_mode_bandset[byInternalBand].tx2_enable;
+	JcBool tx_enable = coup == JC_DUTPORT_A ?
+		__pobj->now_mode_bandset[byInternalBand]->tx1_enable:
+		__pobj->now_mode_bandset[byInternalBand]->tx2_enable;
 	if (tx_enable == FALSE) {
 		__pobj->strErrorInfo = "GetTxOffset: tx channel can not used, tx" + std::to_string(coup + 1);
 		return JC_STATUS_ERROR;

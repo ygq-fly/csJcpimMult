@@ -57,7 +57,7 @@ static int _tx_step = 1;
 static int _tx_adjust_count = 1;
 
 //false通用（无关是否有耦合器开关），true针对华为无耦合器开关
-static bool _tx_no_coup_switch = false;
+static bool _tx_coup_enable = true;
 bool _tx_fast_mode = true;
 
 static int _rx_step = 1;
@@ -190,7 +190,8 @@ struct JcPimObject
 #define TIMEOUT_VALUE 10000
 public:
 	//vco??????????
-	int now_vco_enable[10];
+	int now_vco_enable[15];
+	int now_coup_enable[15];
 
 	//vco门限
 	double now_vco_threasold;
@@ -207,7 +208,7 @@ public:
 	//bande_set
 	//仪表物理模块频段信息，按仪表物理模块安装循序
 	//开关切换后rf和pim工作模块将调用该信息
-	std::vector<JcBandModule> now_mode_bandset;
+	std::vector<std::shared_ptr<JcBandModule>> now_mode_bandset;
 	//band_number
 	std::string now_band_prefix;
 	int now_num_band;
@@ -274,18 +275,22 @@ private:
 		for (int i = 0; i < 5; ++i) {
 			device_status[i] = false;
 		}
-		for (int i = 0; i < 10; ++i){
-			now_vco_enable[i] = 1;
-		}
 
 		//SET INI PATH
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
 
 		//INIT VCO_ENABLE
-		for (int i = 0; i < 7; i++){
-			wchar_t key[10] = { 0 };
+		int len = sizeof(now_vco_enable) / sizeof(now_vco_enable[0]);
+		for (int i = 0; i < len; i++){
+			wchar_t key[32] = { 0 };
 			swprintf_s(key, L"vco_band%d", i);
 			now_vco_enable[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
+		}
+		//INIT COUP_ENABLE
+		for (int i = 0; i < len; i++){
+			wchar_t key[32] = { 0 };
+			swprintf_s(key, L"coup_band%d", i);
+			now_coup_enable[i] = GetPrivateProfileIntW(L"COUP_Enable", key, 1, wsPath_ini.c_str());
 		}
 
 		//GET PATH
@@ -343,7 +348,7 @@ public:
 
 		_tx_no_power_limit = _tx_no_power_limit > 0 ? 0 : _tx_no_power_limit;
 
-		_tx_no_coup_switch = GetPrivateProfileIntW(L"Settings", L"tx_no_coup_switch", 0, wsPath_ini.c_str());
+		_tx_coup_enable = GetPrivateProfileIntW(L"Settings", L"tx_coup_enable", 1, wsPath_ini.c_str());
 		_tx_adjust_count = GetPrivateProfileIntW(L"Settings", L"tx_adjust_count", _tx_adjust_count, wsPath_ini.c_str());
 		_tx_fast_mode = GetPrivateProfileIntW(L"Settings", L"tx_fast_mode", 1, wsPath_ini.c_str());
 
@@ -422,33 +427,34 @@ public:
 				return false;
 			}
 			//初始化频段信息
-			JcBandModule bm;
-			bm.band_name = band_items[1];
+			//JcBandModule* bm = new JcBandModule;
+			std::shared_ptr<JcBandModule> bm = std::make_shared<JcBandModule>();
+			bm->band_name = band_items[1];
 
-			bm.tx1_start = atof(band_items[2].c_str());
-			bm.tx1_stop = atof(band_items[3].c_str());
-			bm.tx2_start = bm.tx1_start;
-			bm.tx2_stop = bm.tx1_stop;
-			bm.rx_start = atof(band_items[4].c_str());
-			bm.rx_stop = atof(band_items[5].c_str());
+			bm->tx1_start = atof(band_items[2].c_str());
+			bm->tx1_stop = atof(band_items[3].c_str());
+			bm->tx2_start = bm->tx1_start;
+			bm->tx2_stop = bm->tx1_stop;
+			bm->rx_start = atof(band_items[4].c_str());
+			bm->rx_stop = atof(band_items[5].c_str());
 
-			bm.vco_a = atof(band_items[6].c_str());
-			bm.vco_b = atof(band_items[7].c_str());
+			bm->vco_a = atof(band_items[6].c_str());
+			bm->vco_b = atof(band_items[7].c_str());
 
 			int channel_enable = std::stoi(band_items[8].c_str(), 0, 16);
-			bm.tx1_enable = (channel_enable & 0x100) >> 8;
-			bm.tx2_enable = (channel_enable & 0x010) >> 4;
-			bm.rx_enable = channel_enable & 0x001;
-			bm.switch_coup1 = atoi(band_items[9].c_str()) -1;
-			bm.switch_coup2 = atoi(band_items[10].c_str()) -1;
+			bm->tx1_enable = (channel_enable & 0x100) >> 8;
+			bm->tx2_enable = (channel_enable & 0x010) >> 4;
+			bm->rx_enable = channel_enable & 0x001;
+			bm->switch_coup1 = atoi(band_items[9].c_str()) - 1;
+			bm->switch_coup2 = atoi(band_items[10].c_str()) - 1;
 
 			wchar_t keyname[64] = { 0 };
 			swprintf_s(keyname, L"band%d_tx1", i);
-			bm.fine_adjust1 = Util::getIniDouble(L"Adjust", keyname, 0, ini_Path.c_str());
+			bm->fine_adjust1 = Util::getIniDouble(L"Adjust", keyname, 0, ini_Path.c_str());
 
 			memset(keyname, 0x00, sizeof(keyname));
 			swprintf_s(keyname, L"band%d_tx2", i);
-			bm.fine_adjust2 = Util::getIniDouble(L"Adjust", keyname, 0, ini_Path.c_str());
+			bm->fine_adjust2 = Util::getIniDouble(L"Adjust", keyname, 0, ini_Path.c_str());
 
 			now_mode_bandset.push_back(bm);
 		}
@@ -552,7 +558,7 @@ public:
 		//case 6: sband = "LTE2600"; break;
 		//default:return "LTE700";
 		//}
-		return now_mode_bandset[MeasBand].band_name;
+		return now_mode_bandset[MeasBand]->band_name;
 	}
 
 	//各种互调公式计算(15/6/5新加)
@@ -680,7 +686,7 @@ public:
 				if (time1 != -1 && time2 != -1 && time3 != -1) {
 					if (time2 >= time1) {
 						if (time2 <= time3) {
-							int iDay = ceil((time2 - time1) / 84600.0);
+							int iDay = ceil((time2 - time1) / 86400.0);
 							if (atoi(Day.c_str()) <= iDay) {
 								std::string strAuthorValueToWrite = Dates + "#" + Datee + "#" + Type + "#" + Days + "#" + 
 									std::to_string(iDay) + "#" + Needcheck;
