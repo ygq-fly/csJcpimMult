@@ -54,8 +54,12 @@ static int _vco_delay = 100;
 //设置相关
 static int _free_tx_enable = 1;
 static int _tx_step = 1;
-static int _tx_adjust_count = 4;
+static int _tx_adjust_count = 1;
+
+//false通用（无关是否有耦合器开关），true针对华为无耦合器开关
 static bool _tx_no_coup_switch = false;
+bool _tx_fast_mode = true;
+
 static int _rx_step = 1;
 static int _pim_avg = 1;
 //sig的rosc
@@ -105,7 +109,7 @@ struct JcBandModule {
 	//功率范围
 	double power_min;
 	double power_max;
-	//
+	//微调
 	double fine_adjust1;
 	double fine_adjust2;
 };
@@ -237,7 +241,7 @@ public:
 	//数据库
 	JcOffsetDB offset;
 	//调整标识
-	bool isNeedSmooth;
+	bool isAdjust;
 
 	//外部传感器(预留)
 	bool isExtSenConn;
@@ -258,7 +262,7 @@ private:
 		, isExtSenConn(false)
 		, ext_sen_index(0)
 		, wstrLogFlag(L"MBP")
-		, isNeedSmooth(true)
+		, isAdjust(true)
 		, offset()
 	{
 		//INIT
@@ -309,6 +313,7 @@ private:
 public:
 	void InitConfig() {
 		std::wstring wsPath_ini = _startPath + L"\\JcConfig.ini";
+		//读取配置
 		_debug_enable = GetPrivateProfileIntW(L"Settings", L"tx_debug", 0, wsPath_ini.c_str());
 		_free_tx_enable = GetPrivateProfileIntW(L"Settings", L"tx_limit", 1, wsPath_ini.c_str());
 
@@ -340,8 +345,9 @@ public:
 
 		_tx_no_coup_switch = GetPrivateProfileIntW(L"Settings", L"tx_no_coup_switch", 0, wsPath_ini.c_str());
 		_tx_adjust_count = GetPrivateProfileIntW(L"Settings", L"tx_adjust_count", _tx_adjust_count, wsPath_ini.c_str());
-		//防止tx_delay小于200
+		_tx_fast_mode = GetPrivateProfileIntW(L"Settings", L"tx_fast_mode", 1, wsPath_ini.c_str());
 
+		//最低数值保护
 		_protect_tx = _protect_tx > OFFSET_PROTECT_TX ? OFFSET_PROTECT_TX : _protect_tx;
 		_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
 		_protect_rx = _protect_rx > 0 ? OFFSET_PROTECT_RX : _protect_rx;

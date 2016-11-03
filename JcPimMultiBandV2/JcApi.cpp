@@ -330,7 +330,7 @@ int HwSetDutPort(JcInt8 byPortTx1, JcInt8 byPortTx2, JcInt8 byPortRx) {
 	if (byPortTx1 > 2 || byPortTx2 > 2) return JC_STATUS_ERROR_SET_SWITCH_FAIL;
 
 	//dd调整值清空
-	__pobj->isNeedSmooth = true;
+	__pobj->isAdjust = true;
 	rf1->dd = 0;
 	rf2->dd = 0;
 
@@ -468,7 +468,7 @@ int fnSetTxPower(double dTxPower1, double dTxPower2,
 	return 0;
 }
 
-//设置频率(针对ATE)
+//设置频率(针对华为ATE优化)
 JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT cUnits) {
 	//单位转换
 	rf1->freq_khz = __pobj->TransKhz(dCarrierFreq1, cUnits);
@@ -496,7 +496,7 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	__pobj->WriteClDebug("   rf_dd1: " + std::to_string(rf1->dd) + "   rf_dd2: " + std::to_string(rf2->dd) + "\r\n");
 
 	//dd调整标识
-	if (__pobj->isNeedSmooth) {
+	if (__pobj->isAdjust) {
 		//---------------------------------------------------------------------------------
 		//开启功放2
 		js = fnSetTxOn(false, JC_CARRIER_TX1);
@@ -504,12 +504,13 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		js = fnSetTxOn(true, JC_CARRIER_TX2);
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
-		//切换耦合器tx2开关(保护多切一次)
-		//if (HwSetCoup(JC_COUP_TX2) == FALSE) {
-		//	//关闭功放
-		//	fnSetTxOn(false, JC_CARRIER_TX1TX2);
-		//	return -10000;
-		//}
+		//切换耦合器tx2开关
+		if (!_tx_no_coup_switch) {
+			if (HwSetCoup(JC_COUP_TX2) == FALSE) {
+				fnSetTxOn(false, JC_CARRIER_TX1TX2);
+				return -10000;
+			}
+		}
 		//检测tx2功率平稳度
 		js = HwGetSig_Smooth(rf2->dd, JC_CARRIER_TX2);
 		if (js <= -10000) {
@@ -528,10 +529,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		js = fnSetTxOn(false, JC_CARRIER_TX2);
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
+		//切换耦合器tx1开关
 		if (!_tx_no_coup_switch) {
-			//切换耦合器tx1开关
 			if (HwSetCoup(JC_COUP_TX1) == FALSE) {
-				//关闭功放
 				fnSetTxOn(false, JC_CARRIER_TX1TX2);
 				return -10000;
 			}
@@ -554,15 +554,15 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 		js = fnSetTxOn(false, JC_CARRIER_TX1TX2);
 		if (0 != js) return js;
 
-		__pobj->isNeedSmooth = false;
+		__pobj->isAdjust = false;
 	}
 	//---------------------------------------------------------------------------------
-	if (_tx_no_coup_switch) {
-		__pobj->isNeedSmooth = true;
+	if (!_tx_fast_mode) {
+		__pobj->isAdjust = true;
 		rf1->dd = 0;
 		rf1->dd = 0;
 	}
-	
+
 	return 0;
 }
 
@@ -586,9 +586,12 @@ JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	//pim->freq_khz = __pobj->GetPimFreq();
 	//__pobj->ana->InstrSetCenterFreq(pim->freq_khz);
 	char cLog[256] = { 0 };
-	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\nP1 = %lf, P2 = %lf\r\noffset1 = %lf, offset2 = %lf\r\n",
+	sprintf_s(cLog, "\r\nF1 = %lf, F2 = %lf\r\n"
+						"P1 = %lf(%lf), P2 = %lf(%lf)\r\n"
+						"offset1 = %lf, offset2 = %lf\r\n",
 		rf1->freq_khz / 1000, rf2->freq_khz / 1000, 
-		rf1->offset_int + rf1->pow_dbm, rf2->offset_int + rf2->pow_dbm,
+		rf1->offset_int + rf1->pow_dbm, rf1->pow_dbm,
+		rf2->offset_int + rf2->pow_dbm, rf2->pow_dbm,
 		rf1->offset_ext, rf2->offset_ext);
 	__pobj->WriteClDebug(cLog);
 
@@ -821,71 +824,6 @@ JcBool HwGet_Vco(double& real_val, double& vco_val) {
 	return b;
 }
 
-JC_STATUS HwGetSig_Smooth_All(JC_RETURN_VALUE dd1, JC_RETURN_VALUE dd2, JC_RETURN_VALUE dsp1, JC_RETURN_VALUE dsp2) {
-	JC_STATUS js;
-	//---------------------------------------------------------------------------------
-	//开启功放2
-	js = fnSetTxOn(false, JC_CARRIER_TX1);
-	if (0 != js) return js;
-	js = fnSetTxOn(true, JC_CARRIER_TX2);
-	if (0 != js) return js;
-	//---------------------------------------------------------------------------------
-	//切换耦合器tx2开关(保护多切一次)
-	//if (HwSetCoup(JC_COUP_TX2) == FALSE) {
-	//	//关闭功放
-	//	fnSetTxOn(false, JC_CARRIER_TX1TX2);
-	//	return -10000;
-	//}
-	//检测tx2功率平稳度
-	js = HwGetSig_Smooth(dd1, JC_CARRIER_TX2);
-	if (js <= -10000) {
-		//关闭功放
-		fnSetTxOn(false, JC_CARRIER_TX1TX2);
-		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged(_T("fnSetTxFreqs: TX2未检测到功率！请检功率输出！"));
-		else
-			Util::logged(_T("fnSetTxFreqs: TX2功率偏差过大！"));
-		return js;
-	}
-	dsp2 = HwGetCoup_Dsp(JC_COUP_TX2);
-	//---------------------------------------------------------------------------------
-	//开启功放1
-	js = fnSetTxOn(true, JC_CARRIER_TX1);
-	if (0 != js) return js;
-	js = fnSetTxOn(false, JC_CARRIER_TX2);
-	if (0 != js) return js;
-	//---------------------------------------------------------------------------------
-	if (!_tx_no_coup_switch) {
-		//切换耦合器tx1开关
-		if (HwSetCoup(JC_COUP_TX1) == FALSE) {
-			//关闭功放
-			fnSetTxOn(false, JC_CARRIER_TX1TX2);
-			return -10000;
-		}
-	}
-
-	//检测tx1功率平稳度
-	js = HwGetSig_Smooth(dd2, JC_CARRIER_TX1);
-	if (js <= -10000) {
-		//关闭功放
-		fnSetTxOn(false, JC_CARRIER_TX1TX2);
-		if (js == JC_STATUS_ERROR_NO_FIND_POWER)
-			Util::logged(_T("fnSetTxFreqs: TX1未检测到功率！请检功率输出！"));
-		else
-			Util::logged(_T("fnSetTxFreqs: TX1功率偏差过大！"));
-
-		return js;
-	}
-	dsp1 = HwGetCoup_Dsp(JC_COUP_TX2);
-	//---------------------------------------------------------------------------------
-	//关闭功放
-	js = fnSetTxOn(false, JC_CARRIER_TX1TX2);
-	if (0 != js) return js;
-
-	__pobj->isNeedSmooth = false;
-	return 0;
-}
-
 //检测功放稳定度(必须功放开启后检测) return dd
 JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 	//初始化dd
@@ -910,7 +848,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 	for (int i = 0; i < _tx_adjust_count; i++) {
 		__pobj->WriteClDebug("   No.: " + std::to_string(i + 1) + "\r\n");
 		if (i == 0)
-			Util::setSleep(_tx_delay);
+			Util::setSleep(_tx_delay + 200);
 		if (byCarrier == JC_CARRIER_TX1) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
 			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;	
