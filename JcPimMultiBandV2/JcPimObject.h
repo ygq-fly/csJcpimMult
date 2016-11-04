@@ -112,6 +112,9 @@ struct JcBandModule {
 	//微调
 	double fine_adjust1;
 	double fine_adjust2;
+	//enable
+	bool vco_enable;
+	bool coup_enable;
 };
 
 //rf发射模块参数类
@@ -287,11 +290,11 @@ private:
 			now_vco_enable[i] = GetPrivateProfileIntW(L"VCO_Enable", key, 1, wsPath_ini.c_str());
 		}
 		//INIT COUP_ENABLE
-		for (int i = 0; i < len; i++){
-			wchar_t key[32] = { 0 };
-			swprintf_s(key, L"coup_band%d", i);
-			now_coup_enable[i] = GetPrivateProfileIntW(L"COUP_Enable", key, 1, wsPath_ini.c_str());
-		}
+		//for (int i = 0; i < len; i++){
+		//	wchar_t key[32] = { 0 };
+		//	swprintf_s(key, L"coup_band%d", i);
+		//	now_coup_enable[i] = GetPrivateProfileIntW(L"COUP_Enable", key, 1, wsPath_ini.c_str());
+		//}
 
 		//GET PATH
 		wchar_t temp[1024] = { 0 };
@@ -431,6 +434,7 @@ public:
 			std::shared_ptr<JcBandModule> bm = std::make_shared<JcBandModule>();
 			bm->band_name = band_items[1];
 
+			//REAL字段
 			bm->tx1_start = atof(band_items[2].c_str());
 			bm->tx1_stop = atof(band_items[3].c_str());
 			bm->tx2_start = bm->tx1_start;
@@ -441,13 +445,20 @@ public:
 			bm->vco_a = atof(band_items[6].c_str());
 			bm->vco_b = atof(band_items[7].c_str());
 
+			//TEXT字段
 			int channel_enable = std::stoi(band_items[8].c_str(), 0, 16);
 			bm->tx1_enable = (channel_enable & 0x100) >> 8;
 			bm->tx2_enable = (channel_enable & 0x010) >> 4;
 			bm->rx_enable = channel_enable & 0x001;
+
+			//INTEGER字段
 			bm->switch_coup1 = atoi(band_items[9].c_str()) - 1;
 			bm->switch_coup2 = atoi(band_items[10].c_str()) - 1;
 
+			bm->vco_enable = atoi(band_items[11].c_str());
+			bm->coup_enable = atoi(band_items[12].c_str());
+
+			//ini配置
 			wchar_t keyname[64] = { 0 };
 			swprintf_s(keyname, L"band%d_tx1", i);
 			bm->fine_adjust1 = Util::getIniDouble(L"Adjust", keyname, 0, ini_Path.c_str());
@@ -605,7 +616,8 @@ public:
 
 	bool GetCoupEnable(const uint8_t& MeasBand) {
 		JcInt8 byTemp = isUseExtBand ? GetExtBandToIntBand(MeasBand) : MeasBand;
-		return now_coup_enable[byTemp] != 0;
+		//return now_coup_enable[byTemp] != 0;
+		return now_mode_bandset[byTemp]->coup_enable;
 	}
 
 	//???

@@ -741,10 +741,10 @@ void HwSetBandEnable(int iBand, JcBool isEnable) {
 JcBool HwSetCoup(JcInt8 byCoup) {
 	if (!__pobj->GetCoupEnable(byCoup == JC_COUP_TX1 ? rf1->band : rf2->band)) {
 		char cLog[256] = { 0 };
-		__pobj->WriteClDebug("Set Coup-" + std::to_string(byCoup) + ": CoupEnale = 0\r\n");
+		__pobj->WriteClDebug("Set Coup-" + std::to_string(byCoup) + ": enale = 0\r\n");
 		return true;
 	}
-	__pobj->WriteClDebug("Set Coup-" + std::to_string(byCoup) + "): CoupEnale = 1\r\n");
+	__pobj->WriteClDebug("Set Coup-" + std::to_string(byCoup) + "): enale = 1\r\n");
 	//int iSwitch = __pobj->now_band * 2 + __pobj->now_dut_port;
 	JcBool r = JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, byCoup);
 	Util::setSleep(_coup_delay);

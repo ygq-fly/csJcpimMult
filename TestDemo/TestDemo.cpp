@@ -152,6 +152,7 @@ void Test_dll(){
 	//setTxOn(true, 0);
 	//double dd = 0;
 	//int n =hwGetSig_Smooth(dd, 1);
+	//hwSetCoup(JC_COUP_TX1);
 
 	//setTxFreqs(830,960,)
 	//double pim_freq, pim_val;

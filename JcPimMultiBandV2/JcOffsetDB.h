@@ -17,7 +17,7 @@
 #define OFFSET_RX 1
 #define OFFSET_REAL 0
 #define OFFSET_DSP 1
-#define VERSION_BAND "2.1"
+#define VERSION_BAND "3.0"
 //#define JC_SQL_DEBUG
 
 enum 

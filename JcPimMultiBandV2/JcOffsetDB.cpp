@@ -70,6 +70,12 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	if (!IsExist(m_band_info_table.c_str()))
 		ExecSql(sql_table);
 
+	if (GetColCount(m_band_info_table.c_str()) == 11) {
+		//扩充2个字段
+		ExecSql("ALTER TABLE JC_BAND2_INFO ADD COLUMN vco_enable INTEGER NOT NULL  DEFAULT 1");
+		ExecSql("ALTER TABLE JC_BAND2_INFO ADD COLUMN coup_enable INTEGER NOT NULL  DEFAULT 1");
+	}
+
 	//华为模式
 	std::string hw_sql_param[8] = huawei_sql_body;
 	std::string hw_band_table_sql = sql_header + hw_sql_param[0];
@@ -741,7 +747,7 @@ bool JcOffsetDB::ExecSql(const char* sql) {
 
 int JcOffsetDB::GetColCount(const char* table) {
 	char sql[128] = { 0 };
-	sprintf_s(sql, "select * from '%s' where rowid = 1", table);
+	sprintf_s(sql, "select * from '%s' limit 1", table);
 	int n = 0;
 	sqlite3_stmt* pstmt = NULL;
 	sqlite3_prepare(m_pConn, sql, -1, &pstmt, NULL);
