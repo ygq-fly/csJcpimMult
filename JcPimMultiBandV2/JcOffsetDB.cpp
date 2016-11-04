@@ -246,9 +246,16 @@ int JcOffsetDB::GetBandInfo(const char* prefix, char* band_info) {
 	std::string str_band_info = "";
 	while (sqlite3_step(pstmt) == SQLITE_ROW)
 	{
+		std::string temp;
 		int n = sqlite3_column_count(pstmt);
 		for (int i = 0; i < n; i++) {
-			std::string temp = reinterpret_cast<const char*>(sqlite3_column_text(pstmt, i));
+			const unsigned char * cell = sqlite3_column_text(pstmt, i);
+
+			if (cell)
+				temp.assign(reinterpret_cast<const char*>(cell));
+			else
+				temp.assign("");
+
 			if (i == (n - 1))
 				str_band_info += temp;
 			else
