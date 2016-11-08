@@ -132,6 +132,8 @@
 // remove fnSetFreq delay
 //(build 379)
 //add config: spe_pim_att,spe_offset_att 
+//(build 390)
+//for no switch
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -269,7 +271,7 @@ void HwSetIsExtBand(JcBool isUse) {
 
 //设置外部标识
 int HwSetExtFlag(int Build, const char* Flag) {
-	if (Build <= -1) {
+	if (Build > 0) {
 		__pobj->isUseExtBand = false;
 		__pobj->wstrLogFlag = L"MBP";
 	}
