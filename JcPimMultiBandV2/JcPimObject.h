@@ -55,10 +55,11 @@ static int _vco_delay = 100;
 static int _free_tx_enable = 1;
 static int _tx_step = 1;
 static int _tx_adjust_count = 1;
+static int _tx_sensor_count = 2;
 
 //false通用（无关是否有耦合器开关），true针对华为无耦合器开关
 //static bool _tx_coup_enable = true;
-bool _tx_fast_mode = true;
+bool _tx_fast_mode = false;
 
 static int _rx_step = 1;
 static int _pim_avg = 1;
@@ -353,7 +354,8 @@ public:
 
 		//_tx_coup_enable = GetPrivateProfileIntW(L"Settings", L"tx_coup_enable", 1, wsPath_ini.c_str());
 		_tx_adjust_count = GetPrivateProfileIntW(L"Settings", L"tx_adjust_count", _tx_adjust_count, wsPath_ini.c_str());
-		_tx_fast_mode = GetPrivateProfileIntW(L"Settings", L"tx_fast_mode", 1, wsPath_ini.c_str());
+		_tx_sensor_count = GetPrivateProfileIntW(L"Settings", L"tx_sensor_count", _tx_sensor_count, wsPath_ini.c_str());
+		_tx_fast_mode = GetPrivateProfileIntW(L"Settings", L"tx_fast_mode", 0, wsPath_ini.c_str());
 
 		//最低数值保护
 		_protect_tx = _protect_tx > OFFSET_PROTECT_TX ? OFFSET_PROTECT_TX : _protect_tx;
@@ -372,6 +374,7 @@ public:
 		_spe_preamp = _spe_preamp == 0 ? 0 : 1;
 
 		_tx_adjust_count = _tx_adjust_count < 1 ? 1 : _tx_adjust_count;
+		_tx_sensor_count = _tx_sensor_count < 1 ? 1 : _tx_sensor_count;
 
 		wchar_t wcSerial[1024] = { 0 };
 		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());

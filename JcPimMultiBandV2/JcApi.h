@@ -155,6 +155,7 @@ JIONTCOM_API JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier);
 /////////////////////////////////////////////////////////////////////////////////////////////
 //À©Õ¹API
 /////////////////////////////////////////////////////////////////////////////////////////////
+JC_API int fnSetInit_origin(const JC_ADDRESS cDeviceAddr);
 JC_API JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr);
 JC_API JcBool JcConnAna(JC_ADDRESS cAddr);
 JC_API JcBool JcConnSen(JC_ADDRESS cAddr);

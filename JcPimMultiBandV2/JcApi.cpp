@@ -134,6 +134,8 @@
 //add config: spe_pim_att,spe_offset_att 
 //(build 390)
 //for no switch
+//(build 391)
+//default: tx_fast_mode = 0
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -683,31 +685,30 @@ int fnSetVBW(int iVBW, const JC_UNIT cUnits) {
 //通用设备命令
 int fnSendCmd(JcInt8 byDevice, const JC_CMD cmd, char* cResult, long& lCount) {
 	bool b = 0;
-	int num = 0;
 	std::string scmd(cmd);
 	int n = scmd.find('?');
 	switch (byDevice) {
 	case 0://SIG1
 		if (n > 0)
-			num = __pobj->sig1->InstrWriteAndRead(cmd, cResult);
+			lCount = __pobj->sig1->InstrWriteAndRead(cmd, cResult);
 		else
 			b = __pobj->sig1->InstrWrite(cmd);
 		break;
 	case 1://SIG2
 		if (n > 0)
-			num = __pobj->sig2->InstrWriteAndRead(cmd, cResult);
+			lCount = __pobj->sig2->InstrWriteAndRead(cmd, cResult);
 		else
 			b = __pobj->sig2->InstrWrite(cmd);
 		break;
 	case 2://SA
 		if (n > 0)
-			num = __pobj->sen->InstrWriteAndRead(cmd, cResult);
+			lCount = __pobj->sen->InstrWriteAndRead(cmd, cResult);
 		else
 			b = __pobj->sen->InstrWrite(cmd);
 		break;
 	case 3://PM
 		if (n > 0)
-			num = __pobj->ana->InstrWriteAndRead(cmd, cResult);
+			lCount = __pobj->ana->InstrWriteAndRead(cmd, cResult);
 		else
 			b = __pobj->ana->InstrWrite(cmd);
 		break;
@@ -784,28 +785,24 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 		tx_temp = rf2->pow_dbm + rf2->offset_ext;
 	}
 	//读取功率计
-	//__pobj->WriteClDebug("   Avg3rd_offset: " + std::to_string(val) + " \r\n");
 	double sen = JcGetSen();
-	__pobj->WriteClDebug("   Avg3rd_1_sensor: " + std::to_string(sen) + " \r\n");
-	if (Util::strFind(__pobj->sen->InstrGetIdn(), "nrpz")) {
-		sen += val;
-	} else {
+	for (int i = 0; i < _tx_sensor_count - 1; i++)
 		sen += JcGetSen();
-		sen += JcGetSen();
-		//计算补偿
-		sen = sen / 3 + val;
-	}
-	//log
+	__pobj->WriteClDebug("   Avg3rd_count: " + std::to_string(_tx_sensor_count) + " \r\n");
+	__pobj->WriteClDebug("   Avg3rd_1_sensor: " + std::to_string(sen / _tx_sensor_count) + " \r\n");
+	//计算补偿
+	sen = sen / _tx_sensor_count + val;
 	__pobj->WriteClDebug("   Avg3rd_1_value: " + std::to_string(sen) + " \r\n");
+
 	//retest
 	double dd = tx_temp - sen;
 	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) {
 		Util::setSleep(100);
-		//读2次后平均
+		//读3次后平均
 		sen = JcGetSen();
-		__pobj->WriteClDebug("   Avg3rd_2_sensor: " + std::to_string(sen) + " \r\n");
 		sen += JcGetSen();
 		sen += JcGetSen();
+		__pobj->WriteClDebug("   Avg3rd_2_sensor: " + std::to_string(sen / 3) + " \r\n");
 		sen = sen / 3 + val;
 		//log
 		__pobj->WriteClDebug("   Avg3rd_2_value: " + std::to_string(sen) + " \r\n");
@@ -866,6 +863,8 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 		__pobj->WriteClDebug("   No.: " + std::to_string(i + 1) + "\r\n");
 		if (i == 0)
 			Util::setSleep(_tx_delay + 200);
+		else 
+			Util::setSleep(_tx_delay);
 		if (byCarrier == JC_CARRIER_TX1) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
 			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;	
@@ -887,8 +886,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 			break;
 		}
 		//超出范围
-		if (tx_deviate > __pobj->now_tx_smooth_threasold || tx_deviate < (__pobj->now_tx_smooth_threasold * -1)) 
-		{
+		if (tx_deviate > __pobj->now_tx_smooth_threasold || tx_deviate < (__pobj->now_tx_smooth_threasold * -1)) {
 			dd = 0;
 			//检测错误后，关闭功放
 			//FnSetTxOn(false, byCarrier);		
@@ -918,7 +916,6 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 					HwSetCoup(JC_COUP_TX2);
 					fnSetTxOn(true, JC_CARRIER_TX2);
 				}				
-				Util::setSleep(_reset_delay);
 				__pobj->WriteClDebug("   (Complete restart!)\r\n");
 				i--;
 				continue;
@@ -927,10 +924,10 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 			if (tx_deviate >= (__pobj->now_tx_smooth_accuracy * -1) && tx_deviate <= __pobj->now_tx_smooth_accuracy)
 				break;
 
-			if (i == 0)
-				dd += tx_deviate;
-			else
-				dd += (tx_deviate * 0.6);
+			if (i < 3)
+				dd += tx_deviate * (1 - i * 0.2);
+			else 
+				dd += (tx_deviate * 0.5);
 
 			double sig_val = 0;
 			JcBool b = FALSE;
@@ -948,7 +945,6 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 				break;
 			}
 			__pobj->WriteClDebug("   tx_set: " + std::to_string(sig_val) + "\r\n");
-			Util::setSleep(_tx_delay);
 		}
 	}
 	__pobj->WriteClDebug("   dd: " + std::to_string(dd) + "\r\n");
@@ -960,6 +956,67 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 //扩展API
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+int fnSetInit_origin(const JC_ADDRESS cDeviceAddr) {
+	if (NULL != __pobj) {
+		//分配地址
+		std::istringstream iss(cDeviceAddr);
+		//std::vector<std::string> vaddr;
+		std::string stemp = "";
+		while (std::getline(iss, stemp, ',')) {
+			__pobj->vaddr.push_back(stemp);
+		}
+
+		//补位,默认开启开关
+		if (__pobj->vaddr.size() == 4)
+			__pobj->vaddr.push_back("0");
+
+		//开始连接
+		std::string strConnMsg = "";
+		ViStatus s = viOpenDefaultRM(&__pobj->viDefaultRM);
+		if (s) return JC_STATUS_ERROR;
+
+		if (__pobj->vaddr.size() < 5) return JC_STATUS_ERROR;
+
+		for (int i = 0; i < 5; i++) 
+			__pobj->device_status[i] = true;
+
+		_spe_preamp = 0;
+		if ("0" != __pobj->vaddr[2]) {
+			if (false == JcConnAna(const_cast<char*>(__pobj->vaddr[2].c_str())))
+				Util::logged(L"fnSetInit: Connect SA Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[2]).c_str());
+		}
+
+		if ("0" != __pobj->vaddr[0]){
+			if (false == JcConnSig(0, const_cast<char*>(__pobj->vaddr[0].c_str())))
+				Util::logged(L"fnSetInit: Connect SG1 Fail!(%s)", Util::utf8_to_wstring(__pobj->vaddr[0]).c_str());
+		}
+
+		if ("0" != __pobj->vaddr[1]){
+			if (false == JcConnSig(1, const_cast<char*>(__pobj->vaddr[1].c_str())))
+				Util::logged(L"fnSetInit: Connect SG2 Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[1]).c_str());
+		}
+
+		if ("0" != __pobj->vaddr[3]) {
+			if (false == JcConnSen(const_cast<char*>(__pobj->vaddr[3].c_str())))
+				Util::logged(L"fnSetInit: Connect PowerMeter Fail! (%s)", Util::utf8_to_wstring(__pobj->vaddr[3]).c_str());
+		}
+
+		//判断连接
+		__pobj->isAllConn = __pobj->device_status[0] & __pobj->device_status[1]
+			& __pobj->device_status[2] & __pobj->device_status[3] & __pobj->device_status[4];
+		//记录错误信息
+		__pobj->strErrorInfo = ("SIG1 Connected: " + std::to_string(__pobj->device_status[0]) + "\r\n");
+		__pobj->strErrorInfo += ("SIG2 Connected: " + std::to_string(__pobj->device_status[1]) + "\r\n");
+		__pobj->strErrorInfo += ("Spectrum Connected: " + std::to_string(__pobj->device_status[2]) + "\r\n");
+		__pobj->strErrorInfo += ("Sensor Connected: " + std::to_string(__pobj->device_status[3]) + "\r\n");
+		__pobj->strErrorInfo += strConnMsg;
+
+		if (false == __pobj->isAllConn)
+			return JC_STATUS_ERROR;
+	}
+
+	return 0;
+}
 
 JcBool JcConnSig(JcInt8 byDevice, JC_ADDRESS cAddr) {
 	ViSession vi = VI_NULL;
