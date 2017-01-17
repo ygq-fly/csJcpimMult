@@ -24,9 +24,13 @@
 #define SMOOTH_TX_THREASOLD 2
 #define SMOOTH_TX_ACCURACY 0.15
 
+#define OFFSET_JC_PROTECT_RX -10
+
 #define OFFSET_PROTECT_TX -10
 #define OFFSET_PROTECT_RX -90
-#define OFFSET_JCPROTECT_RX -80
+#define OFFSET_PROTECT_RX_RANGE 10
+#define OFFSET_STEP_RX 1
+#define OFFSET_STEP_TX 1
 
 #define SUM_LOW	       0
 #define SUM_HIGH	   1
@@ -40,12 +44,13 @@ static int _debug_enable = 0;
 //保护门限相关
 static int _protect_tx = OFFSET_PROTECT_TX;
 static int _protect_rx = OFFSET_PROTECT_RX;
-static int _protect_range_rx = 10;
+static int _protect_range_rx = OFFSET_PROTECT_RX_RANGE;
 static int _tx_no_power_limit = -50;
 static double _out_of_val_range = -149;
 //延时相关
 static bool _need_reset = false;
-static int _tx_delay = 200;
+static int _tx_delay = 10;
+static int _tx_delay2 = 0;
 static int _coup_delay = 300;
 static int _reset_delay = 500;
 static int _sensor_delay = 500;
@@ -55,7 +60,8 @@ static int _vco_delay = 100;
 static int _free_tx_enable = 1;
 static int _tx_step = 1;
 static int _tx_adjust_count = 1;
-static int _tx_sensor_count = 2;
+static int _tx1_sensor_count = 4;
+static int _tx2_sensor_count = 8;
 
 //false通用（无关是否有耦合器开关），true针对华为无耦合器开关
 //static bool _tx_coup_enable = true;
@@ -328,18 +334,19 @@ public:
 
 		_protect_tx = GetPrivateProfileIntW(L"Settings", L"tx_protect_value", OFFSET_PROTECT_TX, wsPath_ini.c_str());
 		_protect_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_value", OFFSET_PROTECT_RX, wsPath_ini.c_str());
-		_protect_range_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_range", 10, wsPath_ini.c_str());
-		_tx_step = GetPrivateProfileIntW(L"Settings", L"tx_step", 1, wsPath_ini.c_str());
-		_rx_step = GetPrivateProfileIntW(L"Settings", L"rx_step", 1, wsPath_ini.c_str());
+		_protect_range_rx = GetPrivateProfileIntW(L"Settings", L"rx_protect_range", OFFSET_PROTECT_RX_RANGE, wsPath_ini.c_str());
+		_tx_step = GetPrivateProfileIntW(L"Settings", L"tx_step", OFFSET_STEP_TX, wsPath_ini.c_str());
+		_rx_step = GetPrivateProfileIntW(L"Settings", L"rx_step", OFFSET_STEP_RX, wsPath_ini.c_str());
 
-		_tx_no_power_limit = GetPrivateProfileIntW(L"Settings", L"tx_no_power_limit", -50, wsPath_ini.c_str());
-		_out_of_val_range = Util::getIniDouble(L"Settings", L"out_of_val_range", -149, wsPath_ini.c_str());
+		_tx_no_power_limit = GetPrivateProfileIntW(L"Settings", L"tx_no_power_limit", _tx_no_power_limit, wsPath_ini.c_str());
+		_out_of_val_range = Util::getIniDouble(L"Settings", L"out_of_val_range", _out_of_val_range, wsPath_ini.c_str());
 
-		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", 200, wsPath_ini.c_str());
-		_coup_delay = GetPrivateProfileIntW(L"Settings", L"coup_delay", 300, wsPath_ini.c_str());
-		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", 500, wsPath_ini.c_str());
-		_reset_delay = GetPrivateProfileIntW(L"Settings", L"reset_delay", 500, wsPath_ini.c_str());
-		_tx_offset_delay = GetPrivateProfileIntW(L"Settings", L"tx_offset_delay", 100, wsPath_ini.c_str());
+		_tx_delay = GetPrivateProfileIntW(L"Settings", L"tx_delay", _tx_delay, wsPath_ini.c_str());
+		_tx_delay2 = GetPrivateProfileIntW(L"Settings", L"tx_delay2", _tx_delay2, wsPath_ini.c_str());
+		_coup_delay = GetPrivateProfileIntW(L"Settings", L"coup_delay", _coup_delay, wsPath_ini.c_str());
+		_sensor_delay = GetPrivateProfileIntW(L"Settings", L"sensor_delay", _sensor_delay, wsPath_ini.c_str());
+		_reset_delay = GetPrivateProfileIntW(L"Settings", L"reset_delay", _reset_delay, wsPath_ini.c_str());
+		_tx_offset_delay = GetPrivateProfileIntW(L"Settings", L"tx_offset_delay", _tx_offset_delay, wsPath_ini.c_str());
 		_vco_delay = GetPrivateProfileIntW(L"Settings", L"vco_delay", _vco_delay, wsPath_ini.c_str());
 
 		_pim_avg = GetPrivateProfileIntW(L"Settings", L"pim_avg", 1, wsPath_ini.c_str());
@@ -354,27 +361,38 @@ public:
 
 		//_tx_coup_enable = GetPrivateProfileIntW(L"Settings", L"tx_coup_enable", 1, wsPath_ini.c_str());
 		_tx_adjust_count = GetPrivateProfileIntW(L"Settings", L"tx_adjust_count", _tx_adjust_count, wsPath_ini.c_str());
-		_tx_sensor_count = GetPrivateProfileIntW(L"Settings", L"tx_sensor_count", _tx_sensor_count, wsPath_ini.c_str());
+		_tx1_sensor_count = GetPrivateProfileIntW(L"Settings", L"tx1_sensor_count", _tx1_sensor_count, wsPath_ini.c_str());
+		_tx2_sensor_count = GetPrivateProfileIntW(L"Settings", L"tx2_sensor_count", _tx2_sensor_count, wsPath_ini.c_str());
 		_tx_fast_mode = GetPrivateProfileIntW(L"Settings", L"tx_fast_mode", 0, wsPath_ini.c_str());
 
 		//最低数值保护
-		_protect_tx = _protect_tx > OFFSET_PROTECT_TX ? OFFSET_PROTECT_TX : _protect_tx;
-		_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
-		_protect_rx = _protect_rx > 0 ? OFFSET_PROTECT_RX : _protect_rx;
+		if (_protect_tx > OFFSET_PROTECT_TX) _protect_tx = OFFSET_PROTECT_TX;
+		if (_protect_range_rx < 10) _protect_range_rx = 10;
+		if (_protect_rx > OFFSET_PROTECT_RX) _protect_rx = OFFSET_PROTECT_RX;
+		//_protect_tx = _protect_tx > OFFSET_PROTECT_TX ? OFFSET_PROTECT_TX : _protect_tx;
+		//_protect_range_rx = _protect_range_rx < 10 ? 10 : _protect_range_rx;
+		//_protect_rx = _protect_rx > 0 ? OFFSET_PROTECT_RX : _protect_rx;
 
-		_tx_delay = _tx_delay < 200 ? 200 : _tx_delay;
-		_coup_delay = _coup_delay < 300 ? 300 : _coup_delay;
-		_sensor_delay = _sensor_delay < 500 ? 500 : _sensor_delay;
-		_reset_delay = _reset_delay < 500 ? 500 : _reset_delay;
-		_tx_offset_delay = _tx_offset_delay < 100 ? 100 : _tx_offset_delay;
-		_vco_delay = _vco_delay < 100 ? 100 : _vco_delay;
+		if (_tx_delay < 0) _tx_delay = 10;
+		if (_tx_delay2 < 0) _tx_delay2 = 0;
+		if (_coup_delay < 300) _coup_delay = 300;
+		if (_sensor_delay < 500) _sensor_delay = 500;
+		if (_reset_delay < 500) _reset_delay = 500;
+		if (_tx_offset_delay < 100) _tx_offset_delay = 100;
+		if (_vco_delay < 100) _vco_delay = 100;
+		//_coup_delay = _coup_delay < 300 ? 300 : _coup_delay;
+		//_sensor_delay = _sensor_delay < 500 ? 500 : _sensor_delay;
+		//_reset_delay = _reset_delay < 500 ? 500 : _reset_delay;
+		//_tx_offset_delay = _tx_offset_delay < 100 ? 100 : _tx_offset_delay;
+		//_vco_delay = _vco_delay < 100 ? 100 : _vco_delay;
 
 		_pim_avg = _pim_avg < 1 ? 1 : _pim_avg;
 		_spe_is_max = _spe_is_max == 0 ? 0 : 1;
 		_spe_preamp = _spe_preamp == 0 ? 0 : 1;
 
-		_tx_adjust_count = _tx_adjust_count < 1 ? 1 : _tx_adjust_count;
-		_tx_sensor_count = _tx_sensor_count < 1 ? 1 : _tx_sensor_count;
+		if (_tx_adjust_count < 1) _tx_adjust_count = 1;
+		if (_tx1_sensor_count < 1) _tx1_sensor_count = 1;
+		if (_tx2_sensor_count < 1) _tx2_sensor_count = 1;
 
 		wchar_t wcSerial[1024] = { 0 };
 		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());

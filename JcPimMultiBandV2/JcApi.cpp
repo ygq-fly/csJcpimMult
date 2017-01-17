@@ -136,6 +136,8 @@
 //for no switch
 //(build 391)
 //default: tx_fast_mode = 0
+//(build 395)
+//fix fine_adjust bug
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
@@ -513,9 +515,9 @@ JC_STATUS fnSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, const JC_UNIT
 	if (__pobj->isAdjust) {
 		//---------------------------------------------------------------------------------
 		//开启功放2
-		js = fnSetTxOn(false, JC_CARRIER_TX1);
-		if (0 != js) return js;
 		js = fnSetTxOn(true, JC_CARRIER_TX2);
+		if (0 != js) return js;
+		js = fnSetTxOn(false, JC_CARRIER_TX1);
 		if (0 != js) return js;
 		//---------------------------------------------------------------------------------
 		//切换耦合器tx2开关
@@ -768,6 +770,7 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 
 	double val = 0;
 	double tx_temp = 0;
+	int tx_sensor_count = 3;
 	if (byCoup == JC_COUP_TX1) {
 		//所有校准数据以mhz为单位，注意转换
 		int s = JcGetOffsetTx(val, rf1->band, rf1->dutport,
@@ -775,6 +778,7 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 							  rf1->freq_khz / 1000, rf1->pow_dbm);
 		if (s) return s;
 		tx_temp = rf1->pow_dbm + rf1->offset_ext;
+		tx_sensor_count = _tx1_sensor_count;
 	}
 	else if (byCoup == JC_COUP_TX2) {
 		//所有校准数据以mhz为单位，注意转换
@@ -783,28 +787,38 @@ double HwGetCoup_Dsp(JcInt8 byCoup) {
 							  rf2->freq_khz / 1000, rf2->pow_dbm);
 		if (s) return s;
 		tx_temp = rf2->pow_dbm + rf2->offset_ext;
+		tx_sensor_count = _tx2_sensor_count;
 	}
 	//读取功率计
-	double sen = JcGetSen();
-	for (int i = 0; i < _tx_sensor_count - 1; i++)
-		sen += JcGetSen();
-	__pobj->WriteClDebug("   Avg3rd_count: " + std::to_string(_tx_sensor_count) + " \r\n");
-	__pobj->WriteClDebug("   Avg3rd_1_sensor: " + std::to_string(sen / _tx_sensor_count) + " \r\n");
+	double sen = 0;
+	for (int i = 0; i < tx_sensor_count; i++) {
+		sen = JcGetSen();
+		//__pobj->WriteClDebug("   Avg3rd_count: " + std::to_string(_tx_sensor_count) + " \r\n");
+		__pobj->WriteClDebug("   Avg3rd_1_sensor: " + std::to_string(sen) + " \r\n");
+	}
 	//计算补偿
-	sen = sen / _tx_sensor_count + val;
+	sen += val;
 	__pobj->WriteClDebug("   Avg3rd_1_value: " + std::to_string(sen) + " \r\n");
 
 	//retest
 	double dd = tx_temp - sen;
 	if (dd > __pobj->now_tx_smooth_threasold || dd < (__pobj->now_tx_smooth_threasold * -1)) {
 		Util::setSleep(100);
-		//读3次后平均
-		sen = JcGetSen();
-		sen += JcGetSen();
-		sen += JcGetSen();
-		__pobj->WriteClDebug("   Avg3rd_2_sensor: " + std::to_string(sen / 3) + " \r\n");
-		sen = sen / 3 + val;
-		//log
+
+		////读3次后平均
+		//sen = JcGetSen();
+		//sen += JcGetSen();
+		//sen += JcGetSen();
+		//__pobj->WriteClDebug("   Avg3rd_2_sensor: " + std::to_string(sen / 3) + " \r\n");
+		//sen = sen / 3 + val;
+
+		for (int i = 0; i < 3; i++) {
+			sen = JcGetSen();
+			__pobj->WriteClDebug("   Avg3rd_2_sensor: " + std::to_string(sen) + " \r\n");
+		}
+		//计算补偿
+		sen += val;
+
 		__pobj->WriteClDebug("   Avg3rd_2_value: " + std::to_string(sen) + " \r\n");
 	}
 	return sen;
@@ -861,10 +875,16 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 	//adjust
 	for (int i = 0; i < _tx_adjust_count; i++) {
 		__pobj->WriteClDebug("   No.: " + std::to_string(i + 1) + "\r\n");
-		if (i == 0)
-			Util::setSleep(_tx_delay + 200);
-		else 
+		if (i == 0) {
+			if (byCarrier == JC_CARRIER_TX2)
+				Util::setSleep(_tx_delay + _tx_delay2);
+			else
+				Util::setSleep(_tx_delay);
+		}
+		else {
 			Util::setSleep(_tx_delay);
+		}
+
 		if (byCarrier == JC_CARRIER_TX1) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
 			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;	
@@ -917,6 +937,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 					fnSetTxOn(true, JC_CARRIER_TX2);
 				}				
 				__pobj->WriteClDebug("   (Complete restart!)\r\n");
+				//Util::setSleep(_tx_delay);
 				i--;
 				continue;
 			}
@@ -933,10 +954,12 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 			JcBool b = FALSE;
 			if (byCarrier == JC_CARRIER_TX1) {
 				sig_val = rf1->pow_dbm + rf1->offset_ext + rf1->offset_int + dd;
+				sig_val += __pobj->now_mode_bandset[rf1->band]->fine_adjust1;
 				b = JcSetSig(JC_CARRIER_TX1, rf1->freq_khz, sig_val);
 			}
 			else if (byCarrier == JC_CARRIER_TX2) {
 				sig_val = rf2->pow_dbm + rf2->offset_ext + rf2->offset_int + dd;
+				sig_val += __pobj->now_mode_bandset[rf2->band]->fine_adjust2;
 				b = JcSetSig(JC_CARRIER_TX2, rf2->freq_khz, sig_val);			
 			}
 			if (b == FALSE) {
@@ -945,6 +968,7 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 				break;
 			}
 			__pobj->WriteClDebug("   tx_set: " + std::to_string(sig_val) + "\r\n");
+			//Util::setSleep(_tx_delay);
 		}
 	}
 	__pobj->WriteClDebug("   dd: " + std::to_string(dd) + "\r\n");
@@ -1284,7 +1308,7 @@ JC_STATUS JcSetSig_Advanced(JcInt8 byCarrier, bool isOffset, double dOther) {
 	else if (byCarrier == JC_CARRIER_TX2){
 		rf2->offset_int = internal_offset;
 		//微调
-		tx_true += __pobj->now_mode_bandset[rf->band]->fine_adjust1;
+		tx_true += __pobj->now_mode_bandset[rf->band]->fine_adjust2;
 		bool b = __pobj->sig2->InstrSetFreqPow(freq_khz, tx_true);
 		if (false == b) {
 			Util::logged(L"JcSetSig_Adv: set sig fail! (sig-%d)", (int)byCarrier);
@@ -1555,7 +1579,7 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		//设置
 		JcSetSig(JC_CARRIER_TX1, Rxfreq[i] * 1000, _protect_rx);
 		Util::setSleep(200);
-		if (_protect_rx == OFFSET_JCPROTECT_RX)
+		if (_protect_rx == OFFSET_JC_PROTECT_RX)
 			Util::setSleep(300);
 		//读取
 		double v = JcGetAna(Rxfreq[i] * 1000, false);
