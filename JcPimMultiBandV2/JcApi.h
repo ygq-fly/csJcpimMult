@@ -151,6 +151,7 @@ JIONTCOM_API double HwGetCoup_Dsp(JcInt8 byCoup);
 JIONTCOM_API JcBool FnGet_Vco();
 JIONTCOM_API JcBool HwGet_Vco(double& real_val, double& vco_val);
 JIONTCOM_API JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier);
+JIONTCOM_API double HwGetDsp(JcInt8 byCarrier);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //À©Õ¹API

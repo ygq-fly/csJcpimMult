@@ -659,7 +659,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	}
 	dPimResult = dPimResult / (double)_pim_avg;
 	//防止华为ATE告警
-	if (dPimResult <= -150)
+	if (dPimResult < _out_of_val_range)
 		dPimResult = _out_of_val_range;
 	//dPimResult += rxoff;
 	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
@@ -887,11 +887,13 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 
 		if (byCarrier == JC_CARRIER_TX1) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX1);
-			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;	
+			tx_deviate = rf1->pow_dbm + rf1->offset_ext - tx_dsp;
+			__pobj->now_dsp_tx1 = tx_dsp;
 		}
 		else if (byCarrier == JC_CARRIER_TX2) {
 			tx_dsp = HwGetCoup_Dsp(JC_COUP_TX2);
 			tx_deviate = rf2->pow_dbm + rf2->offset_ext - tx_dsp;
+			__pobj->now_dsp_tx2 = tx_dsp;
 		}
 		else
 			return JC_STATUS_ERROR_SET_BOSH_USE_TX1TX2;
@@ -972,7 +974,17 @@ JC_STATUS HwGetSig_Smooth(JC_RETURN_VALUE dd, JcInt8 byCarrier) {
 		}
 	}
 	__pobj->WriteClDebug("   dd: " + std::to_string(dd) + "\r\n");
+
 	return ret;
+}
+
+double HwGetDsp(JcInt8 byCarrier) {
+	if (byCarrier == JC_CARRIER_TX1) {
+		return __pobj->now_dsp_tx1;
+	}
+	else {
+		return __pobj->now_dsp_tx2;
+	}
 }
 
 
@@ -1411,18 +1423,20 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 		//int coup1 = __pobj->now_mode_bandset[temp_iSwitchTx1].switch_coup1;
 		//int coup2 = __pobj->now_mode_bandset[temp_iSwitchTx2].switch_coup2;
 		//coup = iSwitchCoup == JC_COUP_TX1 ? coup1 : coup2;
-		if (iSwitchCoup == JC_COUP_TX1 && temp_iSwitchTx1 >= 0)
+		if (iSwitchCoup == JC_COUP_TX1 && temp_iSwitchTx1 >= 0) {
 			coup = __pobj->now_mode_bandset[temp_iSwitchTx1]->switch_coup1;
-		else if (iSwitchCoup == JC_COUP_TX2 && temp_iSwitchTx2 >= 0)
-			coup = __pobj->now_mode_bandset[temp_iSwitchTx2]->switch_coup2;
-		else 
-			coup = -1;
 
-		//根据tx_enable重设
-		if (!__pobj->now_mode_bandset[temp_iSwitchTx1]->tx1_enable)
-			iSwitchTx1 = -1;
-		if (!__pobj->now_mode_bandset[temp_iSwitchTx2]->tx2_enable)
-			iSwitchTx2 = -1;
+			//根据tx_enable重设
+			if (!__pobj->now_mode_bandset[temp_iSwitchTx1]->tx1_enable)
+				iSwitchTx1 = -1;
+		} else if (iSwitchCoup == JC_COUP_TX2 && temp_iSwitchTx2 >= 0) {
+			coup = __pobj->now_mode_bandset[temp_iSwitchTx2]->switch_coup2;
+
+			//根据tx_enable重设
+			if (!__pobj->now_mode_bandset[temp_iSwitchTx2]->tx2_enable)
+				iSwitchTx2 = -1;
+		} else 
+			coup = -1;
 
 	} else {
 		//查找ID_HUAWEI检测通道标号

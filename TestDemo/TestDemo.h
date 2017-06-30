@@ -104,6 +104,9 @@ typedef int(*pGetOffsetRx)(double&, char, char, double);
 //								 double freq_mhz, double tx_dbm);
 typedef int(*pJcGetOffsetTx)(double&, uint8_t, uint8_t, uint8_t, uint8_t, double, double);
 typedef int(*pJcSetOffsetTx)(char, char,double, double, Callback_Get_TX_Offset_Point);
+//JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
+//	double loss_db, Callback_Get_RX_Offset_Point pHandler);
+typedef int(*pJcSetOffsetRx)(char, char, double, Callback_Get_RX_Offset_Point);
 //JC_API JC_STATUS JcGetOffsetVco(JC_RETURN_VALUE offset_vco, BYTE_ byInternalBand, BYTE_ byDutport);
 typedef int(*pGetOffsetVco)(double&, uint8_t, uint8_t);
 //JC_API JC_STATUS JcSetOffsetVco(BYTE_ byInternalBand, BYTE_ byDutport, double val);

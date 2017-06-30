@@ -228,6 +228,9 @@ public:
 	std::wstring wstrLogPath;
 	std::wstring wstrLogFlag;
 
+	double now_dsp_tx1;
+	double now_dsp_tx2;
+
 public:
 	//连接地址
 	//0-SIG1,1-SIG2,2-ANA,3-SEN,4-SWH
@@ -613,7 +616,9 @@ public:
 		//}
 		if (now_mode == MODE_HUAWEI || now_mode == MODE_TRANSMISSION) {
 			//DD800例外
-			if (pim->band == 1) {
+			//if (pim->band == 1) {
+			if (Util::strFind(GetBandString(pim->band), "DD800")) {
+				WriteClDebug("GetPimFreq: DD800 => PIM of High");
 				dF1 = rf2->freq_khz;
 				dF2 = rf1->freq_khz;
 			}
