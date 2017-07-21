@@ -134,6 +134,7 @@ JIONTCOM_API JC_STATUS HwSetTxFreqs(double dCarrierFreq1, double dCarrierFreq2, 
 JIONTCOM_API int fnSetTxOn(JcBool bOn, JcInt8 byCarrier = 0);
 //获取互调值
 JIONTCOM_API int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UNIT cUnits);
+JIONTCOM_API int HwGetImResult(double dFreq, JC_RETURN_VALUE dPimResult, const JC_UNIT cUnits);
 //设置span
 JIONTCOM_API int fnSetSpan(int iSpan, const JC_UNIT cUnits);
 //设置rbw

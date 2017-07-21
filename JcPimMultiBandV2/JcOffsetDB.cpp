@@ -573,12 +573,8 @@ int JcOffsetDB::OffsetTime(char* ctime, int len, const char* band, const char& d
 }
 
 //存储校准数据
-int JcOffsetDB::Store_v2(const char& tx_or_rx,
-						 const char* band, const char& dut, const char& coup,
-						 const char& real_or_dsp,
-						 const double tx,
-						 const double* val, int num) {
-
+int JcOffsetDB::Store_v2(const char& tx_or_rx, const char* band, const char& dut, const char& coup,
+						 const char& real_or_dsp, double tx, const double* val, int num) {
 	std::string sSuffix = dut == 0 ? "_A" : "_B";
 	if (tx_or_rx == OFFSET_TX)
 		sSuffix += (coup == 0 ? "_TX1" : "_TX2");

@@ -160,7 +160,7 @@ void Test_dll(){
 	//getImResult(pim_freq, pim_val, "mhz");
 	
 	//jcSetOffsetTx(8, 0, 43, 42.5, NULL);
-	jcSetOffsetRx(0, 0, 43, NULL);
+	//jcSetOffsetRx(0, 0, 43, NULL);
 	//���
 	std::cout << std::endl;
 	for (int i = 0; i < 7; i++) {

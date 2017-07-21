@@ -21,124 +21,6 @@
 //int csCmd, CString & csResult)	通用透传接口	byDevice : 仪器序号(00:sg1, 01 : sg2, 02 : sa,03 : Pm), csCmd : 仪器指令, csResult : 指令返回结果
 //int GetSpectrumType(CString & csSpectrumType)	获取频谱仪类型
 //-------------------------------------------------------------------------
-//版本
-//-------------------------------------------------------------------------
-//V1.7 (build 200)
-//	1, 添加R&S设备的支持
-//	2, 性能改进
-// 
-//V1.8 (build 255)
-//	1, 支持mingw编译
-//	2, 支持传输模式
-//  3，改进vco检测
-//	4，改进R&S时钟同步检测
-//
-//v1.9 (build 273)
-//	1, 新增rf1,rf2,pim参数模块
-//	2, 支持POI模式
-//  3，升级最新switch
-//	4, 可配置频段和面板映射
-//
-//v1.10 (build 288)
-//  1, struct change
-//  2, 支持TEK 仪表
-//  3, table change
-//(build 289)
-//  1, add-api HwSetImCoefficients
-//(build 290)
-//  1, 可配置关闭单独开关控制
-//(build 291)
-//  1, 缺失情况下自动生成数据库
-//(build 293)
-//  1, 支持e系列信号源
-//(build 297)
-//  修复296的传输模式开关错误
-//(build 299)
-//  设置tx校准模式下，关闭预防
-//  其他模式下开始预放
-//(build 306)
-//  添加authorize
-//(build 307）
-//  support jcsig,jcspe
-//(build 310）
-//  fix authorize bug
-//(build 311）
-//  调换freq和pow顺序
-//(build 312）
-//  fix authorize bug
-//(build 313）
-//  change protect_rx
-//(build 315）
-//  fix authorize bug
-//  rechange protect_rx
-//(build 317）
-//  add new mode(hwa)
-//(build 318）
-//  supprot e4407, e4422
-//(build 319）
-//  supprot u2004
-//(build 320）
-//  upgrade hw7tohw8
-//(buiut 321)
-//  fix bug GetExtBandToIntBand
-//(buiut 322)
-//  fix vco(NewHuawei) bug
-//(buiut 327)
-//  set switch of tx offset -1
-//  set switch of rx offset -1
-//(buiut 328)
-//  vco freq fix
-//(build 329)
-//  no memory freq and power
-//(build 332)
-//  add fnSetInit2
-//(build 336)
-//  support calibration time
-//(build 339)
-//  fix rs's IDN bug ***************
-//(build 341)
-//  enable free power settings
-//(build 343)
-//  config tx_step to set offset step
-//(build 344)
-//  config rbw to 10, vbw 30
-//(build 345)
-//  POI switch 's flag: coup = -1
-//(build 346)
-//  add pim_avg
-//(build 349)
-//  add _coup_delay, need jcMBP1.5.1.55
-//(build 352)
-//  fix tx_step 's bug
-//(build 356)
-//  add auto extend tx or rx offset point's count
-//(build 358)
-//  rewrite: power out of range
-//(build 359)
-//  fig getPimResult to int
-//(build 360)
-//  add fine_adjust
-//(build 364)
-//  support FSC
-//(build 364)
-//  fix _free_enable_tx default to 1
-//(build 367)
-// remove OFFSET_JCPROTECT_RX
-//(build 370)
-// add some config
-//(build 375)
-// support poi_band_15 mode
-//(build 376)
-// remove fnSetFreq delay
-//(build 379)
-//add config: spe_pim_att,spe_offset_att 
-//(build 390)
-//for no switch
-//(build 391)
-//default: tx_fast_mode = 0
-//(build 395)
-//fix fine_adjust bug
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "JcApi.h"
 #include "stdafx.h"
@@ -638,9 +520,16 @@ int fnSetTxOn(JcBool bOn, JcInt8 byCarrier){
 //获取互调结果
 int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UNIT cUnits) {
 	pim->freq_khz = __pobj->GetPimFreq();
+	HwGetImResult(pim->freq_khz, dPimResult, cUnits);
+	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
+	return 0;
+}
+
+int HwGetImResult(double dFreq, JC_RETURN_VALUE dPimResult, const JC_UNIT cUnits) {
+	//pim->freq_khz = __pobj->GetPimFreq();
 	//获取pim模块内部校准
 	double rxoff;
-	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, pim->freq_khz / 1000);
+	JC_STATUS s = JcGetOffsetRx(rxoff, pim->band, pim->dutport, dFreq / 1000);
 	if (s) rxoff = 0;
 	//设置pim模块补偿(直接设置ana内置补偿)
 	JcSetAna_RefLevelOffset(rxoff);
@@ -648,7 +537,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	//获取互调,返回数据
 	dPimResult = 0;
 	for (int i = 0; i < _pim_avg; i++) {
-		double temp = JcGetAna(pim->freq_khz, _spe_is_max);
+		double temp = JcGetAna(dFreq, _spe_is_max);
 		//double temp = JcGetAna(pim->freq_khz, false);
 		if (temp == JC_STATUS_ERROR){
 			Util::logged(L"fnGetImResult: Spectrum read error!");
@@ -662,7 +551,7 @@ int fnGetImResult(JC_RETURN_VALUE dFreq, JC_RETURN_VALUE dPimResult, const JC_UN
 	if (dPimResult < _out_of_val_range)
 		dPimResult = _out_of_val_range;
 	//dPimResult += rxoff;
-	dFreq = __pobj->TransToUnit(pim->freq_khz, cUnits);
+
 	return 0;
 }
 

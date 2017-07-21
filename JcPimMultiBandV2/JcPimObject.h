@@ -194,7 +194,7 @@ struct JcPimModule {
 } *pim;
 
 //?????
-struct JcPimObject
+class JcPimObject : public Singleton<JcPimObject>
 {
 #define LINEFEED_CHAR 0x0D
 #define TIMEOUT_VALUE 10000
@@ -262,7 +262,6 @@ public:
 	int ext_sen_index;
 	std::shared_ptr<IfSensor> ext_sen;
 
-private:
 	JcPimObject()
 		: isAllConn(false)
 		, now_vco_threasold(SMOOTH_VCO_THREASOLD)
@@ -326,7 +325,36 @@ private:
 		isAllConn = false;
 	}
 
-	~JcPimObject() {}
+	~JcPimObject() {
+			if (swh) swh->SwitchClose();
+			if (ana) ana->InstrClose();
+			if (sen) sen->InstrClose();
+			if (vna) vna->InstrClose();
+
+			if (sig1) {
+				if (sig1->InstrConnStatus())
+					sig1->InstrOpenPow(false);
+				sig1->InstrClose();
+			}
+			if (sig2) {
+				if (sig2->InstrConnStatus())
+					sig2->InstrOpenPow(false);
+				sig2->InstrClose();
+			}
+
+			viClose(viDefaultRM);
+
+			ana.reset();
+			sen.reset();
+			sig1.reset();
+			sig2.reset();
+			vna.reset();
+			swh.reset();
+
+			delete rf1;
+			delete rf2;
+			delete pim;
+	}
 
 public:
 	void InitConfig() {
@@ -401,6 +429,7 @@ public:
 		GetPrivateProfileStringW(L"SN", L"sn", L" ", wcSerial, 1024, wsPath_ini.c_str());
 		_serial = Util::wstring_to_utf8(std::wstring(wcSerial));
 	}
+
 	//连接数据库，初始化参数
 	bool InitBandSet(){
 		std::wstring ini_Path = _startPath + L"\\JcConfig.ini";
@@ -495,6 +524,7 @@ public:
 		}
 		return true;
 	}
+
 	//vi_attribute
 	void JcSetViAttribute(ViSession vi){
 		char cInfo[32] = { 0 };
@@ -796,63 +826,14 @@ public:
 #endif	
 		return ret;
 	}
-	//Sigleton model
+
 private:
-	static JcPimObject* _singleton;
 	typedef struct
 	{
 		BLOBHEADER header;
 		DWORD cbKeySize;
 		BYTE rgbKeyData[8];
 	}KeyBlob;
-
-public:
-	static JcPimObject* Instance(){
-		if (NULL == _singleton)
-			_singleton = new JcPimObject;
-
-		return _singleton;
-	}
-
-	static void release() {
-		if (NULL != _singleton) {
-			if (_singleton->swh)
-				_singleton->swh->SwitchClose();
-			if (_singleton->ana)
-				_singleton->ana->InstrClose();
-			if (_singleton->sen)
-				_singleton->sen->InstrClose();
-			if (_singleton->sig1) {
-				if(_singleton->sig1->InstrConnStatus())
-					_singleton->sig1->InstrOpenPow(false);
-				_singleton->sig1->InstrClose();
-			}
-			if (_singleton->sig2) {
-				if (_singleton->sig2->InstrConnStatus())
-					_singleton->sig2->InstrOpenPow(false);
-				_singleton->sig2->InstrClose();
-			}
-			if (_singleton->vna)
-				_singleton->vna->InstrClose();
-			viClose(_singleton->viDefaultRM);
-
-			_singleton->ana.reset();
-			_singleton->sen.reset();
-			_singleton->sig1.reset();
-			_singleton->sig2.reset();
-			_singleton->vna.reset();
-			_singleton->swh.reset();
-
-			delete rf1;
-			delete rf2;
-			delete pim;
-
-			delete _singleton;
-			_singleton = NULL;
-		}
-	}
 };
-
-JcPimObject* JcPimObject::_singleton = NULL;
 
 #endif

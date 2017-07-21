@@ -61,7 +61,8 @@ enum
 	MODE_TRANSMISSION = 1,
 	MODE_POI = 2,
 	MODE_NEWPOI = 3,
-	MODE_NEWHUAWEI = 4
+	MODE_NEWHUAWEI = 4,
+	MODE_DPX = 5
 };
 
 // TODO: reference additional headers your program requires here

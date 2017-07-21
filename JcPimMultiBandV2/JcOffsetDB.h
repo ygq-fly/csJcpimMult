@@ -129,33 +129,30 @@ public:
 	bool DbSetTxIncremental(const char* band, const char& dut, const char& coup, const char& real_or_dsp, double incremental);
 	int GetBandCount(const char* band_mode);
 	int GetBandInfo(const char* prefix, char* band_info);
-	//查找连续点序列的频段
-	int FreqBand_continuous(const uint8_t& tx_or_rx, const char* band, double& f_start, double& f_stop);
-	//查找固定点序列的校准方式
-	int FreqBand_discontinuous(const uint8_t& tx_or_rx, const double& freq_mhz, const char* band,
-								double &f1, double &f2, double &index1, double &index2);
 	//获取校准频率点集合
 	int FreqHeader(const char& tx_or_rx, const char* band, double* freq, int maxnum);
     //获取Tx校准数据
 	double OffsetTx(const char* band, const char& dut, const char& coup,
-					const char& real_or_dsp,
-					const double& freq_mhz, const double& tx_dbm);
+					const char& real_or_dsp, const double& freq_mhz, const double& tx_dbm);
 	//获取Rx校准数据
 	double OffsetRx(const char* band, const char& dut, const double& freq_now);
 	//获取vco数据
 	double OffsetVco(const char* band, const char& dut);
 	int OffsetTime(char*ctime, int len, const char* band, const char& dut);
 	//存储校准数据
-	int Store_v2(const char& tx_or_rx,
-				 const char* band, const char& dut, const char& coup,
-				 const char& real_or_dsp,
-				 const double tx,
-				 const double* val, int num);
+	int Store_v2(const char& tx_or_rx, const char* band, const char& dut, const char& coup,
+				 const char& real_or_dsp, double tx, const double* val, int num);
 	//存储vco校准数据
 	int Store_vco_single(const char* band, const char& dut, const double val);
 	int Store_calibration_time(const char* band, const char& dut, const char* val);
 
 private:
+	//查找连续点序列的频段
+	int FreqBand_continuous(const uint8_t& tx_or_rx, const char* band, double& f_start, double& f_stop);
+	//查找固定点序列的校准方式
+	int FreqBand_discontinuous(const uint8_t& tx_or_rx, const double& freq_mhz, const char* band,
+							   double& f1, double& f2, double& index1, double& index2);
+
     //计算斜率
 	double SumSlope(double v, double x1, double y1, double x2, double y2);
     //sqlite语句执行
