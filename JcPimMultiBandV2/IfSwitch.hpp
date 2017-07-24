@@ -4,6 +4,16 @@
 #include "IfInstrument.hpp"
 #include "stdafx.h"
 
+enum
+{
+	MODE_HUAWEI = 0,
+	MODE_TRANSMISSION = 1,
+	MODE_POI = 2,
+	MODE_NEWPOI = 3,
+	MODE_NEWHUAWEI = 4,
+	MODE_DPX = 5
+};
+
 Interface_ IfSwitch
 {
 public:

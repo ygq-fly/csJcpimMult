@@ -1579,8 +1579,7 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 						Callback_Get_TX_Offset_Point pHandler) {
 	//检查当前接收频段是否允许
 	if (JcGetChannelEnable(JC_CARRIER_TX1) == FALSE &&
-		JcGetChannelEnable(JC_CARRIER_TX2) == FALSE)
-	{
+		JcGetChannelEnable(JC_CARRIER_TX2) == FALSE) {
 		__pobj->strErrorInfo = "TxOffset: tx1_tx2 channel can not used";
 		return JC_STATUS_ERROR;
 	}
@@ -1613,8 +1612,8 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		iswitch = byInternalBand * 2 + byDutPort;
 	//----------------------------------------------------------------------------------------------
 	//coup ==> JC_COUP_TX1 to JC_COUP_TX2
-	for (int coup = 0; coup < 2; ++coup)
-	{
+	for (int coup = 0; coup < 2; ++coup) {
+
 #ifdef JC_OFFSET_TX_DEBUG
 		std::cout << "\n";
 		std::cout << "Start: " << coup << std::endl;

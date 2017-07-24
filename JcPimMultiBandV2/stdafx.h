@@ -55,15 +55,9 @@
 #define g_sprintf  sprintf_s
 #define g_snprintf snprintf_s
 
-enum
-{
-	MODE_HUAWEI = 0,
-	MODE_TRANSMISSION = 1,
-	MODE_POI = 2,
-	MODE_NEWPOI = 3,
-	MODE_NEWHUAWEI = 4,
-	MODE_DPX = 5
-};
+#define DISALLOW_EVIL_CONSTRUCTORS(TypeName)    \
+TypeName(const TypeName&);                      \
+void operator=(const TypeName&)
 
 // TODO: reference additional headers your program requires here
 #endif
