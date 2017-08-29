@@ -402,6 +402,26 @@ int JcOffsetDB::FreqHeader(char tx_or_rx, const char* band, double* freq, int ma
 	return i;
 }
 
+int JcOffsetDB::FreqHeader(uint8_t tx_or_rx, const char* band, double* freqs) {
+	if (freqs != NULL)
+		return JCOFFSET_ERROR;
+
+	double step = tx_or_rx == OFFSET_TX ? m_tx_step : m_rx_step;
+	double f_start, f_stop;
+	if (FreqBand_continuous(tx_or_rx, band, f_start, f_stop) == JCOFFSET_ERROR)
+		return JCOFFSET_ERROR;
+
+	int num = ceil((f_stop - f_start) / step) + 1;
+	freqs = new double[num];
+	for (int j = 0; j < num; ++j) {
+		if ((f_start + j * step) > f_stop)
+			*(freqs + j) = f_stop;
+		else
+			*(freqs + j) = f_start + step*j;
+	}
+	return num;
+}
+
 double JcOffsetDB::OffsetTx(const char* band, char dut, char coup, char real_or_dsp, double freq_mhz, double tx_dbm) {
 	std::stringstream ss;
 	std::string sSuffix = dut == 0 ? "_A" : "_B";

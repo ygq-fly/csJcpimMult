@@ -451,20 +451,24 @@ public:
 		
 		//获取频段数量
 		if (now_mode == MODE_POI) {
-			now_num_band = offset.GetBandCount("poi");
-			now_band_prefix = "poi";
+			now_num_band = offset.GetBandCount(poi_flag);
+			now_band_prefix = poi_flag;
 		}
 		else if (now_mode == MODE_NEWPOI) {
-			now_num_band = offset.GetBandCount("np");
-			now_band_prefix = "np";
+			now_num_band = offset.GetBandCount(NewPoi_flag);
+			now_band_prefix = NewPoi_flag;
 		}
 		else if (now_mode == MODE_NEWHUAWEI) {
-			now_num_band = offset.GetBandCount("nhw");
-			now_band_prefix = "nhw";
+			now_num_band = offset.GetBandCount(NewHuawei_flag);
+			now_band_prefix = NewHuawei_flag;
+		}
+		else if (now_mode == MODE_DPX) {
+			now_num_band = offset.GetBandCount(Dpx_flag);
+			now_band_prefix = Dpx_flag;
 		}
 		else {
-			now_num_band = offset.GetBandCount("hw");
-			now_band_prefix = "hw";
+			now_num_band = offset.GetBandCount(huawei_flag);
+			now_band_prefix = huawei_flag;
 		}
 		
 		for (int i = 0; i < now_num_band; i++)

@@ -43,6 +43,8 @@
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")
 #pragma comment(lib, "Version.lib")
+#pragma comment(lib, "dbghelp.lib")
+#pragma warning(disable:4996)
 #endif
 
 #ifdef __GNUC__

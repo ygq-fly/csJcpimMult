@@ -114,6 +114,12 @@ enum
 	"'nhw8', '2600d',     2620,     2690,     2500,    2580,   1358,  1360,   '111',   15,   16"  \
 					}
 
+//DPX
+#define Dpx_flag "dpx"
+#define Dpx_sql_body { \
+	"'dpx1', 'dpx',      400,      3500,      400,     3500,    0,  0,   '111',   1,   2",  \
+						}
+
 class JcOffsetDB
 {
 public:
@@ -131,6 +137,7 @@ public:
 	int GetBandInfo(const char* prefix, char* band_info);
 	//获取校准频率点集合
 	int FreqHeader(char tx_or_rx, const char* band, double* freq, int maxnum);
+	int FreqHeader(uint8_t tx_or_rx, const char* band, double* freqs);
     //获取Tx校准数据
 	double OffsetTx(const char* band, char dut, char coup, char real_or_dsp, double freq_mhz, double tx_dbm);
 	//获取Rx校准数据

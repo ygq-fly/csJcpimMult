@@ -200,6 +200,8 @@ JC_API JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 JC_API long JcGetOffsetTxNum(JcInt8 byInternalBand);
 JC_API JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 							   double des_p_dbm, double loss_db, Callback_Get_TX_Offset_Point pHandler);
+JC_API JC_STATUS JcSetOffsetTx_FreeBand(JcInt8 byInternalBand, JcInt8 byDutPort, double* freqs, int freq_num,
+							   double des_p_dbm, double loss_db, Callback_Get_TX_Offset_Point pHandler);
 JC_API JC_STATUS JcSetOffsetTx_Single(JC_RETURN_VALUE resulte, JC_RETURN_VALUE resulte_sen,
 									  int coup,
 									  double des_p_dbm, double des_f_mhz,

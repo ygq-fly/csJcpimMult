@@ -56,6 +56,7 @@
 #define ROSC_EXT 1
 #define ROSC_INT 0
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //mian
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +70,7 @@ int fnSetInit(const JC_ADDRESS cDeviceAddr) {
 	//加载pim对象
 	if (NULL != __pobj) {
 
+		//strcpy(NULL, "123");
 		//建立模块
 		__pobj->InitConfig();
 		//if (__pobj->CheckAuthorization() == false) {
@@ -212,6 +214,12 @@ int HwSetMeasBand(JcInt8 byBandTx1, JcInt8 byBandTx2, JcInt8 byBandRx){
 		pim->band = byBandRx;
 	}
 
+	if (__pobj->now_mode == MODE_DPX) {
+		rf1->band = 0;
+		rf2->band = 0;
+		pim->band = 0;
+	}
+
 	return 0;
 }
 
@@ -222,23 +230,34 @@ int fnSetDutPort(JcInt8 byPort) {
 
 int HwSetDutPort(JcInt8 byPortTx1, JcInt8 byPortTx2, JcInt8 byPortRx) {
 	__pobj->WriteClDebug("", true);
-	if (byPortTx1 > 2 || byPortTx2 > 2) return JC_STATUS_ERROR_SET_SWITCH_FAIL;
+	if (__pobj->now_mode == MODE_DPX){
+		if (byPortTx1 > 8 || byPortTx2 > 8) 
+			return JC_STATUS_ERROR_SET_SWITCH_FAIL;
+	}
+	else{
+		if (byPortTx1 > 2 || byPortTx2 > 2) 
+			return JC_STATUS_ERROR_SET_SWITCH_FAIL;
+	}
 
 	//dd调整值清空
 	__pobj->isAdjust = true;
 	rf1->dd = 0;
 	rf2->dd = 0;
 
-	//__pobj->now_dut_port = byPort;
 	rf1->dutport = byPortTx1;
 	rf2->dutport = byPortTx2;
 	pim->dutport = byPortRx;
 
 	//Band转换开关参数 , byPort = JC_DUTPORT_A 或　JC_DUTPORT_B
-	if (__pobj->now_mode == MODE_POI) {
+	if (__pobj->now_mode == MODE_POI ) {
 		rf1->switch_port = rf1->band;
 		rf2->switch_port = rf2->band;
 		pim->switch_port = pim->band;
+	}
+	else if (__pobj->now_mode == MODE_DPX) {
+		rf1->switch_port = byPortTx1;
+		rf2->switch_port = byPortTx2;
+		pim->switch_port = byPortRx;
 	}
 	else {
 		rf1->switch_port = rf1->band * 2 + rf1->dutport;
@@ -1280,6 +1299,7 @@ void JcNeedRetSwitch() {
 	JcSetSwitch(rf1->switch_port, rf2->switch_port, pim->switch_port, JC_COUP_TX2);
 
 }
+
 JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCoup) {
 	if (NULL == __pobj) return JC_STATUS_ERROR;
 	//查找检测通道标号
@@ -1327,7 +1347,11 @@ JcBool JcSetSwitch(int iSwitchTx1, int iSwitchTx2, int iSwitchPim, int iSwitchCo
 		} else 
 			coup = -1;
 
-	} else {
+	} 
+	else if (__pobj->now_mode == MODE_DPX) {
+		coup = iSwitchCoup;
+	}
+	else {
 		//查找ID_HUAWEI检测通道标号
 		//这里的iSwitch和band不会配对
 		if (iSwitchCoup == JC_COUP_TX1) 
@@ -1574,20 +1598,47 @@ long JcGetOffsetTxNum(JcInt8 byInternalBand) {
 }
 
 //自动校准Tx (校准前请确认连线)，(band:当前频段，dutport:当前测试端kou), 同时校准tx1,tx2
-JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
-						double des_p_dbm, double loss_db,
+JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort, double des_p_dbm, double loss_db,
 						Callback_Get_TX_Offset_Point pHandler) {
+
+	//获取当前频段显示字符
+	std::string sband = __pobj->GetBandString(byInternalBand);
+	//获取Tx校准频点
+	//double txfreq[MAX_SIZE_FREQ] = { 0 };
+	//int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq, MAX_SIZE_FREQ);
+	//double off_real[MAX_SIZE_FREQ] = { 0 };
+	//double off_dsp[MAX_SIZE_FREQ] = { 0 };
+
+	double* txfreq = NULL;
+	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq);
+	if (freq_num <= 0) {
+		if (txfreq) delete txfreq;
+		return JC_STATUS_ERROR;
+	}
+	
+	JC_STATUS ret = JcSetOffsetTx_FreeBand(byInternalBand, byDutPort, txfreq, freq_num, des_p_dbm, loss_db, pHandler);
+	if (txfreq) delete txfreq;
+	return  ret;
+}
+
+JC_STATUS JcSetOffsetTx_FreeBand(JcInt8 byInternalBand, JcInt8 byDutPort, double* freqs, int freq_num,
+								 double des_p_dbm, double loss_db, Callback_Get_TX_Offset_Point pHandler) {
+	if (freqs == NULL) {
+		__pobj->strErrorInfo = "freqs is null";
+		return JC_STATUS_ERROR;
+	}
+
 	//检查当前接收频段是否允许
-	if (JcGetChannelEnable(JC_CARRIER_TX1) == FALSE &&
-		JcGetChannelEnable(JC_CARRIER_TX2) == FALSE) {
-		__pobj->strErrorInfo = "TxOffset: tx1_tx2 channel can not used";
+	if (JcGetChannelEnable(JC_CARRIER_TX1) == FALSE && JcGetChannelEnable(JC_CARRIER_TX2) == FALSE) {
+		__pobj->strErrorInfo = "TxOffset: tx1, tx2 channel can not used";
 		return JC_STATUS_ERROR;
 	}
 
 	if (__pobj->ext_sen_index == 1) {
 		//to do
 		//外部传感器使用
-	} else {
+	}
+	else {
 		//默认方式，需设置频谱
 		__pobj->ana->InstrTxOffsetSetting();
 		Util::setSleep(500);
@@ -1596,17 +1647,13 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//获取Tx校准频点
-	double txfreq[MAX_SIZE_FREQ] = { 0 };
-	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq, MAX_SIZE_FREQ);
 
-	double off_real[MAX_SIZE_FREQ] = { 0 };
-	double off_dsp[MAX_SIZE_FREQ] = { 0 };
-
-	//Util::logged("loss_db: %lf", loss_db);
+	double* off_real = new double[freq_num];
+	double* off_dsp = new double[freq_num];
 
 	//Band转换开关参数
 	int iswitch = -1;
-	if (__pobj->now_mode == MODE_POI) 
+	if (__pobj->now_mode == MODE_POI)
 		iswitch = byInternalBand;
 	else
 		iswitch = byInternalBand * 2 + byDutPort;
@@ -1626,45 +1673,61 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 		//切换开关
 		JcBool isSwhConn = JcSetSwitch(iswitch, iswitch, OFFSET_SWITCH_NULL, coup);
 		if (isSwhConn == FALSE) {
+			if (off_real) delete off_real;
+			if (off_dsp) delete off_dsp;
 			__pobj->strErrorInfo = "TxOffset: Switch-Coup Fail!\r\n";
 			return JC_STATUS_ERROR;
 		}
 		//----------------------------------------------------------------------------------------------
 		//开启功放,设置保护值
 		std::shared_ptr<IfSignalSource> pow = coup == JC_COUP_TX1 ? __pobj->sig1 : __pobj->sig2;
-		pow->InstrSetFreqPow(txfreq[0] * 1000, _protect_tx);
+		pow->InstrSetFreqPow(freqs[0] * 1000, _protect_tx);
 		pow->InstrOpenPow(true);
 		//----------------------------------------------------------------------------------------------
 		Util::setSleep(400);
 		//开始 自动生成 TX1 校准数据
 		for (int i = 0; i < freq_num; ++i) {
 			//单点校准
-			int s = JcSetOffsetTx_Single(off_real[i], off_dsp[i], coup, des_p_dbm, txfreq[i], loss_db);
+			int s = JcSetOffsetTx_Single(off_real[i], off_dsp[i], coup, des_p_dbm, freqs[i], loss_db);
 			if (s) return s;
 			//开始回调
-			if(pHandler)
-				pHandler(txfreq[i], off_real[i], off_dsp[i]);
+			if (pHandler) pHandler(freqs[i], off_real[i], off_dsp[i]);
+
 #ifdef JC_OFFSET_TX_DEBUG
-			std::cout << "Run: " << txfreq[i] << " MHz" << std::endl;
+			std::cout << "Run: " << freqs[i] << " MHz" << std::endl;
 			std::cout << "Off = " << off_real[i] << " ; Sen= " << off_dsp[i] << std::endl;
 #endif
+
 		}
 		//----------------------------------------------------------------------------------------------
 		//关闭功放
 		pow->InstrOpenPow(false);
 		//----------------------------------------------------------------------------------------------
 		//存储校准数据
-		int s = __pobj->offset.Store_v2(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_REAL, des_p_dbm, off_real, freq_num);
+		int s;
+		if (__pobj->now_mode == MODE_DPX)
+			s = __pobj->offset.Store_dpx(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_REAL, des_p_dbm, off_real, freqs, freq_num);
+		else
+			s = __pobj->offset.Store_v2(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_REAL, des_p_dbm, off_real, freq_num);
 		if (s) {
+			if (off_real) delete off_real;
+			if (off_dsp) delete off_dsp;
 			__pobj->strErrorInfo = "TxOffset: Tx_Real data save error!\r\n";
 			return JC_STATUS_ERROR;
 		}
-		s = __pobj->offset.Store_v2(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_DSP, des_p_dbm, off_dsp, freq_num);
+
+		if (__pobj->now_mode == MODE_DPX)
+			s = __pobj->offset.Store_dpx(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_DSP, des_p_dbm, off_real, freqs, freq_num);
+		else
+			s = __pobj->offset.Store_v2(OFFSET_TX, sband.c_str(), byDutPort, coup, JC_OFFSET_DSP, des_p_dbm, off_dsp, freq_num);
 		if (s) {
+			if (off_real) delete off_real;
+			if (off_dsp) delete off_dsp;
 			__pobj->strErrorInfo = "TxOffset: Tx_Dsp data save error!\r\n";
 			return JC_STATUS_ERROR;
 		}
 		//----------------------------------------------------------------------------------------------
+
 #ifdef JC_OFFSET_TX_DEBUG
 		std::cout << "Save Success!" << std::endl;
 #endif
@@ -1674,7 +1737,9 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	//还原频谱设置
 	if (__pobj->ext_sen_index == 0)
 		__pobj->ana->InstrPimSetting();
-	
+
+	if (off_real) delete off_real;
+	if (off_dsp) delete off_dsp;
 	return JC_STATUS_SUCCESS;
 }
 
