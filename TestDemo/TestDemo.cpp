@@ -146,7 +146,7 @@ void Test_dll(){
 
 	//jcSetOffsetTime(0, 0);
 	//setImOrder(3);
-	setMeasBand(0);
+	//setMeasBand(0);
 	//setDutPort(0);
 	//setTxPower(43, 43, 0, 0);
 	//hwSetTxFreqs(930, 960, "mhz");
@@ -159,7 +159,7 @@ void Test_dll(){
 	//double pim_freq, pim_val;
 	//getImResult(pim_freq, pim_val, "mhz");
 	
-	//jcSetOffsetTx(8, 0, 43, 42.5, NULL);
+	jcSetOffsetTx(0, 0, 43, 42.5, NULL);
 	//jcSetOffsetRx(0, 0, 43, NULL);
 	//���
 	std::cout << std::endl;

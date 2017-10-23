@@ -117,7 +117,18 @@ enum
 //DPX
 #define Dpx_flag "dpx"
 #define Dpx_sql_body { \
-	"'dpx1', 'dpx',      400,      3500,      400,     3500,    0,  0,   '111',   1,   2",  \
+	"'dpx1', '450f1',      460,     465.75,  450,    455.75,  0, 0,   '111',   1,   2",  \
+	"'dpx2', '450f2',      462.5,   467.5,   452.5,  457.5,   0, 0,   '111',   1,   2",  \
+	"'dpx3', '700l',       728,     746,     698,    712,     0, 0,   '111',   1,   2",  \
+	"'dpx4', '700h',       746,     768,     777,    798,     0, 0,   '111',   1,   2",  \
+	"'dpx5', '700apt',     758,     803,     703,    748,     0, 0,   '111',   1,   2",  \
+	"'dpx6', 'dd800',      791,     821,     832,    862,     0, 0,   '111',   1,  2",  \
+	"'dpx7', 'cdma800',    865,     894,     820,    849,     0, 0,   '111',   1,  2",  \
+	"'dpx8', 'gsm900',     925,     960,     880,    915,     0, 0,   '111',   1,   2",  \
+	"'dpx9', 'dcs1800',    1805,    1880,    1710,   1785,    0, 0,   '111',   1,   2",  \
+	"'dpx10', 'pcs1900',   1930,    1990,    1850,   1910,    0, 0,   '111',   1,   2",  \
+	"'dpx11', 'wcdma2100', 2110,    2170,    1920,   2060,    0, 0,   '111',   1,   2",  \
+	"'dpx12', 'wcdma2600', 2620,    2690,    2500,   2570,    0, 0,   '111',   1,   2"  \
 						}
 
 class JcOffsetDB
@@ -137,7 +148,7 @@ public:
 	int GetBandInfo(const char* prefix, char* band_info);
 	//获取校准频率点集合
 	int FreqHeader(char tx_or_rx, const char* band, double* freq, int maxnum);
-	int FreqHeader(uint8_t tx_or_rx, const char* band, double* freqs);
+	int FreqHeader(uint8_t tx_or_rx, const char* band, double** freqs);
     //获取Tx校准数据
 	double OffsetTx(const char* band, char dut, char coup, char real_or_dsp, double freq_mhz, double tx_dbm);
 	//获取Rx校准数据
@@ -182,6 +193,8 @@ private:
 	std::string m_band_info_table;
 	std::string m_tx_offset_table;
 	std::string m_rx_offset_table;
+	std::string m_tx_dpx_offset_table;
+	std::string m_rx_dpx_offset_table;
 	std::string m_vco_offset_table;
 	std::string m_setting_table;
 

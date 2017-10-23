@@ -1,6 +1,5 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
-#include <vld.h>
 #include "JcApi.h"
 
 #include <dbghelp.h>

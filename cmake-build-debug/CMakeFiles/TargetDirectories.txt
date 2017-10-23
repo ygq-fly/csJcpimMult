@@ -1,0 +1,6 @@
+C:/OneDrive/Sync/JcPimMultiBandV2/cmake-build-debug/CMakeFiles/TestDemo.dir
+C:/OneDrive/Sync/JcPimMultiBandV2/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/OneDrive/Sync/JcPimMultiBandV2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/OneDrive/Sync/JcPimMultiBandV2/cmake-build-debug/JcPimMultiBandV2/CMakeFiles/JcPimMultiBandV2.dir
+C:/OneDrive/Sync/JcPimMultiBandV2/cmake-build-debug/JcPimMultiBandV2/CMakeFiles/edit_cache.dir
+C:/OneDrive/Sync/JcPimMultiBandV2/cmake-build-debug/JcPimMultiBandV2/CMakeFiles/rebuild_cache.dir

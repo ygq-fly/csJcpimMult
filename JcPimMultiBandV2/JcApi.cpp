@@ -1429,7 +1429,10 @@ JC_STATUS JcGetOffsetRx(JC_RETURN_VALUE offset_val,
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//计算校准数据点
-	offset_val = __pobj->offset.OffsetRx(sband.c_str(), byDutPort, freq_mhz);
+	if (__pobj->now_mode == MODE_DPX)
+		offset_val = __pobj->offset.OffsetRx_dpx(sband.c_str(), byDutPort, freq_mhz);
+	else
+		offset_val = __pobj->offset.OffsetRx(sband.c_str(), byDutPort, freq_mhz);
 	if (offset_val == JC_STATUS_ERROR) {
 		__pobj->strErrorInfo = "GetRxOffset: Read error!\r\n";
 		return JC_STATUS_ERROR_GET_RX_OFFSET;
@@ -1539,8 +1542,11 @@ JC_STATUS JcSetOffsetRx(JcInt8 byInternalBand, JcInt8 byDutPort,
 	fnSetTxOn(false, JC_CARRIER_TX1);
 	//if (_protect_rx == OFFSET_JCPROTECT_RX)
 	//	__pobj->ana->InstrSetAtt(0);
-
-	JC_STATUS s = __pobj->offset.Store_v2(OFFSET_RX, sband.c_str(), byDutPort, 0, 0, 0, off, freq_num);
+	JC_STATUS s;
+	if (__pobj->now_mode == MODE_DPX)
+		s = __pobj->offset.Store_dpx(OFFSET_RX, sband.c_str(), byDutPort, 0, 0, 0, Rxfreq, off, freq_num);
+	else
+		s = __pobj->offset.Store_v2(OFFSET_RX, sband.c_str(), byDutPort, 0, 0, 0, off, freq_num);
 	if (s) {
 		__pobj->strErrorInfo = "RxOffset: Save Error!\r\n";
 		return JC_STATUS_ERROR;
@@ -1577,7 +1583,10 @@ JC_STATUS JcGetOffsetTx(JC_RETURN_VALUE offset_val,
 	//获取当前频段显示字符
 	std::string sband = __pobj->GetBandString(byInternalBand);
 	//计算校准数据点
-	offset_val = __pobj->offset.OffsetTx(sband.c_str(), byTempDutPort, coup, real_or_dsp, freq_mhz, tx_dbm);
+	if (__pobj->now_mode == MODE_DPX)
+		offset_val = __pobj->offset.OffsetTx_dpx(sband.c_str(), byTempDutPort, coup, real_or_dsp, freq_mhz, tx_dbm);
+	else
+		offset_val = __pobj->offset.OffsetTx(sband.c_str(), byTempDutPort, coup, real_or_dsp, freq_mhz, tx_dbm);
 	if (offset_val == JC_STATUS_ERROR) {
 		offset_val = 0;
 		__pobj->strErrorInfo = "TxOffset: Read data error!\r\n";
@@ -1610,12 +1619,23 @@ JC_STATUS JcSetOffsetTx(JcInt8 byInternalBand, JcInt8 byDutPort, double des_p_db
 	//double off_dsp[MAX_SIZE_FREQ] = { 0 };
 
 	double* txfreq = NULL;
-	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), txfreq);
+	int freq_num = __pobj->offset.FreqHeader(OFFSET_TX, sband.c_str(), &txfreq);
 	if (freq_num <= 0) {
 		if (txfreq) delete txfreq;
 		return JC_STATUS_ERROR;
 	}
-	
+
+	/*double* val = new double[freq_num];
+	for (size_t i = 0; i < freq_num;i++)
+	{
+		val[i] = 43 + i;
+	}*/
+	/*__pobj->offset.Store_dpx(OFFSET_TX, sband.c_str(), byDutPort, 0, JC_OFFSET_REAL, des_p_dbm, txfreq, val, freq_num);
+	return 0;*/
+
+	double val= __pobj->offset.OffsetTx_dpx(sband.c_str(), 0, 0, 0, 728, 43);
+	return 0;
+
 	JC_STATUS ret = JcSetOffsetTx_FreeBand(byInternalBand, byDutPort, txfreq, freq_num, des_p_dbm, loss_db, pHandler);
 	if (txfreq) delete txfreq;
 	return  ret;

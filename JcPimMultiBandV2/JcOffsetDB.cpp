@@ -12,6 +12,8 @@ JcOffsetDB::JcOffsetDB()
 	, m_band_info_table("JC_BAND2_INFO")
 	, m_tx_offset_table("JC_TX_OFFSET_ALL")
 	, m_rx_offset_table("JC_RX_OFFSET_ALL")
+	, m_tx_dpx_offset_table("JC_TX_OFFSET_DPX")
+	, m_rx_dpx_offset_table("JC_RX_OFFSET_DPX")
 	, m_setting_table("JC_SETTING_INFO")
 	, m_offset_mode(discontinuous_offset_mode)
 	, m_tx_step(OFFSET_STEP_TX)
@@ -60,6 +62,8 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 	m_band_info_table = "JC_BAND2_INFO";
 	m_tx_offset_table = "JC_TX_OFFSET_ALL";
 	m_rx_offset_table = "JC_RX_OFFSET_ALL";
+	m_tx_dpx_offset_table = "JC_TX_OFFSET_DPX";
+	m_rx_dpx_offset_table = "JC_RX_OFFSET_DPX";
 	m_vco_offset_table = "JC_VCO_OFFSET_ALL";
 
 	//if (!IsExist("JC_SETTING_INFO")) {
@@ -141,6 +145,17 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 		ExecSql(HuaweiA_band_table_sql.c_str());
 	}
 
+	//»ªÎªÐÂ8Æµ
+	if (GetBandCount(Dpx_flag) == 0) {
+		std::string dpx_sql_param[12] = Dpx_sql_body;
+		std::string dpx_band_table_sql = sql_header + dpx_sql_param[0];
+		for (int i = 1; i < 12; i++){
+			dpx_band_table_sql += " union all select " + dpx_sql_param[i];
+		}
+
+		ExecSql(dpx_band_table_sql.c_str());
+	}
+
 	//poi15Æµ
 	//if (GetBandCount(poi_15_flag) == 0) {
 	//	std::string poi15_sql_param[15] = poi_15_sql_body;
@@ -209,7 +224,7 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 			"\"Power\" real NOT NULL,"
 			"\"Frequency\" real NOT NULL,"
 			"\"Value\" real NOT NULL,"
-			"PRIMARY KEY(\"Port\"))";
+			"PRIMARY KEY(\"Port\",\"Dsp\",\"Power\",\"Frequency\"))";
 		ExecSql(table);
 	}
 
@@ -218,7 +233,7 @@ void JcOffsetDB::DbInit(uint8_t mode) {
 			"\"Port\" text NOT NULL,"
 			"\"Frequency\" real NOT NULL,"
 			"\"Value\" real NOT NULL,"
-			"PRIMARY KEY(\"Port\"))";
+			"PRIMARY KEY(\"Port\",\"Frequency\"))";
 		ExecSql(table);
 	}
 }
@@ -402,9 +417,9 @@ int JcOffsetDB::FreqHeader(char tx_or_rx, const char* band, double* freq, int ma
 	return i;
 }
 
-int JcOffsetDB::FreqHeader(uint8_t tx_or_rx, const char* band, double* freqs) {
-	if (freqs != NULL)
-		return JCOFFSET_ERROR;
+int JcOffsetDB::FreqHeader(uint8_t tx_or_rx, const char* band, double** freqs) {
+	//if (freqs != NULL)
+	//	return JCOFFSET_ERROR;
 
 	double step = tx_or_rx == OFFSET_TX ? m_tx_step : m_rx_step;
 	double f_start, f_stop;
@@ -412,13 +427,14 @@ int JcOffsetDB::FreqHeader(uint8_t tx_or_rx, const char* band, double* freqs) {
 		return JCOFFSET_ERROR;
 
 	int num = ceil((f_stop - f_start) / step) + 1;
-	freqs = new double[num];
+	*freqs = new double[num];
 	for (int j = 0; j < num; ++j) {
 		if ((f_start + j * step) > f_stop)
-			*(freqs + j) = f_stop;
+			*(*freqs + j) = f_stop;
 		else
-			*(freqs + j) = f_start + step*j;
+			*(*freqs + j) = f_start + step*j;
 	}
+
 	return num;
 }
 
@@ -740,8 +756,8 @@ double JcOffsetDB::OffsetTx_dpx(const char* band, uint8_t dut, uint8_t coup, uin
 	char sql[256] = { 0 };
 	sprintf_s(sql,
 		"select Max_val, Min_val from "
-		"(select max([Power]) Max_val from [%s] where [Power] <= '%lf' and [Port] = '%s' and [Dsp] = '%d'), "
-		"(select min([Power]) Min_val from [%s] where [Power] >= '%lf' and [Port] = '%s' and [Dsp] = '%d')",
+		"(select max([Power]) Max_val from [%s] where [Power] <= %lf and [Port] = '%s' and [Dsp] = %d), "
+		"(select min([Power]) Min_val from [%s] where [Power] >= %lf and [Port] = '%s' and [Dsp] = %d)",
 		table, tx_dbm, port, (int)real_or_dsp, table, tx_dbm, port, (int)real_or_dsp);
 	double p1, p2;
 	if (GetSqlVal(sql, p1, p2))
@@ -750,8 +766,8 @@ double JcOffsetDB::OffsetTx_dpx(const char* band, uint8_t dut, uint8_t coup, uin
 	memset(sql, 0, sizeof(sql));
 	sprintf_s(sql,
 		"select Max_val, Min_val from "
-		"(select max([Frequency]) Max_val from [%s] where [Frequency] <= '%lf' and [Port] = '%s' and [Dsp] = '%d'), "
-		"(select min([Frequency]) Min_val from [%s] where [Frequency] >= '%lf' and [Port] = '%s' and [Dsp] = '%d')",
+		"(select max([Frequency]) Max_val from [%s] where [Frequency] <= %lf and [Port] = '%s' and [Dsp] = %d), "
+		"(select min([Frequency]) Min_val from [%s] where [Frequency] >= %lf and [Port] = '%s' and [Dsp] = %d)",
 		table, freq_mhz, port, (int)real_or_dsp, table, freq_mhz, port, (int)real_or_dsp);
 	double f1, f2;
 	if (GetSqlVal(sql, f1, f2))
@@ -760,8 +776,8 @@ double JcOffsetDB::OffsetTx_dpx(const char* band, uint8_t dut, uint8_t coup, uin
 	memset(sql, 0, sizeof(sql));
 	sprintf_s(sql, 
 		"select Val1, Val2 from "
-		"(select [Value] Val1 from [%s] where [Frequency] = '%lf' and [Power] = '%lf' and [Port] = '%s' and [Dsp] = '%d'), "
-		"(select [Value] Val2 from [%s] where [Frequency] = '%lf' and [Power] = '%lf' and [Port] = '%s' and [Dsp] = '%d')",
+		"(select [Value] Val1 from [%s] where [Frequency] = %lf and [Power] = %lf and [Port] = '%s' and [Dsp] = %d), "
+		"(select [Value] Val2 from [%s] where [Frequency] = %lf and [Power] = %lf and [Port] = '%s' and [Dsp] = %d)",
 		table, f1, p1, port, (int)real_or_dsp, table, f2, p1, port, (int)real_or_dsp);
 	double y1, y2;
 	if (GetSqlVal(sql, y1, y2))
@@ -770,8 +786,8 @@ double JcOffsetDB::OffsetTx_dpx(const char* band, uint8_t dut, uint8_t coup, uin
 	memset(sql, 0, sizeof(sql));
 	sprintf_s(sql,
 		"select Val1, Val2 from "
-		"(select [Value] Val1 from [%s] where [Frequency] = '%lf' and [Power] = '%lf' and [Port] = '%s' and [Dsp] = '%d'), "
-		"(select [Value] Val2 from [%s] where [Frequency] = '%lf' and [Power] = '%lf' and [Port] = '%s' and [Dsp] = '%d')",
+		"(select [Value] Val1 from [%s] where [Frequency] = %lf and [Power] = %lf and [Port] = '%s' and [Dsp] = %d), "
+		"(select [Value] Val2 from [%s] where [Frequency] = %lf and [Power] = %lf and [Port] = '%s' and [Dsp] = %d)",
 		table, f1, p2, port, (int)real_or_dsp, table, f2, p2, port, (int)real_or_dsp);
 	double z1, z2;
 	if (GetSqlVal(sql, z1, z2))
@@ -790,8 +806,8 @@ double JcOffsetDB::OffsetRx_dpx(const char* band, uint8_t dut, double freq_now) 
 	char sql[256] = { 0 };
 	sprintf_s(sql,
 		"select Max_val, Min_val from "
-		"(select max([Frequency]) Max_val from [%s] where [Frequency] <= '%lf' and [Port] = '%s'), "
-		"(select min([Frequency]) Min_val from [%s] where [Frequency] >= '%lf' and [Port] = '%s')",
+		"(select max([Frequency]) Max_val from [%s] where [Frequency] <= %lf and [Port] = '%s'), "
+		"(select min([Frequency]) Min_val from [%s] where [Frequency] >= %lf and [Port] = '%s')",
 		table, freq_now, port, table, freq_now, port);
 	double f1, f2;
 	if (GetSqlVal(sql, f1, f2))
@@ -799,8 +815,8 @@ double JcOffsetDB::OffsetRx_dpx(const char* band, uint8_t dut, double freq_now) 
 
 	memset(sql, 0, sizeof(sql));
 	sprintf_s(sql, "select Val1, Val2 from "
-		"(select [Value] Val1 from [%s] where [Frequency] = '%lf' and Port = '%s'), "
-		"(select [Value] Val2 from [%s] where [Frequency] = '%lf' and Port = '%s')",
+		"(select [Value] Val1 from [%s] where [Frequency] = %lf and Port = '%s'), "
+		"(select [Value] Val2 from [%s] where [Frequency] = %lf and Port = '%s')",
 		table, f1, port, table, f2, port);
 	double y1 = 0, y2 = 0;
 	if (GetSqlVal(sql, y1, y2))
@@ -816,27 +832,30 @@ int JcOffsetDB::Store_dpx(uint8_t tx_or_rx, const char* band, uint8_t dut, uint8
 	char port[64] = { 0 };
 	
 	if (tx_or_rx == OFFSET_TX) {
-		sprintf_s(port, "%s_P%d_TX%d", band, (int)dut, (int)coup + 1);
+		//sprintf_s(port, "dpx_P%d_TX%d", (int)dut, (int)coup + 1);
+		sprintf_s(port, "'dpx_P%d_TX%d'", (int)dut, (int)coup + 1);
 		sprintf_s(header, "Port,Dsp,Power,Frequency,Value");
-		table = m_tx_offset_table;
+		table = m_tx_dpx_offset_table;
 	}
 	else {
-		sprintf_s(port, "%s_P%d", band, (int)dut);
+		//sprintf_s(port, "dpx_P%d", (int)dut);
+		sprintf_s(port, "'dpx_P%d'", (int)dut);
 		sprintf_s(header, "Port,Frequency,Value");
-		table = m_rx_offset_table;
+		table = m_rx_dpx_offset_table;
 	}
 
 	try {
 		for (int i = 0; i < num; ++i) {
-			char values[128] = { 0 };
+			char values[256] = { 0 };
 			if (tx_or_rx == OFFSET_TX) {
-				sprintf_s(values, "%s,%d,%lf,%lf,%lf", port, (int)real_or_dsp, tx, freqs[i], vals[i]);
+				sprintf_s(values,"%s,%d,%lf,%lf,%lf", port, (int)real_or_dsp, tx, freqs[i], vals[i]);
 			}
 			else {
 				sprintf_s(values, "%s,%lf,%lf", port, freqs[i], vals[i]);
 			}
 			char sql[256] = { 0 };
 			sprintf_s(sql, "insert or replace into [%s] (%s) values (%s)", table.c_str(), header, values);
+		
 			m_pSQLite->execDML(sql);
 		}		
 		return 0;
